@@ -1,0 +1,12 @@
+{
+  "name": "harvester-cutting-tracker",
+  "version": "1.0.0",
+  "description": "A web application for tracking harvester cutting operations",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

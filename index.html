@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>हार्वेस्टर कटिंग ट्रैकर</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Modern Header -->
+        <header class="modern-header">
+            <!-- Theme Toggle -->
+            <div class="theme-toggle-container">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <div class="toggle-track">
+                        <div class="toggle-thumb">
+                            <i data-lucide="sun" class="theme-icon light-icon"></i>
+                            <i data-lucide="moon" class="theme-icon dark-icon"></i>
+                        </div>
+                    </div>
+                </button>
+            </div>
+
+
+
+            <!-- Greeting Section -->
+            <div class="greeting-section">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <div class="user-name">
+                            हार्वेस्टर ट्रैकर
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Balance Card -->
+            <div class="balance-card" id="balanceCard">
+                <div class="balance-header">
+                    <span class="balance-label">कुल राशि</span>
+                </div>
+                <div class="balance-amount" id="totalBalance">₹0</div>
+                <div class="action-buttons">
+                    <button class="action-btn active" data-tab="entry">
+                        <i data-lucide="plus" class="action-btn-icon"></i>
+                        <span class="action-btn-text">नई एंट्री</span>
+                    </button>
+                    <button class="action-btn" data-tab="records">
+                        <i data-lucide="file-text" class="action-btn-icon"></i>
+                        <span class="action-btn-text">रिकॉर्ड</span>
+                    </button>
+                    <button class="action-btn" data-tab="summary">
+                        <i data-lucide="bar-chart-3" class="action-btn-icon"></i>
+                        <span class="action-btn-text">सारांश</span>
+                    </button>
+                    <button class="action-btn">
+                        <i data-lucide="more-horizontal" class="action-btn-icon"></i>
+                        <span class="action-btn-text">More</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- New Entry Tab -->
+            <div id="entry-tab" class="tab-content active">
+                <form class="modern-form" id="entryForm">
+                    <div class="form-header">
+                        <h2 class="form-title">नई एंट्री जोड़ें</h2>
+                        <p class="form-subtitle">किसान और कटिंग की जानकारी भरें</p>
+                    </div>
+
+                    <div class="form-grid">
+                        <!-- Row 1: Basic Info -->
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i data-lucide="user" class="label-icon"></i>
+                                    किसान का नाम *
+                                </label>
+                                <input type="text" id="farmerName" class="modern-input" placeholder="किसान का नाम दर्ज करें" required>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i data-lucide="phone" class="label-icon"></i>
+                                    संपर्क नंबर *
+                                </label>
+                                <input type="tel" id="contactNumber" class="modern-input" placeholder="मोबाइल नंबर" maxlength="10" required>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Date and Land -->
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i data-lucide="calendar" class="label-icon"></i>
+                                    तारीख
+                                </label>
+                                <input type="date" id="date" class="modern-input">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i data-lucide="map" class="label-icon"></i>
+                                    ज़मीन (एकड़) *
+                                </label>
+                                <input type="number" id="landInAcres" class="modern-input" placeholder="एकड़ में" step="0.01" required>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Rate and Total -->
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i data-lucide="indian-rupee" class="label-icon"></i>
+                                    प्रति एकड़ दर (₹) *
+                                </label>
+                                <input type="number" id="ratePerAcre" class="modern-input" placeholder="दर दर्ज करें" value="2500" required>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i data-lucide="calculator" class="label-icon"></i>
+                                    कुल राशि
+                                </label>
+                                <div class="calculated-display" id="totalPayment">₹ 0</div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Payment Info -->
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i data-lucide="banknote" class="label-icon"></i>
+                                    नकद भुगतान (₹)
+                                </label>
+                                <input type="number" id="nakadPaid" class="modern-input" placeholder="नकद में दी गई राशि" min="0">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i data-lucide="clock" class="label-icon"></i>
+                                    पूरा भुगतान तारीख
+                                </label>
+                                <input type="date" id="fullPaymentDate" class="modern-input">
+                            </div>
+                        </div>
+
+                        <!-- Payment Summary -->
+                        <div class="payment-summary">
+                            <div class="summary-item">
+                                <span class="summary-label">कुल राशि:</span>
+                                <span class="summary-value total" id="summaryTotal">₹ 0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">नकद भुगतान:</span>
+                                <span class="summary-value paid" id="summaryPaid">₹ 0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">बकाया राशि:</span>
+                                <span class="summary-value pending" id="summaryPending">₹ 0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="modern-save-btn">
+                        <i data-lucide="save"></i>
+                        <span>रिकॉर्ड सेव करें</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Records Tab -->
+            <div id="records-tab" class="tab-content">
+                <div class="section-header">
+                    <h2 class="section-title">सभी रिकॉर्ड</h2>
+                    <button class="view-all-btn">View all</button>
+                </div>
+
+                <div class="search-container">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="नाम, नंबर या तारीख से खोजें">
+                </div>
+
+                <div class="records-count" id="recordsCount">कुल 0 रिकॉर्ड मिले</div>
+
+                <div class="records-list" id="recordsList">
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-state-content">
+                            <i data-lucide="inbox" class="empty-state-icon"></i>
+                            <h3 class="empty-state-title">कोई रिकॉर्ड नहीं मिला</h3>
+                            <p class="empty-state-subtitle">नई एंट्री जोड़ने के लिए "नई एंट्री" टैब पर जाएं</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Tab -->
+            <div id="summary-tab" class="tab-content">
+                <div class="section-header">
+                    <h2 class="section-title">सारांश</h2>
+                    <button class="view-all-btn">View all</button>
+                </div>
+
+                <div class="period-selector-section">
+                    <div class="period-card">
+                        <h3 class="section-title">समय अवधि चुनें</h3>
+                        <div class="period-buttons">
+                            <button class="period-button" data-period="today">
+                                <span class="period-label">आज</span>
+                                <span class="period-count" id="todayCount">0</span>
+                            </button>
+                            <button class="period-button" data-period="week">
+                                <span class="period-label">सप्ताह</span>
+                                <span class="period-count" id="weekCount">0</span>
+                            </button>
+                            <button class="period-button" data-period="month">
+                                <span class="period-label">महीना</span>
+                                <span class="period-count" id="monthCount">0</span>
+                            </button>
+                            <button class="period-button active" data-period="all">
+                                <span class="period-label">सभी</span>
+                                <span class="period-count" id="allCount">0</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card primary-stat">
+                        <div class="stat-icon-container">
+                            <i data-lucide="users" class="stat-icon"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-title">कुल रिकॉर्ड</span>
+                            <div class="stat-value" id="totalRecords">0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card secondary-stat">
+                        <div class="stat-icon-container">
+                            <i data-lucide="map-pin" class="stat-icon"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-title">कुल ज़मीन</span>
+                            <div class="stat-value" id="totalLand">0 एकड़</div>
+                            <div class="stat-subtitle" id="totalLandDismil">0 डिसमिल</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card success-stat">
+                        <div class="stat-icon-container">
+                            <i data-lucide="indian-rupee" class="stat-icon"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-title">कुल भुगतान</span>
+                            <div class="stat-value" id="totalPaymentStat">₹ 0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card warning-stat">
+                        <div class="stat-icon-container">
+                            <i data-lucide="alert-circle" class="stat-icon"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-title">कुल बकाया</span>
+                            <div class="stat-value" id="totalPending">₹ 0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="additional-stats" id="additionalStats" style="display: none;">
+                    <div class="additional-stats-header">
+                        <i data-lucide="info" class="additional-stats-icon"></i>
+                        <h3 class="section-title">अतिरिक्त विवरण</h3>
+                    </div>
+                    <div class="additional-stats-container">
+                        <div class="additional-stat-item">
+                            <span class="additional-stat-label">औसत ज़मीन प्रति रिकॉर्ड</span>
+                            <span class="additional-stat-value" id="avgLandPerRecord">0 एकड़</span>
+                        </div>
+                        <div class="additional-stat-item">
+                            <span class="additional-stat-label">औसत भुगतान प्रति रिकॉर्ड</span>
+                            <span class="additional-stat-value" id="avgPaymentPerRecord">₹ 0</span>
+                        </div>
+                        <div class="additional-stat-item">
+                            <span class="additional-stat-label">औसत दर प्रति एकड़</span>
+                            <span class="additional-stat-value" id="averageRate">₹ 0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Modern Floating Bottom Navigation with Original App Buttons -->
+        <nav class="modern-bottom-nav">
+            <ul class="nav-pill">
+                <div class="nav-active-bar"></div>
+                <li class="nav-item active" data-tab="entry">
+                    <span class="icon-bg-gradient">
+                        <i data-lucide="plus" class="nav-icon"></i>
+                    </span>
+                    <span class="nav-label">एंट्री</span>
+                </li>
+                <li class="nav-item" data-tab="records">
+                    <i data-lucide="copy" class="nav-icon"></i>
+                    <span class="nav-label">रिकॉर्ड</span>
+                </li>
+                <li class="nav-item" data-tab="summary">
+                    <i data-lucide="plus-circle" class="nav-icon"></i>
+                    <span class="nav-label">सारांश</span>
+                </li>
+                <li class="nav-item" data-tab="settings">
+                    <i data-lucide="settings" class="nav-icon"></i>
+                    <span class="nav-label">सेटिंग</span>
+                </li>
+                <li class="nav-item" data-tab="more">
+                    <i data-lucide="more-horizontal" class="nav-icon"></i>
+                    <span class="nav-label">More</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content">
+            <div class="section-header">
+                <h2 class="section-title">सेटिंग्स</h2>
+            </div>
+
+            <div class="settings-container">
+
+
+                <div class="setting-card">
+                    <div class="setting-header">
+                        <i data-lucide="palette" class="setting-icon"></i>
+                        <h3 class="setting-title">थीम सेटिंग्स</h3>
+                    </div>
+                    <div class="theme-setting">
+                        <span class="theme-label">डार्क/लाइट मोड</span>
+                        <button class="theme-toggle-setting" id="themeToggleSetting" onclick="toggleTheme()">
+                            <div class="toggle-track-setting">
+                                <div class="toggle-thumb-setting">
+                                    <i data-lucide="sun" class="theme-icon light-icon"></i>
+                                    <i data-lucide="moon" class="theme-icon dark-icon"></i>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- More Tab -->
+        <div id="more-tab" class="tab-content">
+            <div class="section-header">
+                <h2 class="section-title">अधिक विकल्प</h2>
+            </div>
+
+            <div class="more-options">
+                <div class="option-card">
+                    <i data-lucide="download" class="option-icon"></i>
+                    <div class="option-content">
+                        <h3 class="option-title">डेटा एक्सपोर्ट</h3>
+                        <p class="option-subtitle">अपना डेटा डाउनलोड करें</p>
+                    </div>
+                </div>
+
+                <div class="option-card">
+                    <i data-lucide="upload" class="option-icon"></i>
+                    <div class="option-content">
+                        <h3 class="option-title">डेटा इम्पोर्ट</h3>
+                        <p class="option-subtitle">डेटा अपलोड करें</p>
+                    </div>
+                </div>
+
+                <div class="option-card">
+                    <i data-lucide="info" class="option-icon"></i>
+                    <div class="option-content">
+                        <h3 class="option-title">ऐप के बारे में</h3>
+                        <p class="option-subtitle">वर्जन 1.0.0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="script.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+</body>
+
+</html>
