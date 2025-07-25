@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add loading state management
     document.body.classList.remove('loading');
+
+    // Set landing page to summary tab
+    switchTab('summary');
 });
 
 // Initialize device ID

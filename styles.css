@@ -1253,8 +1253,9 @@ body {
 }
 
 .nav-item.active {
-    color: var(--primary-purple);
-    background: rgba(99, 102, 241, 0.1);
+    color: var(--text-on-primary);
+    background: var(--bg-gradient);
+    box-shadow: var(--shadow-purple);
 }
 
 
