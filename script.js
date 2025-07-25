@@ -454,6 +454,7 @@ function handleFormSubmit(e) {
             form.reset();
             setCurrentDate();
             updateCalculations();
+            loadRecords();
             form.style.transform = 'scale(1)';
             resetSubmitButton(submitButton, originalContent);
         }, 200);
