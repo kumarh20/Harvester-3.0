@@ -375,7 +375,7 @@ function handleFormSubmit(e) {
     e.preventDefault();
 
     // Add loading state to button
-    const submitButton = document.querySelector('.premium-save-button');
+    const submitButton = document.querySelector('.modern-save-btn');
     const originalContent = submitButton.innerHTML;
 
     submitButton.innerHTML = `
