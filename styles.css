@@ -711,6 +711,7 @@ body {
 
 .record-card.collapsed {
     transform: none;
+    transition: 0.3s all ease-in-out;
 }
 
 .record-card.collapsed:hover {
@@ -1292,10 +1293,6 @@ body {
     transition: all 0.3s ease;
 }
 
-.nav-item.active .nav-icon {
-    transform: scale(1.1);
-}
-
 .nav-label {
     font-size: var(--font-size-xs);
     font-weight: 600;
@@ -1766,7 +1763,7 @@ body {
 }
 
 .icon-bg-gradient .nav-icon {
-    color: #fff !important;
+    /* color: #fff !important; */
     filter: drop-shadow(0 2px 8px rgba(127, 0, 255, 0.12));
     /* Remove transform: scale(1.12); */
 }
@@ -1775,7 +1772,7 @@ body {
 .nav-item:not(.active):focus {
     background: rgba(127, 0, 255, 0.08);
     color: #E100FF;
-    transform: translateY(-2px) scale(1.08);
+    /* transform: translateY(-2px); */
     box-shadow: 0 2px 8px 0 rgba(127, 0, 255, 0.10);
 }
 
