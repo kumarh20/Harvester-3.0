@@ -5,9 +5,8 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = 3000;
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydsilltoMpxEeLbm3zUSnbchp2K3mBfatlAwC0A0zyPPsyIZuiVY8cZSsZEh5xVvYX/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0tII90CX_nROvY-8JvUvYlkcMF3pyxUsv4TLBdhhQ9kavY3iseRkZVH20tgNwiBNb/exec';
 
-// MIME types for different file extensions
 const mimeTypes = {
   '.html': 'text/html',
   '.css': 'text/css',
@@ -23,86 +22,87 @@ const mimeTypes = {
 
 const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url, true);
-  
-  // Handle API proxy requests
+
+  // ✅ API route
   if (parsedUrl.pathname === '/api/cloud-data') {
-    // Set CORS headers
+    // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    
+
     if (req.method === 'OPTIONS') {
       res.writeHead(200);
       res.end();
       return;
     }
-    
+
     let body = '';
     req.on('data', chunk => {
       body += chunk.toString();
     });
-    
+
     req.on('end', () => {
+      let method = req.method;
+      let jsonBody;
+
+      try {
+        jsonBody = JSON.parse(body || '{}');
+      } catch (err) {
+        jsonBody = {};
+      }
+
+      // ✅ Simulate DELETE via POST
+      if (method === 'DELETE') {
+        method = 'POST';
+        jsonBody._method = 'DELETE';
+        body = JSON.stringify(jsonBody);
+      }
+
       let targetUrl = GOOGLE_SCRIPT_URL;
-      
-      if (req.method === 'GET' && parsedUrl.query.deviceId) {
+      if (method === 'GET' && parsedUrl.query.deviceId) {
         targetUrl += `?deviceId=${parsedUrl.query.deviceId}`;
       }
-      
+
       const options = {
-        method: req.method,
+        method: method,
         headers: {
           'Content-Type': 'application/json'
         }
       };
-      
+
       const proxyReq = https.request(targetUrl, options, (proxyRes) => {
         res.writeHead(proxyRes.statusCode, proxyRes.headers);
         proxyRes.pipe(res);
       });
-      
+
       proxyReq.on('error', (error) => {
-        console.error('Proxy request error:', error);
+        console.error('Proxy error:', error);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: false, error: 'Proxy error' }));
       });
-      
+
       if (body) {
         proxyReq.write(body);
       }
-      
+
       proxyReq.end();
     });
-    
+
     return;
   }
-  
-  // Handle static file requests
+
+  // ✅ Serve static files
   let filePath = '.' + req.url;
-  
-  // Default to index.html for root path
-  if (filePath === './') {
-    filePath = './index.html';
-  }
-  
-  // Get file extension
-  const extname = String(path.extname(filePath)).toLowerCase();
-  const mimeType = mimeTypes[extname] || 'application/octet-stream';
-  
-  // Read and serve the file
-  fs.readFile(filePath, (error, content) => {
-    if (error) {
-      if (error.code === 'ENOENT') {
-        // File not found
-        res.writeHead(404, { 'Content-Type': 'text/html' });
-        res.end('<h1>404 - File Not Found</h1>', 'utf-8');
-      } else {
-        // Server error
-        res.writeHead(500);
-        res.end(`Server Error: ${error.code}`, 'utf-8');
-      }
+  if (filePath === './') filePath = './index.html';
+
+  const ext = path.extname(filePath).toLowerCase();
+  const mimeType = mimeTypes[ext] || 'application/octet-stream';
+
+  fs.readFile(filePath, (err, content) => {
+    if (err) {
+      res.writeHead(err.code === 'ENOENT' ? 404 : 500, { 'Content-Type': 'text/html' });
+      res.end(`<h1>${err.code === 'ENOENT' ? '404 Not Found' : 'Server Error'}</h1>`);
     } else {
-      // Success
       res.writeHead(200, { 'Content-Type': mimeType });
       res.end(content, 'utf-8');
     }
@@ -110,5 +110,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
+  console.log(`✅ Server running at http://localhost:${PORT}`);
 });

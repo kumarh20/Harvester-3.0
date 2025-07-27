@@ -3,15 +3,15 @@ let records = [];
 let filteredRecords = [];
 let selectedPeriod = 'all';
 let deviceId = '';
-const SCRIPT_URL = '/api/cloud-data';
+const SCRIPT_URL = 'http://localhost:3000/api/cloud-data';
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
     initializeDeviceId();
+    loadRecords(); // Call as early as possible after deviceId is set
     initializeLucide();
     initializeTheme();
     initializeTime();
-    loadRecords();
     setupEventListeners();
     setCurrentDate();
     updateCalculations();
@@ -443,7 +443,7 @@ function handleFormSubmit(e) {
 
         // Save record with animation
         records.push(formData);
-        saveRecords();
+        saveRecords(formData);
 
         // Reset form with smooth animation
         const form = document.getElementById('entryForm');
@@ -527,7 +527,7 @@ function showMessage(message, type = 'success') {
     }, autoRemoveTime);
 }
 
-// Load records from localStorage
+// Enhanced record loading with cloud fallback
 function loadRecords() {
     try {
         // First try to load from cloud
@@ -539,8 +539,7 @@ function loadRecords() {
             })
             .catch(error => {
                 console.error('Failed to load from cloud, using local storage:', error);
-                // Fallback to localStorage
-                const savedRecords = localStorage.getItem('farmerRecords');
+
                 if (savedRecords) {
                     records = JSON.parse(savedRecords);
                 }
@@ -560,55 +559,68 @@ function loadRecords() {
 async function loadRecordsFromCloud() {
     try {
         showMessage('डेटा लोड हो रहा है...', 'info');
-
-        const response = await fetch(`${SCRIPT_URL}?deviceId=${deviceId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        const response = await fetch(`${SCRIPT_URL}?deviceId=${deviceId}`);
         const data = await response.json();
 
-        if (data.success && data.data) {
-            // Convert cloud data to local format
-            records = data.data.map(item => ({
-                id: item.id || Date.now().toString(),
-                farmerName: item.name || '',
-                contactNumber: item.contact || '',
-                date: item.date || '',
-                landInAcres: item.acres ? item.acres.toString() : '0',
-                landInDismil: (parseFloat(item.acres || 0) * 100).toString(),
-                ratePerAcre: item.rate ? item.rate.toString() : '0',
-                totalPayment: item.total ? item.total.toString() : '0',
-                nakadPaid: item.cash ? item.cash.toString() : '0',
-                pendingAmount: ((item.total || 0) - (item.cash || 0)).toString(),
-                fullPaymentDate: item.fullPaymentDate || ''
+        if (Array.isArray(data)) {
+            records = data.map(item => ({
+                id: item.ID ? item.ID.toString() : Date.now().toString(),
+                farmerName: item["किसान का नाम"] || '',
+                contactNumber: item["संपर्क नंबर"] || '',
+                date: item["तारीख"] || '',
+                landInAcres: item["ज़मीन (एकड़)"] ? item["ज़मीन (एकड़)"].toString() : '0',
+                landInDismil: (parseFloat(item["ज़मीन (एकड़)"] || 0) * 100).toString(),
+                ratePerAcre: item["प्रति एकड़ दर"] ? item["प्रति एकड़ दर"].toString() : '0',
+                totalPayment: item["कुल राशि"] ? item["कुल राशि"].toString() : '0',
+                nakadPaid: item["नकद भुगतान"] ? item["नकद भुगतान"].toString() : '0',
+                pendingAmount: ((item["कुल राशि"] || 0) - (item["नकद भुगतान"] || 0)).toString(),
+                fullPaymentDate: item["पूरा भुगतान तारीख"] || ''
             }));
 
-            // Also save to localStorage as backup
-            localStorage.setItem('farmerRecords', JSON.stringify(records));
-            console.log('Records loaded from cloud:', records.length);
+            displayRecords();
+            updateSummary();
         } else {
             records = [];
         }
     } catch (error) {
-        console.error('Error loading from cloud:', error);
-        throw error;
+        console.error('Error loading records:', error);
+        showMessage('डेटा लोड करने में समस्या आई', 'error');
     }
 }
 
-// Save records to localStorage
-function saveRecords() {
+
+// Save records to cloud
+async function saveRecords(formData) {
     try {
-        localStorage.setItem('farmerRecords', JSON.stringify(records));
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                deviceId,
+                name: formData.farmerName,
+                contact: formData.contactNumber,
+                date: formData.date,
+                acres: formData.landInAcres,
+                rate: formData.ratePerAcre,
+                total: formData.totalPayment,
+                cash: formData.nakadPaid,
+                fullPaymentDate: formData.fullPaymentDate
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showMessage('रिकॉर्ड सफलतापूर्वक सेव हो गया', 'success');
+            await loadRecordsFromCloud(); // 🔁 Refetch after save
+        } else {
+            showMessage('रिकॉर्ड सेव करने में समस्या हुई', 'error');
+        }
     } catch (error) {
-        console.error('Error saving records:', error);
-        showMessage('रिकॉर्ड सेव करने में समस्या हुई', 'error');
+        console.error('Error saving record:', error);
+        showMessage('रिकॉर्ड सेव करने में समस्या आई', 'error');
     }
 }
 
@@ -758,30 +770,51 @@ function createRecordCard(record) {
 }
 
 // Enhanced delete record with better confirmation
-function deleteRecord(id) {
+async function deleteRecord(id) {
     const record = records.find(r => r.id === id);
     if (!record) return;
-    
+
     const confirmMessage = `क्या आप वाकई "${record.farmerName}" का रिकॉर्ड डिलीट करना चाहते हैं?\n\nयह क्रिया को वापस नहीं किया जा सकता।`;
-    
     if (confirm(confirmMessage)) {
-        // Add deletion animation
         const cardElement = document.querySelector(`[onclick="deleteRecord('${id}')"]`).closest('.record-card');
         cardElement.style.transition = 'all 0.3s ease';
         cardElement.style.transform = 'scale(0.95)';
         cardElement.style.opacity = '0.5';
-        
-        setTimeout(() => {
-            records = records.filter(record => record.id !== id);
-            filteredRecords = filteredRecords.filter(record => record.id !== id);
-            saveRecords();
-            displayRecords();
-            updateSummary();
-            updateTotalBalance();
-            showMessage('रिकॉर्ड सफलतापूर्वक डिलीट हो गया', 'success');
-        }, 300);
+
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id, deviceId, _method: 'DELETE' })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                setTimeout(() => {
+                    records = records.filter(record => record.id !== id);
+                    filteredRecords = filteredRecords.filter(record => record.id !== id);
+                    loadRecords();
+                    displayRecords();
+                    updateSummary();
+                    showMessage('रिकॉर्ड सफलतापूर्वक डिलीट हो गया', 'success');
+                }, 300);
+            } else {
+                showMessage('रिकॉर्ड डिलीट करने में समस्या आई: ' + (result.error || 'Unknown error'), 'error');
+                cardElement.style.opacity = '1';
+                cardElement.style.transform = 'scale(1)';
+            }
+        } catch (error) {
+            console.error('Error deleting record:', error);
+            showMessage('रिकॉर्ड डिलीट करने में समस्या आई', 'error');
+            cardElement.style.opacity = '1';
+            cardElement.style.transform = 'scale(1)';
+        }
     }
 }
+
 
 // Enhanced period selection with smooth transitions
 function selectPeriod(period) {
