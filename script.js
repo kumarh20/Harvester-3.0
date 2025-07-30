@@ -717,7 +717,7 @@ function createRecordCard(record) {
         </div>
 
         <div class="record-details-expanded">
-            <div class="details-grid">
+            <div class="details-grid" data-view="display">
                 <div class="detail-item-expanded">
                     <div class="detail-label-expanded">तारीख</div>
                     <div class="detail-value-expanded">${record.date}</div>
@@ -749,8 +749,42 @@ function createRecordCard(record) {
                 </div>
                 ` : ''}
             </div>
+            <form class="details-grid edit-form" data-view="edit" style="display:none;">
+                <div class="detail-item-expanded">
+                    <div class="detail-label-expanded">तारीख</div>
+                    <input type="date" name="date" value="${record.date}" class="detail-value-expanded" required />
+                </div>
+                <div class="detail-item-expanded">
+                    <div class="detail-label-expanded">ज़मीन (एकड़)</div>
+                    <input type="number" name="landInAcres" value="${record.landInAcres}" class="detail-value-expanded" required min="0" step="0.01" />
+                </div>
+                <div class="detail-item-expanded">
+                    <div class="detail-label-expanded">प्रति एकड़ दर</div>
+                    <input type="number" name="ratePerAcre" value="${record.ratePerAcre}" class="detail-value-expanded" required min="0" step="0.01" />
+                </div>
+                <div class="detail-item-expanded highlight">
+                    <div class="detail-label-expanded">कुल राशि</div>
+                    <input type="number" name="totalPayment" value="${record.totalPayment}" class="detail-value-expanded" required min="0" step="0.01" />
+                </div>
+                <div class="detail-item-expanded highlight">
+                    <div class="detail-label-expanded">नकद भुगतान</div>
+                    <input type="number" name="nakadPaid" value="${record.nakadPaid}" class="detail-value-expanded" required min="0" step="0.01" />
+                </div>
+                <div class="detail-item-expanded">
+                    <div class="detail-label-expanded">पूरा भुगतान तारीख</div>
+                    <input type="date" name="fullPaymentDate" value="${record.fullPaymentDate || ''}" class="detail-value-expanded" />
+                </div>
+                <div class="edit-actions" style="grid-column: 1 / -1; text-align: right;">
+                    <button type="submit" class="action-button save">सेव करें</button>
+                    <button type="button" class="action-button cancel">रद्द करें</button>
+                </div>
+            </form>
 
             <div class="expanded-actions">
+                <button class="action-button edit" aria-label="रिकॉर्ड एडिट करें">
+                    <i data-lucide="pencil"></i>
+                    <span>एडिट</span>
+                </button>
                 <button class="action-button delete" onclick="deleteRecord('${record.id}')" aria-label="रिकॉर्ड डिलीट करें">
                     <i data-lucide="trash-2"></i>
                     <span>डिलीट करें</span>
@@ -758,6 +792,43 @@ function createRecordCard(record) {
             </div>
         </div>
     `;
+    // Add edit button logic
+    setTimeout(() => {
+        const editBtn = card.querySelector('.action-button.edit');
+        const displayGrid = card.querySelector('.details-grid[data-view="display"]');
+        const editForm = card.querySelector('.edit-form');
+        const cancelBtn = card.querySelector('.action-button.cancel');
+        if (editBtn && displayGrid && editForm && cancelBtn) {
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                displayGrid.style.display = 'none';
+                editForm.style.display = '';
+            });
+            cancelBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                editForm.style.display = 'none';
+                displayGrid.style.display = '';
+            });
+            editForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(editForm);
+                const updated = {
+                    id: record.id,
+                    farmerName: record.farmerName,
+                    contactNumber: record.contactNumber,
+                    date: formData.get('date'),
+                    landInAcres: formData.get('landInAcres'),
+                    ratePerAcre: formData.get('ratePerAcre'),
+                    totalPayment: formData.get('totalPayment'),
+                    nakadPaid: formData.get('nakadPaid'),
+                    fullPaymentDate: formData.get('fullPaymentDate')
+                };
+                await editRecord(updated);
+                editForm.style.display = 'none';
+                displayGrid.style.display = '';
+            });
+        }
+    }, 0);
     
     // Re-initialize Lucide icons for the new card
     setTimeout(() => {
@@ -765,8 +836,42 @@ function createRecordCard(record) {
             lucide.createIcons();
         }
     }, 0);
-    
     return card;
+}
+
+// Edit record: send PUT request to backend and update UI
+async function editRecord(updated) {
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                _method: 'PUT', 
+                id: updated.id,
+                deviceId,
+                farmerName: updated.farmerName,
+                contactNumber: updated.contactNumber,
+                date: updated.date,
+                landInAcres: updated.landInAcres,
+                ratePerAcre: updated.ratePerAcre,
+                totalPayment: updated.totalPayment,
+                nakadPaid: updated.nakadPaid,
+                fullPaymentDate: updated.fullPaymentDate
+            })
+        });
+        const result = await response.json();
+        if (result.success) {
+            showMessage('रिकॉर्ड सफलतापूर्वक अपडेट हो गया', 'success');
+            await loadRecordsFromCloud();
+        } else {
+            showMessage('रिकॉर्ड अपडेट करने में समस्या हुई', 'error');
+        }
+    } catch (error) {
+        console.error('Error updating record:', error);
+        showMessage('रिकॉर्ड अपडेट करने में समस्या आई', 'error');
+    }
 }
 
 // Enhanced delete record with better confirmation
