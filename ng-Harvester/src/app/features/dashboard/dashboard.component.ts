@@ -53,79 +53,13 @@ export class DashboardComponent implements OnInit {
   });
 
   constructor(public recordsService: RecordsService) {
-    // Sample data initialization (if needed)
-    // Uncomment below if you want to initialize with sample data
-    /*
-    const sampleRecords: Record[] = [
-      {
-        id: '1',
-        farmerName: 'राजेश कुमार',
-        contactNumber: '9876543210',
-        date: '31-12-2025',
-        landInAcres: 5,
-        ratePerAcre: 2500,
-        totalPayment: 12500,
-        nakadPaid: 5000,
-        pendingAmount: 7500,
-        fullPaymentDate: ''
-      },
-      {
-        id: '2',
-        farmerName: 'प्रिया शर्मा',
-        contactNumber: '8765432109',
-        date: '30-12-2025',
-        landInAcres: 3,
-        ratePerAcre: 2500,
-        totalPayment: 7500,
-        nakadPaid: 7500,
-        pendingAmount: 0,
-        fullPaymentDate: '30-12-2025'
-      },
-      {
-        id: '3',
-        farmerName: 'अमित सिंह',
-        contactNumber: '7654321098',
-        date: '25-12-2025',
-        landInAcres: 2.5,
-        ratePerAcre: 2500,
-        totalPayment: 6250,
-        nakadPaid: 3000,
-        pendingAmount: 3250,
-        fullPaymentDate: ''
-      },
-      {
-        id: '4',
-        farmerName: 'विजय पटेल',
-        contactNumber: '6543210987',
-        date: '20-12-2025',
-        landInAcres: 4,
-        ratePerAcre: 2500,
-        totalPayment: 10000,
-        nakadPaid: 5000,
-        pendingAmount: 5000,
-        fullPaymentDate: ''
-      },
-      {
-        id: '5',
-        farmerName: 'सुनीता गुप्ता',
-        contactNumber: '5432109876',
-        date: '10-12-2025',
-        landInAcres: 2,
-        ratePerAcre: 2500,
-        totalPayment: 5000,
-        nakadPaid: 5000,
-        pendingAmount: 0,
-        fullPaymentDate: '10-12-2025'
-      }
-    ];
-    this.recordsService.setRecords(sampleRecords);
-    */
+    
     this.updatePeriodCounts();
   }
 
   ngOnInit(): void {
     this.updatePeriodCounts();
-    
+
     // Update counts whenever records change
     // This ensures period counts update after adding/deleting records
     const intervalId = setInterval(() => {
