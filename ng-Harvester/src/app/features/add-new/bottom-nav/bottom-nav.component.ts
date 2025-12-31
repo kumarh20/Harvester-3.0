@@ -27,6 +27,7 @@ interface NavItem {
 })
 export class BottomNavComponent {
   activeRoute: string = '/home';
+  activeIndex: number = 0;
 
   navItems: NavItem[] = [
     { path: '/home', icon: 'home', label: 'Home' },
@@ -40,7 +41,18 @@ export class BottomNavComponent {
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.activeRoute = event.urlAfterRedirects;
+      this.updateActiveIndex();
     });
+    
+    // Initialize active index
+    this.updateActiveIndex();
+  }
+
+  updateActiveIndex(): void {
+    const index = this.navItems.findIndex(item => item.path === this.activeRoute);
+    if (index !== -1) {
+      this.activeIndex = index;
+    }
   }
 
   isActive(path: string): boolean {
@@ -49,5 +61,23 @@ export class BottomNavComponent {
 
   navigate(path: string): void {
     this.router.navigate([path]);
+  }
+  
+  getSliderStyle(): any {
+    const totalItems = this.navItems.length;
+    const gapSize = 8; // 8px gap between items
+    const totalGaps = (totalItems - 1) * gapSize;
+    
+    // Calculate available width for items (container width minus gaps and padding)
+    // Using calc to account for dynamic widths
+    const itemWidthPercent = (100 / totalItems);
+    
+    // Calculate position including gaps
+    const gapOffset = this.activeIndex * gapSize;
+    
+    return {
+      transform: `translateX(calc(${this.activeIndex * itemWidthPercent}% + ${gapOffset}px))`,
+      width: `calc(${itemWidthPercent}% - ${gapSize}px)`
+    };
   }
 }

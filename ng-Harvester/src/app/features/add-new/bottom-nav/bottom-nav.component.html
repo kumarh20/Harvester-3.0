@@ -1,14 +1,14 @@
 <nav class="bottom-nav" @slideUp>
   <div class="nav-container">
+    <!-- Single sliding background indicator -->
+    <div class="sliding-background" [ngStyle]="getSliderStyle()"></div>
+    
     <div 
       *ngFor="let item of navItems; let i = index" 
       class="nav-item" 
       [class.active]="isActive(item.path)"
       (click)="navigate(item.path)"
     >
-      <!-- Individual background for each item -->
-      <div class="item-background" *ngIf="isActive(item.path)"></div>
-      
       <div class="nav-content">
         <div class="icon-wrapper">
           <svg class="nav-icon" [class.active-icon]="isActive(item.path)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

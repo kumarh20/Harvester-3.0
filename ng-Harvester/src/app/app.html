@@ -49,10 +49,15 @@
 
     <!-- Floating Navigation Bar with New Design -->
     <nav class="floating-navigation">
-        <div class="nav-container">
+        <div class="nav-container" #navContainer>
+            <!-- Single sliding background indicator -->
+            <div class="sliding-background" #slidingBg></div>
+            
             @for (item of navItems; track item.route; let i = $index) {
-            <div class="nav-item" [class.active]="isActive(item.route)" (click)="onNavChange(item.route)">
-                <div class="item-background" *ngIf="isActive(item.route)"></div>
+            <div class="nav-item" 
+                 [class.active]="isActive(item.route)" 
+                 (click)="onNavChange(item.route)"
+                 #navItem>
                 <div class="nav-content">
                     <div class="icon-wrapper">
                         <svg class="nav-icon" [class.active-icon]="isActive(item.route)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

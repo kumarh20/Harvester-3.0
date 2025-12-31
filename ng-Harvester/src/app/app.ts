@@ -1,4 +1,4 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -30,11 +30,15 @@ interface NavItem {
     ])
   ]
 })
-export class App {
+export class App implements AfterViewInit {
   protected readonly title = signal('हार्वेस्टर ट्रैकर');
   protected activeRoute = signal('/dashboard');
   protected currentTab = signal('dashboard');
   protected isDarkTheme = signal(false);
+
+  @ViewChildren('navItem') navItemElements!: QueryList<ElementRef>;
+  @ViewChild('slidingBg') slidingBgElement!: ElementRef;
+  @ViewChild('navContainer') navContainerElement!: ElementRef;
 
   protected readonly navItems: NavItem[] = [
     { label: 'Add New', icon: 'add_circle', route: '/add-new' },
@@ -52,9 +56,21 @@ export class App {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
         this.activeRoute.set(event.url);
+        // Wait for view to update, then move slider
+        setTimeout(() => this.moveSliderToActive(), 0);
       });
 
     this.initializeTheme();
+    
+    // Always land on Dashboard
+    if (this.router.url === '/' || this.router.url === '') {
+      this.router.navigate(['/dashboard']);
+    }
+  }
+
+  ngAfterViewInit(): void {
+    // Initial slider position
+    setTimeout(() => this.moveSliderToActive(), 100);
   }
 
   onNavChange(route: string): void {
@@ -63,6 +79,32 @@ export class App {
 
   isActive(route: string): boolean {
     return this.activeRoute() === route;
+  }
+
+  moveSliderToActive(): void {
+    if (!this.slidingBgElement || !this.navItemElements) return;
+
+    const activeIndex = this.navItems.findIndex(item => item.route === this.activeRoute());
+    if (activeIndex === -1) return;
+
+    const navItemsArray = this.navItemElements.toArray();
+    if (navItemsArray.length === 0 || !navItemsArray[activeIndex]) return;
+
+    const activeElement = navItemsArray[activeIndex].nativeElement;
+    const containerElement = this.navContainerElement.nativeElement;
+    const sliderElement = this.slidingBgElement.nativeElement;
+
+    // Get positions relative to container
+    const containerRect = containerElement.getBoundingClientRect();
+    const activeRect = activeElement.getBoundingClientRect();
+
+    // Calculate position and width
+    const left = activeRect.left - containerRect.left;
+    const width = activeRect.width;
+
+    // Apply to slider
+    sliderElement.style.transform = `translateX(${left}px)`;
+    sliderElement.style.width = `${width}px`;
   }
 
   switchTab(tabName: string): void {
