@@ -1,0 +1,116 @@
+<div class="add-new-container">
+    <mat-card class="form-card">
+        <mat-card-header>
+            <mat-card-title>नई एंट्री</mat-card-title>
+            <mat-card-subtitle>नया रिकॉर्ड जोड़ें</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+            <form (ngSubmit)="onFormSubmit($event)">
+                <!-- Form Title -->
+                <div class="form-section-title">किसान की जानकारी</div>
+
+                <!-- Row 1: Farmer Name & Contact -->
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="form-field">
+                        <mat-label>किसान का नाम</mat-label>
+                        <input matInput type="text" placeholder="पूरा नाम" [(ngModel)]="formData().farmerName" (input)="onFormChange()" name="farmerName" required />
+                        <mat-icon matPrefix>person</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="form-field">
+                        <mat-label>मोबाइल नंबर</mat-label>
+                        <input matInput type="tel" placeholder="10 अंक" [(ngModel)]="formData().contactNumber" (input)="onFormChange()" name="contactNumber" maxlength="10" required />
+                        <mat-icon matPrefix>phone</mat-icon>
+                    </mat-form-field>
+                </div>
+
+                <!-- Row 2: Date & Land -->
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="form-field">
+                        <mat-label>तारीख़</mat-label>
+                        <input matInput [matDatepicker]="datePicker" [(ngModel)]="formData().date" (input)="onFormChange()" name="date" required />
+                        <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+                        <mat-datepicker #datePicker></mat-datepicker>
+                        <mat-icon matPrefix>event</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="form-field">
+                        <mat-label>ज़मीन (एकड़)</mat-label>
+                        <input matInput type="number" placeholder="0.00" [(ngModel)]="formData().landInAcres" (input)="onFormChange()" name="landInAcres" step="0.01" required />
+                        <mat-icon matPrefix>location_on</mat-icon>
+                    </mat-form-field>
+                </div>
+
+                <!-- Row 3: Rate & Total -->
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="form-field">
+                        <mat-label>दर (₹/एकड़)</mat-label>
+                        <input matInput type="number" placeholder="2500" [(ngModel)]="formData().ratePerAcre" (input)="onFormChange()" name="ratePerAcre" step="100" required />
+                        <mat-icon matPrefix>currency_rupee</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="form-field">
+                        <mat-label>कुल रुपये</mat-label>
+                        <input matInput type="number" [value]="totalPayment()" disabled class="calculated-input" [disabled]="true" />
+                        <mat-icon matPrefix>calculate</mat-icon>
+                    </mat-form-field>
+                </div>
+
+                <!-- Row 4: Payment & Payment Date -->
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="form-field">
+                        <mat-label>नक़द भुगतान (₹)</mat-label>
+                        <input matInput type="number" placeholder="0" [(ngModel)]="formData().nakadPaid" (input)="onFormChange()" name="nakadPaid" step="100" />
+                        <mat-icon matPrefix>wallet</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="form-field">
+                        <mat-label>भुगतान तारीख़</mat-label>
+                        <input matInput [matDatepicker]="paymentDatePicker" [(ngModel)]="formData().fullPaymentDate" (input)="onFormChange()" name="fullPaymentDate" />
+                        <mat-datepicker-toggle matSuffix [for]="paymentDatePicker"></mat-datepicker-toggle>
+                        <mat-datepicker #paymentDatePicker></mat-datepicker>
+                        <mat-icon matPrefix>schedule</mat-icon>
+                    </mat-form-field>
+                </div>
+
+                <!-- Payment Summary -->
+                <div class="payment-summary">
+                    <div class="summary-row">
+                        <span class="summary-label">कुल रुपये:</span>
+                        <span class="summary-value">₹{{ totalPayment() | number: '1.0-0' }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">नक़द भुगतान:</span>
+                        <span class="summary-value">₹{{ formData().nakadPaid | number: '1.0-0' }}</span>
+                    </div>
+                    <div class="summary-row summary-pending">
+                        <span class="summary-label">बाक़ी रुपये:</span>
+                        <span class="summary-value" [class.pending-zero]="pendingPayment() <= 0">
+              ₹{{ pendingPayment() | number: '1.0-0' }}
+            </span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="form-actions">
+                    <button mat-raised-button color="primary" type="submit" class="save-btn" [disabled]="isSubmitting()">
+                        @if (isSubmitting()) {
+                            <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+                            <span>सेव हो रहा है...</span>
+                        } @else {
+                            <ng-container>
+                                <mat-icon>save</mat-icon>
+                                <span>रिकॉर्ड सेव करें</span>
+                            </ng-container>
+                        }
+                    </button>
+                    <button mat-stroked-button type="button" (click)="resetForm()" class="clear-btn" [disabled]="isSubmitting()">
+                        <mat-icon>clear</mat-icon>
+                        <span>साफ़ करें</span>
+                    </button>
+                </div>
+            </form>
+        </mat-card-content>
+    </mat-card>
+</div>

@@ -1,0 +1,136 @@
+<div class="more-container">
+    <!-- Header -->
+    <div class="more-header">
+        <h1>अधिक विकल्प</h1>
+        <p class="subtitle">अतिरिक्त विशेषताएं और जानकारी</p>
+    </div>
+
+    <!-- Options Grid -->
+    <div class="options-grid">
+        @for (option of options(); track option.id) {
+        <mat-card class="option-card" (click)="option.action && option.action()">
+            <mat-card-content>
+                <div class="option-icon-container">
+                    <mat-icon class="option-icon">{{option.icon}}</mat-icon>
+                </div>
+                <div class="option-info">
+                    <h3 class="option-title">{{option.title}}</h3>
+                    <p class="option-description">{{option.description}}</p>
+                </div>
+                <mat-icon class="option-arrow">arrow_forward</mat-icon>
+            </mat-card-content>
+        </mat-card>
+        }
+    </div>
+
+    <!-- About Section -->
+    <mat-expansion-panel class="info-panel about-panel" [expanded]="expandedAbout()">
+        <mat-expansion-panel-header (click)="expandedAbout.set(!expandedAbout())">
+            <mat-panel-title>
+                <mat-icon>info_outline</mat-icon>
+                ऐप के बारे में
+            </mat-panel-title>
+            <mat-panel-description>
+                {{appName}} v{{appVersion}}
+            </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <div class="panel-content">
+            <div class="info-item">
+                <span class="info-label">ऐप का नाम:</span>
+                <span class="info-value">{{appName}}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">संस्करण:</span>
+                <span class="info-value">{{appVersion}}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">विवरण:</span>
+                <span class="info-value">हार्वेस्टर ट्रैकर एक आधुनिक ऐप्लिकेशन है जो किसानों को अपने हार्वेस्टर डेटा को आसानी से ट्रैक करने में मदद करता है।</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">विकास:</span>
+                <span class="info-value">Angular 19 + Material Design के साथ बनाया गया</span>
+            </div>
+
+            <button mat-raised-button color="accent" (click)="shareApp()" class="share-button">
+        <mat-icon>share</mat-icon>
+        ऐप साझा करें
+      </button>
+        </div>
+    </mat-expansion-panel>
+
+    <!-- Help Section -->
+    <mat-expansion-panel class="info-panel help-panel" [expanded]="expandedHelp()">
+        <mat-expansion-panel-header (click)="expandedHelp.set(!expandedHelp())">
+            <mat-panel-title>
+                <mat-icon>help_outline</mat-icon>
+                सहायता और समर्थन
+            </mat-panel-title>
+            <mat-panel-description>
+                अक्सर पूछे जाने वाले प्रश्न
+            </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <div class="panel-content">
+            <div class="help-item">
+                <h4>नया रिकॉर्ड कैसे जोड़ें?</h4>
+                <p>"नई प्रविष्टि" टैब में जाएं, सभी विवरण भरें और "सहेजें" क्लिक करें।</p>
+            </div>
+            <div class="help-item">
+                <h4>रिकॉर्ड कैसे संपादित करें?</h4>
+                <p>"रिकॉर्ड" टैब में, किसी रिकॉर्ड को विस्तृत करें और "संपादित करें" बटन क्लिक करें।</p>
+            </div>
+            <div class="help-item">
+                <h4>डेटा कैसे एक्सपोर्ट करें?</h4>
+                <p>"अधिक विकल्प" > "डेटा एक्सपोर्ट" पर जाएं और CSV फाइल डाउनलोड करें।</p>
+            </div>
+            <div class="help-item">
+                <h4>थीम कैसे बदलें?</h4>
+                <p>"सेटिंग्स" टैब में "थीम सेटिंग्स" का उपयोग करें।</p>
+            </div>
+        </div>
+    </mat-expansion-panel>
+
+    <!-- Contact Section -->
+    <mat-expansion-panel class="info-panel contact-panel" [expanded]="expandedContact()">
+        <mat-expansion-panel-header (click)="expandedContact.set(!expandedContact())">
+            <mat-panel-title>
+                <mat-icon>contact_mail</mat-icon>
+                संपर्क करें
+            </mat-panel-title>
+            <mat-panel-description>
+                हमसे जुड़ें
+            </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <div class="panel-content">
+            <div class="contact-item">
+                <mat-icon>email</mat-icon>
+                <div class="contact-info">
+                    <span class="contact-label">ईमेल:</span>
+                    <span class="contact-value">support@harvestertracker.com</span>
+                </div>
+            </div>
+            <div class="contact-item">
+                <mat-icon>phone</mat-icon>
+                <div class="contact-info">
+                    <span class="contact-label">फोन:</span>
+                    <span class="contact-value">+91 XXXX-XXXX-XXXX</span>
+                </div>
+            </div>
+            <div class="contact-item">
+                <mat-icon>location_on</mat-icon>
+                <div class="contact-info">
+                    <span class="contact-label">स्थान:</span>
+                    <span class="contact-value">भारत</span>
+                </div>
+            </div>
+
+            <button mat-raised-button color="primary" class="contact-button">
+        <mat-icon>message</mat-icon>
+        प्रतिक्रिया भेजें
+      </button>
+        </div>
+    </mat-expansion-panel>
+</div>

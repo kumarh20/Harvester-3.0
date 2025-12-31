@@ -1,0 +1,120 @@
+<div class="settings-container">
+    <!-- Header -->
+    <div class="settings-header">
+        <h1>सेटिंग्स</h1>
+        <p class="subtitle">अपनी प्राथमिकताएं प्रबंधित करें</p>
+    </div>
+
+    <!-- Theme Settings Card -->
+    <mat-card class="settings-card theme-settings-card">
+        <mat-card-header>
+            <mat-card-title>
+                <mat-icon>palette</mat-icon>
+                थीम सेटिंग्स
+            </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span class="label-title">डार्क/लाइट मोड</span>
+                    <span class="label-description">अपनी थीम पसंद चुनें</span>
+                </div>
+                <mat-slide-toggle [checked]="isDarkMode()" (change)="onThemeToggle($event.checked)">
+                </mat-slide-toggle>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Preferences Card -->
+    <mat-card class="settings-card preferences-card">
+        <mat-card-header>
+            <mat-card-title>
+                <mat-icon>tune</mat-icon>
+                प्राथमिकताएं
+            </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <!-- Notifications -->
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span class="label-title">सूचनाएं</span>
+                    <span class="label-description">पुश सूचनाएं सक्षम करें</span>
+                </div>
+                <mat-slide-toggle [checked]="notificationsEnabled()" (change)="onNotificationsToggle($event.checked)">
+                </mat-slide-toggle>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Language -->
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span class="label-title">भाषा</span>
+                    <span class="label-description">अपनी भाषा चुनें</span>
+                </div>
+                <mat-form-field appearance="outline" class="setting-select">
+                    <mat-select [value]="language()" (selectionChange)="onLanguageChange($event.value)">
+                        <mat-option value="hi">हिंदी</mat-option>
+                        <mat-option value="en">English</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Currency -->
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span class="label-title">करेंसी प्रारूप</span>
+                    <span class="label-description">भुगतान प्रारूप चुनें</span>
+                </div>
+                <mat-form-field appearance="outline" class="setting-select">
+                    <mat-select [value]="currencyFormat()" (selectionChange)="onCurrencyChange($event.value)">
+                        <mat-option value="hi-IN">भारतीय रुपया (₹)</mat-option>
+                        <mat-option value="en-US">US Dollar ($)</mat-option>
+                        <mat-option value="en-GB">British Pound (£)</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Data Management Card -->
+    <mat-card class="settings-card data-management-card">
+        <mat-card-header>
+            <mat-card-title>
+                <mat-icon>storage</mat-icon>
+                डेटा प्रबंधन
+            </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="button-group">
+                <button mat-raised-button color="primary" (click)="exportData()" class="action-button">
+          <mat-icon>download</mat-icon>
+          डेटा एक्सपोर्ट करें
+        </button>
+                <button mat-raised-button color="warn" (click)="clearAllData()" class="action-button">
+          <mat-icon>delete_outline</mat-icon>
+          सभी डेटा हटाएं
+        </button>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Reset Settings Card -->
+    <mat-card class="settings-card reset-settings-card">
+        <mat-card-header>
+            <mat-card-title>
+                <mat-icon>restart_alt</mat-icon>
+                रीसेट करें
+            </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <p class="reset-description">सभी सेटिंग्स को डिफ़ॉल्ट मान में रीसेट करें</p>
+            <button mat-stroked-button color="accent" (click)="resetSettings()" class="full-width-button">
+        <mat-icon>restore</mat-icon>
+        सेटिंग्स रीसेट करें
+      </button>
+        </mat-card-content>
+    </mat-card>
+</div>

@@ -1,0 +1,41 @@
+<nav class="bottom-nav" @slideUp>
+  <div class="nav-container">
+    <div 
+      *ngFor="let item of navItems; let i = index" 
+      class="nav-item" 
+      [class.active]="isActive(item.path)"
+      (click)="navigate(item.path)"
+    >
+      <!-- Individual background for each item -->
+      <div class="item-background" *ngIf="isActive(item.path)"></div>
+      
+      <div class="nav-content">
+        <div class="icon-wrapper">
+          <svg class="nav-icon" [class.active-icon]="isActive(item.path)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Home Icon -->
+            <path *ngIf="item.icon === 'home'" d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline *ngIf="item.icon === 'home'" points="9 22 9 12 15 12 15 22"/>
+            
+            <!-- Scan Icon (QR Code style) -->
+            <g *ngIf="item.icon === 'scan'">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+            </g>
+            
+            <!-- Profile Icon -->
+            <path *ngIf="item.icon === 'person'" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle *ngIf="item.icon === 'person'" cx="12" cy="7" r="4"/>
+            
+            <!-- Settings Icon -->
+            <circle *ngIf="item.icon === 'settings'" cx="12" cy="12" r="3"/>
+            <path *ngIf="item.icon === 'settings'" d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
+          </svg>
+        </div>
+        
+        <span class="nav-label" *ngIf="isActive(item.path)">{{ item.label }}</span>
+      </div>
+    </div>
+  </div>
+</nav>
