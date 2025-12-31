@@ -1,9 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { DialogService } from '../../shared/services/dialog.service';
 
 interface Option {
   id: string;
@@ -24,9 +25,11 @@ interface Option {
     MatExpansionModule
   ],
   templateUrl: './more.component.html',
-  styleUrl: './more.component.scss'
+  styleUrl: './more.component.scss',
+  encapsulation: ViewEncapsulation.None
 })
 export class MoreComponent {
+  constructor(private dialogService: DialogService) {}
   appVersion = '1.0.0';
   appName = 'हार्वेस्टर ट्रैकर';
 
@@ -64,7 +67,7 @@ export class MoreComponent {
   exportData(): void {
     const records = localStorage.getItem('harvester_records');
     if (!records) {
-      alert('कोई डेटा एक्सपोर्ट करने के लिए नहीं है');
+      this.dialogService.alert('कोई डेटा एक्सपोर्ट करने के लिए नहीं है', 'सूचना', 'info');
       return;
     }
 
@@ -72,10 +75,10 @@ export class MoreComponent {
       const data = JSON.parse(records);
       const csvContent = this.convertToCSV(data);
       this.downloadCSV(csvContent, 'harvester_records.csv');
-      alert('डेटा सफलतापूर्वक एक्सपोर्ट किया गया');
+      this.dialogService.alert('डेटा सफलतापूर्वक एक्सपोर्ट किया गया', 'सफलता', 'success');
     } catch (error) {
       console.error('Error exporting data:', error);
-      alert('डेटा एक्सपोर्ट करने में त्रुटि');
+      this.dialogService.alert('डेटा एक्सपोर्ट करने में त्रुटि', 'त्रुटि', 'error');
     }
   }
 
@@ -102,15 +105,15 @@ export class MoreComponent {
           } else if (file.name.endsWith('.csv')) {
             data = this.parseCSV(content);
           } else {
-            alert('कृपया .json या .csv फाइल चुनें');
+            this.dialogService.alert('कृपया .json या .csv फाइल चुनें', 'त्रुटि', 'error');
             return;
           }
 
           localStorage.setItem('harvester_records', JSON.stringify(data));
-          alert('डेटा सफलतापूर्वक इम्पोर्ट किया गया');
+          this.dialogService.alert('डेटा सफलतापूर्वक इम्पोर्ट किया गया', 'सफलता', 'success');
         } catch (error) {
           console.error('Error importing data:', error);
-          alert('डेटा इम्पोर्ट करने में त्रुटि');
+          this.dialogService.alert('डेटा इम्पोर्ट करने में त्रुटि', 'त्रुटि', 'error');
         }
       };
 
@@ -139,8 +142,8 @@ export class MoreComponent {
         text: text
       });
     } else {
-      alert('शेयर करने के लिए क्लिपबोर्ड में कॉपी किया गया: ' + text);
       navigator.clipboard.writeText(text);
+      this.dialogService.alert('शेयर करने के लिए क्लिपबोर्ड में कॉपी किया गया', 'सफलता', 'success');
     }
   }
 

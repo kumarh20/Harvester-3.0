@@ -1,4 +1,4 @@
-import { Component, signal, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, signal, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -21,6 +21,7 @@ interface NavItem {
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
+  encapsulation: ViewEncapsulation.None,
   animations: [
     trigger('slideUp', [
       transition(':enter', [

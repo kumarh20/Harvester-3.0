@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -10,6 +10,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { RecordsService } from '../../core/services/records.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { DialogService } from '../../shared/services/dialog.service';
 
 interface Record {
   id: string;
@@ -27,6 +28,7 @@ interface Record {
 @Component({
   selector: 'app-records',
   standalone: true,
+  encapsulation: ViewEncapsulation.None,
   imports: [
     CommonModule,
     FormsModule,
@@ -47,7 +49,8 @@ export class RecordsComponent implements OnInit {
 
   constructor(
     public recordsService: RecordsService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private dialogService: DialogService
   ) {}
 
   ngOnInit(): void {
@@ -76,17 +79,24 @@ export class RecordsComponent implements OnInit {
     if (!record) return;
 
     const confirmMessage = `क्या आप वाकई "${record.farmerName}" का रिकॉर्ड डिलीट करना चाहते हैं?\n\nयह क्रिया को वापस नहीं किया जा सकता।`;
-    const confirmed = confirm(confirmMessage);
     
-    if (confirmed) {
-      try {
-        await this.recordsService.deleteRecord(id);
-        this.toastService.success('रिकॉर्ड सफलतापूर्वक डिलीट हो गया');
-      } catch (error) {
-        console.error('Error deleting record:', error);
-        this.toastService.error('रिकॉर्ड डिलीट करने में समस्या आई');
+    this.dialogService.confirm(
+      confirmMessage,
+      'पुष्टि करें',
+      'हाँ, डिलीट करें',
+      'रद्द करें',
+      'warning'
+    ).subscribe(async confirmed => {
+      if (confirmed) {
+        try {
+          await this.recordsService.deleteRecord(id);
+          this.toastService.success('रिकॉर्ड सफलतापूर्वक डिलीट हो गया');
+        } catch (error) {
+          console.error('Error deleting record:', error);
+          this.toastService.error('रिकॉर्ड डिलीट करने में समस्या आई');
+        }
       }
-    }
+    });
   }
 
   toggleExpand(recordId: string): void {

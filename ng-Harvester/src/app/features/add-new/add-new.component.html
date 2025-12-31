@@ -19,13 +19,13 @@
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>किसान का नाम</mat-label>
-                        <input matInput type="text" placeholder="पूरा नाम" [(ngModel)]="formData().farmerName" (input)="onFormChange()" name="farmerName" required />
+                        <input matInput type="text" placeholder="पूरा नाम" [(ngModel)]="formData.farmerName" (ngModelChange)="onFormChange()" name="farmerName" required />
                         <mat-icon matPrefix>person</mat-icon>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>मोबाइल नंबर</mat-label>
-                        <input matInput type="tel" placeholder="10 अंक" [(ngModel)]="formData().contactNumber" (input)="onFormChange()" name="contactNumber" maxlength="10" required />
+                        <input matInput type="tel" placeholder="10 अंक" [(ngModel)]="formData.contactNumber" (ngModelChange)="onFormChange()" name="contactNumber" maxlength="10" required />
                         <mat-icon matPrefix>phone</mat-icon>
                     </mat-form-field>
                 </div>
@@ -34,7 +34,7 @@
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>तारीख़</mat-label>
-                        <input matInput [matDatepicker]="datePicker" [(ngModel)]="formData().date" (input)="onFormChange()" name="date" required />
+                        <input matInput [matDatepicker]="datePicker" [(ngModel)]="formData.date" (ngModelChange)="onFormChange()" name="date" required />
                         <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
                         <mat-datepicker #datePicker></mat-datepicker>
                         <mat-icon matPrefix>event</mat-icon>
@@ -42,7 +42,7 @@
 
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>ज़मीन (एकड़)</mat-label>
-                        <input matInput type="number" placeholder="0.00" [(ngModel)]="formData().landInAcres" (input)="onFormChange()" name="landInAcres" step="0.01" required />
+                        <input matInput type="number" placeholder="0.00" [(ngModel)]="formData.landInAcres" (ngModelChange)="onFormChange()" name="landInAcres" step="0.01" required />
                         <mat-icon matPrefix>location_on</mat-icon>
                     </mat-form-field>
                 </div>
@@ -51,7 +51,7 @@
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>दर (₹/एकड़)</mat-label>
-                        <input matInput type="number" placeholder="2500" [(ngModel)]="formData().ratePerAcre" (input)="onFormChange()" name="ratePerAcre" step="100" required />
+                        <input matInput type="number" placeholder="2500" [(ngModel)]="formData.ratePerAcre" (ngModelChange)="onFormChange()" name="ratePerAcre" step="100" required />
                         <mat-icon matPrefix>currency_rupee</mat-icon>
                     </mat-form-field>
 
@@ -66,13 +66,13 @@
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>नक़द भुगतान (₹)</mat-label>
-                        <input matInput type="number" placeholder="0" [(ngModel)]="formData().nakadPaid" (input)="onFormChange()" name="nakadPaid" step="100" />
+                        <input matInput type="number" placeholder="0" [(ngModel)]="formData.nakadPaid" (ngModelChange)="onFormChange()" name="nakadPaid" step="100" />
                         <mat-icon matPrefix>wallet</mat-icon>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>भुगतान तारीख़</mat-label>
-                        <input matInput [matDatepicker]="paymentDatePicker" [(ngModel)]="formData().fullPaymentDate" (input)="onFormChange()" name="fullPaymentDate" />
+                        <input matInput [matDatepicker]="paymentDatePicker" [(ngModel)]="formData.fullPaymentDate" (ngModelChange)="onFormChange()" name="fullPaymentDate" />
                         <mat-datepicker-toggle matSuffix [for]="paymentDatePicker"></mat-datepicker-toggle>
                         <mat-datepicker #paymentDatePicker></mat-datepicker>
                         <mat-icon matPrefix>schedule</mat-icon>
@@ -87,7 +87,7 @@
                     </div>
                     <div class="summary-row">
                         <span class="summary-label">नक़द भुगतान:</span>
-                        <span class="summary-value">₹{{ formData().nakadPaid | number: '1.0-0' }}</span>
+                        <span class="summary-value">₹{{ formData.nakadPaid | number: '1.0-0' }}</span>
                     </div>
                     <div class="summary-row summary-pending">
                         <span class="summary-label">बाक़ी रुपये:</span>

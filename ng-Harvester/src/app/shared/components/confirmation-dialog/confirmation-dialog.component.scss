@@ -1,0 +1,93 @@
+.confirmation-dialog {
+  min-width: 320px;
+  max-width: 500px;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px 12px;
+  margin: 0;
+  
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .dialog-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  &.dialog-info .dialog-icon {
+    color: #3B82F6;
+  }
+  
+  &.dialog-warning .dialog-icon {
+    color: #F59E0B;
+  }
+  
+  &.dialog-error .dialog-icon {
+    color: #EF4444;
+  }
+  
+  &.dialog-success .dialog-icon {
+    color: #10B981;
+  }
+}
+
+mat-dialog-content {
+  padding: 12px 24px 24px !important;
+  
+  .dialog-message {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+}
+
+mat-dialog-actions {
+  padding: 16px 24px !important;
+  gap: 12px;
+  
+  button {
+    min-width: 100px;
+  }
+}
+
+// Dark theme
+[data-theme="dark"] {
+  .confirmation-dialog {
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
+  
+  .dialog-header {
+    h2 {
+      color: var(--text-primary);
+    }
+    
+    &.dialog-info .dialog-icon {
+      color: #60A5FA;
+    }
+    
+    &.dialog-warning .dialog-icon {
+      color: #FBBF24;
+    }
+    
+    &.dialog-error .dialog-icon {
+      color: #F87171;
+    }
+    
+    &.dialog-success .dialog-icon {
+      color: #34D399;
+    }
+  }
+}
+
+

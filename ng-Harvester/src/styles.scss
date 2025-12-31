@@ -174,10 +174,97 @@ body {
     color: var(--text-secondary) !important;
 }
 
+/* Modern Button Styles */
 .mat-mdc-button,
 .mat-mdc-raised-button,
+.mat-mdc-stroked-button,
+.mat-mdc-unelevated-button {
+    border-radius: 12px !important;
+    padding: 12px 32px !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+    letter-spacing: 0.3px !important;
+    text-transform: none !important;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
+    min-height: 48px !important;
+    
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    &:active:not(:disabled) {
+        transform: translateY(0);
+    }
+}
+
+.mat-mdc-raised-button,
+.mat-mdc-unelevated-button {
+    &.mat-primary {
+        background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%) !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+        
+        &:hover:not(:disabled) {
+            background: linear-gradient(135deg, #5558E3 0%, #7C3AED 100%) !important;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+        }
+        
+        [data-theme="dark"] & {
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5) !important;
+            
+            &:hover:not(:disabled) {
+                box-shadow: 0 8px 24px rgba(99, 102, 241, 0.6) !important;
+            }
+        }
+    }
+    
+    &.mat-accent {
+        background: linear-gradient(135deg, #3B82F6 0%, #6366F1 100%) !important;
+        color: white !important;
+    }
+    
+    &.mat-warn {
+        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%) !important;
+        color: white !important;
+    }
+}
+
 .mat-mdc-stroked-button {
-    color: var(--text-primary) !important;
+    border: 2px solid #6366F1 !important;
+    color: #6366F1 !important;
+    background: transparent !important;
+    
+    &:hover:not(:disabled) {
+        background: rgba(99, 102, 241, 0.08) !important;
+        border-color: #5558E3 !important;
+    }
+    
+    [data-theme="dark"] & {
+        border-color: #A78BFA !important;
+        color: #A78BFA !important;
+        
+        &:hover:not(:disabled) {
+            background: rgba(167, 139, 250, 0.12) !important;
+            border-color: #C4B5FD !important;
+        }
+    }
+}
+
+.mat-mdc-button {
+    color: #6366F1 !important;
+    
+    &:hover:not(:disabled) {
+        background: rgba(99, 102, 241, 0.08) !important;
+    }
+    
+    [data-theme="dark"] & {
+        color: #A78BFA !important;
+        
+        &:hover:not(:disabled) {
+            background: rgba(167, 139, 250, 0.12) !important;
+        }
+    }
 }
 
 /* Dark Theme Material Overrides */
@@ -286,6 +373,32 @@ body {
     }
 }
 
+
+/* Material Dialog Styles */
+
+.custom-dialog-container {
+    .mat-mdc-dialog-container {
+        border-radius: 16px !important;
+        padding: 0 !important;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+        
+        [data-theme="dark"] & {
+            background: var(--bg-card) !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7),
+                        0 0 40px rgba(99, 102, 241, 0.15) !important;
+        }
+        
+        .mat-mdc-dialog-surface {
+            background: transparent !important;
+        }
+    }
+}
+
+.mat-mdc-dialog-actions {
+    padding: 16px 24px !important;
+    gap: 12px !important;
+}
 
 /* Utility Classes */
 

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -40,11 +40,12 @@ interface FormData {
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './add-new.component.html',
-  styleUrl: './add-new.component.scss'
+  styleUrl: './add-new.component.scss',
+  encapsulation: ViewEncapsulation.None
 })
 export class AddNewComponent {
-
-  formData = signal<FormData>({
+  // Use plain object for ngModel binding (not a signal)
+  formData: FormData = {
     farmerName: '',
     contactNumber: '',
     date: new Date().toISOString().split('T')[0], // Today's date
@@ -52,7 +53,7 @@ export class AddNewComponent {
     ratePerAcre: 2500,
     nakadPaid: 0,
     fullPaymentDate: ''
-  });
+  };
 
   // Calculated values
   totalPayment = signal(0);
@@ -69,8 +70,8 @@ export class AddNewComponent {
   }
 
   updateCalculations(): void {
-    const total = this.formData().landInAcres * this.formData().ratePerAcre;
-    const pending = total - this.formData().nakadPaid;
+    const total = this.formData.landInAcres * this.formData.ratePerAcre;
+    const pending = total - this.formData.nakadPaid;
 
     this.totalPayment.set(total);
     this.pendingPayment.set(pending);
@@ -84,28 +85,28 @@ export class AddNewComponent {
     event.preventDefault();
 
     // Validation
-    if (!this.formData().farmerName.trim()) {
+    if (!this.formData.farmerName.trim()) {
       this.toastService.error('कृपया किसान का नाम दर्ज करें');
       return;
     }
 
-    if (!this.formData().contactNumber.trim() || this.formData().contactNumber.length !== 10) {
+    if (!this.formData.contactNumber.trim() || this.formData.contactNumber.length !== 10) {
       this.toastService.error('कृपया सही मोबाइल नंबर दर्ज करें');
       return;
     }
 
-    if (this.formData().landInAcres <= 0) {
+    if (this.formData.landInAcres <= 0) {
       this.toastService.error('कृपया ज़मीन की मात्रा दर्ज करें');
       return;
     }
 
-    if (this.formData().ratePerAcre <= 0) {
+    if (this.formData.ratePerAcre <= 0) {
       this.toastService.error('कृपया वैध दर दर्ज करें');
       return;
     }
 
     // Check if cash payment exceeds total
-    if (this.formData().nakadPaid > this.totalPayment()) {
+    if (this.formData.nakadPaid > this.totalPayment()) {
       this.toastService.error('नकद राशि कुल राशि से अधिक नहीं हो सकती');
       return;
     }
@@ -117,7 +118,7 @@ export class AddNewComponent {
     try {
       // Save to service (with cloud sync)
       const recordToSave = {
-        ...this.formData(),
+        ...this.formData,
         totalPayment: this.totalPayment(),
         pendingAmount: this.pendingPayment()
       };
@@ -137,7 +138,7 @@ export class AddNewComponent {
   }
 
   resetForm(): void {
-    this.formData.set({
+    this.formData = {
       farmerName: '',
       contactNumber: '',
       date: new Date().toISOString().split('T')[0],
@@ -145,7 +146,7 @@ export class AddNewComponent {
       ratePerAcre: 2500,
       nakadPaid: 0,
       fullPaymentDate: ''
-    });
+    };
     this.updateCalculations();
   }
 }
