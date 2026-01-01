@@ -451,6 +451,30 @@
             }
         }
     }
+      
+    .cancel-btn {
+        color: #f59e0b;
+        border: 2px solid #f59e0b;
+        background: white;
+        
+        &:hover:not(:disabled) {
+            background: #fffbeb;
+            border-color: #d97706;
+            color: #d97706;
+        }
+        
+        [data-theme="dark"] & {
+            color: #fbbf24;
+            border-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.05);
+            
+            &:hover:not(:disabled) {
+                background: rgba(251, 191, 36, 0.15);
+                border-color: #fcd34d;
+                box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+            }
+        }
+    }
 }
 
 // Responsive design

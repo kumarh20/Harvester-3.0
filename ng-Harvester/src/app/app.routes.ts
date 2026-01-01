@@ -23,6 +23,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'add-new/:id',
+    component: AddNewComponent,
+    canActivate: [authGuard]
+  },
+  {
     path: 'records',
     component: RecordsComponent,
     canActivate: [authGuard]

@@ -3,15 +3,15 @@
     <div class="sphere-1"></div>
     <div class="sphere-2"></div>
     <div class="sphere-3"></div>
-    
+
     <mat-card class="form-card">
         <mat-card-header>
-            <mat-card-title>नई एंट्री</mat-card-title>
-            <mat-card-subtitle>नया रिकॉर्ड जोड़ें</mat-card-subtitle>
+            <mat-card-title>{{ formTitle }}</mat-card-title>
+            <mat-card-subtitle>{{ formSubtitle }}</mat-card-subtitle>
         </mat-card-header>
 
         <mat-card-content>
-            <form (ngSubmit)="onFormSubmit($event)">
+            <form [formGroup]="recordForm" (ngSubmit)="onFormSubmit($event)">
                 <!-- Form Title -->
                 <div class="form-section-title">किसान की जानकारी</div>
 
@@ -19,14 +19,20 @@
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>किसान का नाम</mat-label>
-                        <input matInput type="text" placeholder="पूरा नाम" [(ngModel)]="formData.farmerName" (ngModelChange)="onFormChange()" name="farmerName" required />
+                        <input matInput type="text" placeholder="पूरा नाम" formControlName="farmerName" required />
                         <mat-icon matPrefix>person</mat-icon>
+                        @if (recordForm.get('farmerName')?.invalid && recordForm.get('farmerName')?.touched) {
+                        <mat-error>कृपया नाम दर्ज करें (कम से कम 2 अक्षर)</mat-error>
+                        }
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>मोबाइल नंबर</mat-label>
-                        <input matInput type="tel" placeholder="10 अंक" [(ngModel)]="formData.contactNumber" (ngModelChange)="onFormChange()" name="contactNumber" maxlength="10" required />
+                        <input matInput type="tel" placeholder="10 अंक" formControlName="contactNumber" maxlength="10" required />
                         <mat-icon matPrefix>phone</mat-icon>
+                        @if (recordForm.get('contactNumber')?.invalid && recordForm.get('contactNumber')?.touched) {
+                        <mat-error>कृपया 10 अंकों का मोबाइल नंबर दर्ज करें</mat-error>
+                        }
                     </mat-form-field>
                 </div>
 
@@ -34,16 +40,22 @@
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>तारीख़</mat-label>
-                        <input matInput [matDatepicker]="datePicker" [(ngModel)]="formData.date" (ngModelChange)="onFormChange()" name="date" required />
+                        <input matInput [matDatepicker]="datePicker" formControlName="date" required />
                         <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
                         <mat-datepicker #datePicker></mat-datepicker>
                         <mat-icon matPrefix>event</mat-icon>
+                        @if (recordForm.get('date')?.invalid && recordForm.get('date')?.touched) {
+                        <mat-error>कृपया तारीख़ चुनें</mat-error>
+                        }
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>ज़मीन (एकड़)</mat-label>
-                        <input matInput type="number" placeholder="0.00" [(ngModel)]="formData.landInAcres" (ngModelChange)="onFormChange()" name="landInAcres" step="0.01" required />
+                        <input matInput type="number" placeholder="0.00" formControlName="landInAcres" step="0.01" required />
                         <mat-icon matPrefix>location_on</mat-icon>
+                        @if (recordForm.get('landInAcres')?.invalid && recordForm.get('landInAcres')?.touched) {
+                        <mat-error>कृपया ज़मीन का क्षेत्रफल दर्ज करें (0 से अधिक)</mat-error>
+                        }
                     </mat-form-field>
                 </div>
 
@@ -51,13 +63,16 @@
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>दर (₹/एकड़)</mat-label>
-                        <input matInput type="number" placeholder="2500" [(ngModel)]="formData.ratePerAcre" (ngModelChange)="onFormChange()" name="ratePerAcre" step="100" required />
+                        <input matInput type="number" placeholder="2500" formControlName="ratePerAcre" step="100" required />
                         <mat-icon matPrefix>currency_rupee</mat-icon>
+                        @if (recordForm.get('ratePerAcre')?.invalid && recordForm.get('ratePerAcre')?.touched) {
+                        <mat-error>कृपया वैध दर दर्ज करें (1 से अधिक)</mat-error>
+                        }
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>कुल रुपये</mat-label>
-                        <input matInput type="number" [value]="totalPayment()" disabled class="calculated-input" [disabled]="true" />
+                        <input matInput type="number" [value]="totalPayment()" disabled class="calculated-input" />
                         <mat-icon matPrefix>calculate</mat-icon>
                     </mat-form-field>
                 </div>
@@ -66,13 +81,13 @@
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>नक़द भुगतान (₹)</mat-label>
-                        <input matInput type="number" placeholder="0" [(ngModel)]="formData.nakadPaid" (ngModelChange)="onFormChange()" name="nakadPaid" step="100" />
+                        <input matInput type="number" placeholder="0" formControlName="nakadPaid" step="100" />
                         <mat-icon matPrefix>wallet</mat-icon>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>भुगतान तारीख़</mat-label>
-                        <input matInput [matDatepicker]="paymentDatePicker" [(ngModel)]="formData.fullPaymentDate" (ngModelChange)="onFormChange()" name="fullPaymentDate" />
+                        <input matInput [matDatepicker]="paymentDatePicker" formControlName="fullPaymentDate" />
                         <mat-datepicker-toggle matSuffix [for]="paymentDatePicker"></mat-datepicker-toggle>
                         <mat-datepicker #paymentDatePicker></mat-datepicker>
                         <mat-icon matPrefix>schedule</mat-icon>
@@ -87,7 +102,7 @@
                     </div>
                     <div class="summary-row">
                         <span class="summary-label">नक़द भुगतान:</span>
-                        <span class="summary-value">₹{{ formData.nakadPaid | number: '1.0-0' }}</span>
+                        <span class="summary-value">₹{{ recordForm.get('nakadPaid')?.value | number: '1.0-0' }}</span>
                     </div>
                     <div class="summary-row summary-pending">
                         <span class="summary-label">बाक़ी रुपये:</span>
@@ -102,18 +117,22 @@
                     <button mat-raised-button color="primary" type="submit" class="save-btn" [disabled]="isSubmitting()">
                         @if (isSubmitting()) {
                             <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
-                            <span>सेव हो रहा है...</span>
+                            <span>{{ isEditMode() ? 'अपडेट हो रहा है...' : 'सेव हो रहा है...' }}</span>
                         } @else {
                             <ng-container>
-                                <mat-icon>save</mat-icon>
-                                <span>रिकॉर्ड सेव करें</span>
+                                <mat-icon>{{ isEditMode() ? 'update' : 'save' }}</mat-icon>
+                                <span>{{ submitButtonText }}</span>
                             </ng-container>
                         }
-                    </button>
+                    </button> @if (isEditMode()) {
+                    <button mat-stroked-button type="button" (click)="cancelEdit()" class="cancel-btn" [disabled]="isSubmitting()">
+                            <mat-icon>close</mat-icon>
+                            <span>रद्द करें</span>
+                        </button> } @else {
                     <button mat-stroked-button type="button" (click)="resetForm()" class="clear-btn" [disabled]="isSubmitting()">
-                        <mat-icon>clear</mat-icon>
-                        <span>साफ़ करें</span>
-                    </button>
+                            <mat-icon>clear</mat-icon>
+                            <span>साफ़ करें</span>
+                        </button> }
                 </div>
             </form>
         </mat-card-content>

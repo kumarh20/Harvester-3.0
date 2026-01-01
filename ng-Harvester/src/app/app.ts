@@ -79,13 +79,42 @@ export class App implements AfterViewInit {
   }
 
   isActive(route: string): boolean {
-    return this.activeRoute() === route;
+    // Check if current route exactly matches or starts with the nav item route
+    // This handles both /add-new and /add-new/:id cases
+    const currentRoute = this.activeRoute();
+    
+    // Exact match
+    if (currentRoute === route) {
+      return true;
+    }
+    
+    // Check if current route starts with nav item route (for child routes like /add-new/:id)
+    // But don't match partial route segments (e.g., /settings shouldn't match /settings-advanced)
+    if (currentRoute.startsWith(route + '/')) {
+      return true;
+    }
+    
+    return false;
   }
 
   moveSliderToActive(): void {
     if (!this.slidingBgElement || !this.navItemElements) return;
 
-    const activeIndex = this.navItems.findIndex(item => item.route === this.activeRoute());
+    const currentRoute = this.activeRoute();
+    
+    // Find the active nav item using the same logic as isActive
+    const activeIndex = this.navItems.findIndex(item => {
+      // Exact match
+      if (currentRoute === item.route) {
+        return true;
+      }
+      // Check if current route starts with nav item route (for child routes)
+      if (currentRoute.startsWith(item.route + '/')) {
+        return true;
+      }
+      return false;
+    });
+    
     if (activeIndex === -1) return;
 
     const navItemsArray = this.navItemElements.toArray();

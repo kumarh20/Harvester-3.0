@@ -839,7 +839,42 @@ function createRecordCard(record) {
     return card;
 }
 
-// Edit record: send PUT request to backend and update UI
+// Update record API - called from main form
+async function updateRecordAPI(formData) {
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                _method: 'PUT', 
+                id: formData.id,
+                deviceId,
+                name: formData.farmerName,
+                contact: formData.contactNumber,
+                date: formData.date,
+                acres: formData.landInAcres,
+                rate: formData.ratePerAcre,
+                total: formData.totalPayment,
+                cash: formData.nakadPaid,
+                fullPaymentDate: formData.fullPaymentDate
+            })
+        });
+        const result = await response.json();
+        if (result.success) {
+            showMessage('रिकॉर्ड सफलतापूर्वक अपडेट हो गया', 'success');
+            await loadRecordsFromCloud();
+        } else {
+            showMessage('रिकॉर्ड अपडेट करने में समस्या हुई', 'error');
+        }
+    } catch (error) {
+        console.error('Error updating record:', error);
+        showMessage('रिकॉर्ड अपडेट करने में समस्या आई', 'error');
+    }
+}
+
+// Edit record: send PUT request to backend and update UI (inline edit - kept for backward compatibility)
 async function editRecord(updated) {
     try {
         const response = await fetch(SCRIPT_URL, {

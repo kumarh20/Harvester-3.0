@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, computed, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -50,7 +51,8 @@ export class RecordsComponent implements OnInit {
   constructor(
     public recordsService: RecordsService,
     private toastService: ToastService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -114,8 +116,8 @@ export class RecordsComponent implements OnInit {
   }
 
   editRecord(record: Record): void {
-    // TODO: Navigate to edit form with record data
-    console.log('Edit record:', record);
+    // Navigate to add-new component with record ID
+    this.router.navigate(['/add-new', record.id]);
   }
 
   getInitial(name: string): string {
