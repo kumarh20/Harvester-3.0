@@ -6,7 +6,13 @@
     <header class="modern-header">
         <!-- Title and Theme Toggle in One Line -->
         <div class="header-top-row">
-            <div class="user-name">हार्वेस्टर ट्रैकर</div>
+            <div class="user-name">{{ translationService.get('app.appTitle') }}</div>
+            <div class="header-actions">
+                <!-- Language Toggle -->
+                <button class="language-toggle" (click)="toggleLanguage()" [title]="getCurrentLanguage() === 'hi' ? translationService.get('settings.languageEnglish') : translationService.get('settings.languageHindi')">
+                    <span class="language-code">{{ getCurrentLanguage().toUpperCase() }}</span>
+                </button>
+                <!-- Theme Toggle -->
             <button class="theme-toggle" (click)="toggleTheme()" aria-label="Toggle theme">
                 <div class="toggle-track">
                     <div class="toggle-thumb">
@@ -29,13 +35,14 @@
                     </div>
                 </div>
             </button>
+            </div>
         </div>
 
         <!-- Balance Card - Only visible on Dashboard -->
         @if (isActive('/dashboard')) {
             <div class="balance-card">
                 <div class="balance-header">
-                    <span class="balance-label">कुल राशि</span>
+                    <span class="balance-label">{{ translationService.get('app.totalBalance') }}</span>
                 </div>
                 <div class="balance-amount">{{ getTotalBalance() }}</div>
             </div>
@@ -89,7 +96,7 @@
                             <circle *ngIf="item.label === 'More'" cx="19" cy="12" r="2"/>
                         </svg>
                     </div>
-                    <span class="nav-label" *ngIf="isActive(item.route)">{{ item.label }}</span>
+                    <span class="nav-label" *ngIf="isActive(item.route)">{{ getNavLabel(item.label) }}</span>
                 </div>
             </div>
             }

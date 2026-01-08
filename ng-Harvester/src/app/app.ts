@@ -5,6 +5,8 @@ import { filter } from 'rxjs/operators';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { RecordsService } from './core/services/records.service';
+import { TranslationService } from './shared/services/translation.service';
+import { LanguageService } from './shared/services/language.service';
 
 interface NavItem {
   label: string;
@@ -32,7 +34,6 @@ interface NavItem {
   ]
 })
 export class App implements AfterViewInit {
-  protected readonly title = signal('हार्वेस्टर ट्रैकर');
   protected activeRoute = signal('/dashboard');
   protected currentTab = signal('dashboard');
   protected isDarkTheme = signal(false);
@@ -41,6 +42,8 @@ export class App implements AfterViewInit {
   @ViewChild('slidingBg') slidingBgElement!: ElementRef;
   @ViewChild('navContainer') navContainerElement!: ElementRef;
 
+  // Navigation items - labels kept as English for icon matching logic
+  // Display will use translations via getNavLabel()
   protected readonly navItems: NavItem[] = [
     { label: 'Add New', icon: 'add_circle', route: '/add-new' },
     { label: 'Records', icon: 'list', route: '/records' },
@@ -51,7 +54,9 @@ export class App implements AfterViewInit {
 
   constructor(
     private router: Router,
-    private recordsService: RecordsService
+    private recordsService: RecordsService,
+    public translationService: TranslationService,
+    private languageService: LanguageService
   ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -195,10 +200,43 @@ export class App implements AfterViewInit {
       return sum + (record.totalPayment || 0);
     }, 0);
 
-    return new Intl.NumberFormat('hi-IN', {
+    const locale = this.languageService.isHindi() ? 'hi-IN' : 'en-IN';
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'INR',
       maximumFractionDigits: 0
     }).format(total);
+  }
+
+  /**
+   * Toggle language between Hindi and English
+   */
+  toggleLanguage(): void {
+    const currentLang = this.languageService.getCurrentLanguage();
+    const newLang = currentLang === 'hi' ? 'en' : 'hi';
+    this.languageService.setLanguage(newLang);
+  }
+
+  /**
+   * Get current language code
+   */
+  getCurrentLanguage(): string {
+    return this.languageService.getCurrentLanguage();
+  }
+
+  /**
+   * Get translated navigation label
+   * Maps English label to translation key
+   */
+  getNavLabel(label: string): string {
+    const labelMap: Record<string, string> = {
+      'Add New': 'nav.addNew',
+      'Records': 'nav.records',
+      'Dashboard': 'nav.dashboard',
+      'Settings': 'nav.settings',
+      'More': 'nav.more'
+    };
+    const key = labelMap[label] || label;
+    return this.translationService.get(key);
   }
 }

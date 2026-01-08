@@ -16,9 +16,9 @@ export class DialogService {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       width: '400px',
       data: {
-        title: title || 'सूचना',
+        title: title || 'Info',
         message,
-        confirmText: 'ठीक है',
+        confirmText: 'OK',
         // cancelText omitted for alert (no cancel button)
         type
       } as ConfirmationDialogData,
@@ -34,14 +34,14 @@ export class DialogService {
   confirm(
     message: string,
     title?: string,
-    confirmText: string = 'हाँ',
-    cancelText: string = 'नहीं',
+    confirmText: string = 'Yes',
+    cancelText: string = 'No',
     type: 'info' | 'warning' | 'error' | 'success' = 'warning'
   ): Observable<boolean> {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       width: '400px',
       data: {
-        title: title || 'पुष्टि करें',
+        title: title || 'Confirm',
         message,
         confirmText,
         cancelText,

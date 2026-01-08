@@ -25,10 +25,10 @@ export class ConfirmationDialogComponent {
     public dialogRef: MatDialogRef<ConfirmationDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ConfirmationDialogData
   ) {
-    // Set defaults
-    this.data.title = this.data.title || 'सूचना';
-    this.data.confirmText = this.data.confirmText || 'ठीक है';
-    this.data.cancelText = this.data.cancelText || 'रद्द करें';
+    // Set defaults (components will override with translated text)
+    this.data.title = this.data.title || 'Info';
+    this.data.confirmText = this.data.confirmText || 'OK';
+    this.data.cancelText = this.data.cancelText || 'Cancel';
     this.data.type = this.data.type || 'info';
   }
 

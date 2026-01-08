@@ -1,17 +1,18 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, map, of, tap } from 'rxjs';
+import { TranslationService } from '../../shared/services/translation.service';
 
 export interface CloudRecord {
-  ID?: string;
-  'किसान का नाम': string;
-  'संपर्क नंबर': string;
-  'तारीख': string;
-  'ज़मीन (एकड़)': number;
-  'प्रति एकड़ दर': number;
-  'कुल राशि': number;
-  'नकद भुगतान': number;
-  'पूरा भुगतान तारीख': string;
+  id?: string; // Entry ID from Google Sheet
+  farmerName: string;
+  contactNumber: string;
+  date: string;
+  landInAcres: number;
+  ratePerAcre: number;
+  totalPayment: number;
+  paidOnSight: number;
+  fullPaymentDate: string;
 }
 
 export interface LocalRecord {
@@ -22,7 +23,7 @@ export interface LocalRecord {
   landInAcres: number;
   ratePerAcre: number;
   totalPayment: number;
-  nakadPaid: number;
+  paidOnSight: number;
   pendingAmount: number;
   fullPaymentDate: string;
 }
@@ -37,7 +38,10 @@ export class CloudSyncService {
   public lastSyncTime = signal<Date | null>(null);
   public syncError = signal<string | null>(null);
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private translationService: TranslationService
+  ) {
     this.initializeDeviceId();
   }
 
@@ -78,7 +82,7 @@ export class CloudSyncService {
         error: (error) => {
           console.error('Error loading records from cloud:', error);
           this.isSyncing.set(false);
-          this.syncError.set('डेटा लोड करने में समस्या आई');
+          this.syncError.set(this.translationService.get('messages.saveError'));
         }
       }),
       catchError((error) => {
@@ -97,15 +101,18 @@ export class CloudSyncService {
 
     const payload = {
       deviceId: this.deviceId(),
-      name: record.farmerName,
-      contact: record.contactNumber,
+      farmerName: record.farmerName,
+      contactNumber: record.contactNumber,
       date: record.date,
-      acres: record.landInAcres.toString(),
-      rate: record.ratePerAcre.toString(),
-      total: record.totalPayment.toString(),
-      cash: record.nakadPaid.toString(),
+      landInAcres: record.landInAcres.toString(),
+      ratePerAcre: record.ratePerAcre.toString(),
+      totalPayment: record.totalPayment.toString(),
+      paidOnSight: record.paidOnSight.toString(),
       fullPaymentDate: record.fullPaymentDate || ''
     };
+
+    // Log payload to verify it's using English column names
+    console.log('📤 Sending to API with English columns:', payload);
 
     return this.http.post(this.API_URL, payload).pipe(
       tap({
@@ -116,7 +123,7 @@ export class CloudSyncService {
         error: (error) => {
           console.error('Error saving record to cloud:', error);
           this.isSyncing.set(false);
-          this.syncError.set('रिकॉर्ड सेव करने में समस्या आई');
+          this.syncError.set(this.translationService.get('messages.saveError'));
         }
       }),
       catchError((error) => {
@@ -143,7 +150,7 @@ export class CloudSyncService {
       landInAcres: record.landInAcres.toString(),
       ratePerAcre: record.ratePerAcre.toString(),
       totalPayment: record.totalPayment.toString(),
-      nakadPaid: record.nakadPaid.toString(),
+      paidOnSight: record.paidOnSight.toString(),
       fullPaymentDate: record.fullPaymentDate || ''
     };
 
@@ -156,7 +163,7 @@ export class CloudSyncService {
         error: (error) => {
           console.error('Error updating record in cloud:', error);
           this.isSyncing.set(false);
-          this.syncError.set('रिकॉर्ड अपडेट करने में समस्या आई');
+          this.syncError.set(this.translationService.get('messages.updateError'));
         }
       }),
       catchError((error) => {
@@ -188,7 +195,7 @@ export class CloudSyncService {
         error: (error) => {
           console.error('Error deleting record from cloud:', error);
           this.isSyncing.set(false);
-          this.syncError.set('रिकॉर्ड डिलीट करने में समस्या आई');
+          this.syncError.set(this.translationService.get('messages.deleteError'));
         }
       }),
       catchError((error) => {
@@ -200,27 +207,36 @@ export class CloudSyncService {
 
   /**
    * Convert cloud records to local format
+   * API now returns only English column names
+   * Also handles migration from old Hindi column names if backend still sends them
    */
-  private convertCloudToLocal(cloudRecords: CloudRecord[]): LocalRecord[] {
+  private convertCloudToLocal(cloudRecords: CloudRecord[] | any[]): LocalRecord[] {
     if (!Array.isArray(cloudRecords)) {
       return [];
     }
 
-    return cloudRecords.map((item) => {
-      const totalPayment = parseFloat(item['कुल राशि']?.toString() || '0');
-      const nakadPaid = parseFloat(item['नकद भुगतान']?.toString() || '0');
+    return cloudRecords.map((item: any) => {
+      // Handle English column names (backward compatibility for old field names)
+      const farmerName = item.farmerName || '';
+      const contactNumber = item.contactNumber || '';
+      const date = item.date || '';
+      const landInAcres = parseFloat(item.landInAcres?.toString() || '0');
+      const ratePerAcre = parseFloat(item.ratePerAcre?.toString() || '0');
+      const totalPayment = parseFloat(item.totalPayment?.toString() || '0');
+      const paidOnSight = parseFloat(item.paidOnSight?.toString() || item.nakadPaid?.toString() || '0');
+      const fullPaymentDate = item.fullPaymentDate || '';
 
       return {
-        id: item.ID ? item.ID.toString() : Date.now().toString(),
-        farmerName: item['किसान का नाम'] || '',
-        contactNumber: item['संपर्क नंबर'] || '',
-        date: item['तारीख'] || '',
-        landInAcres: parseFloat(item['ज़मीन (एकड़)']?.toString() || '0'),
-        ratePerAcre: parseFloat(item['प्रति एकड़ दर']?.toString() || '0'),
+        id: item.id || item.ID ? (item.id || item.ID).toString() : Date.now().toString(),
+        farmerName: farmerName,
+        contactNumber: contactNumber,
+        date: date,
+        landInAcres: landInAcres,
+        ratePerAcre: ratePerAcre,
         totalPayment: totalPayment,
-        nakadPaid: nakadPaid,
-        pendingAmount: totalPayment - nakadPaid,
-        fullPaymentDate: item['पूरा भुगतान तारीख'] || ''
+        paidOnSight: paidOnSight,
+        pendingAmount: totalPayment - paidOnSight,
+        fullPaymentDate: fullPaymentDate
       };
     });
   }

@@ -1,4 +1,4 @@
-import { Component, signal, ViewEncapsulation } from '@angular/core';
+import { Component, signal, computed, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,6 +8,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { DialogService } from '../../shared/services/dialog.service';
+import { TranslationService } from '../../shared/services/translation.service';
+import { LanguageService } from '../../shared/services/language.service';
 
 @Component({
   selector: 'app-settings',
@@ -30,8 +32,8 @@ export class SettingsComponent {
   // Theme preference signal
   isDarkMode = signal(false);
 
-  // Language preference signal
-  language = signal('hi'); // 'hi' for Hindi, 'en' for English
+  // Language preference signal - computed from LanguageService
+  language = computed(() => this.languageService.getCurrentLanguage());
 
   // Notifications preference signal
   notificationsEnabled = signal(true);
@@ -39,7 +41,11 @@ export class SettingsComponent {
   // Currency format signal
   currencyFormat = signal('hi-IN'); // hi-IN for Indian Rupee, etc.
 
-  constructor(private dialogService: DialogService) {
+  constructor(
+    private dialogService: DialogService,
+    public translationService: TranslationService,
+    private languageService: LanguageService
+  ) {
     this.loadSettings();
   }
 
@@ -50,8 +56,7 @@ export class SettingsComponent {
     const theme = localStorage.getItem('theme') || 'light';
     this.isDarkMode.set(theme === 'dark');
 
-    const lang = localStorage.getItem('language') || 'hi';
-    this.language.set(lang);
+    // Language is managed by LanguageService, no need to set here
 
     const notifications = localStorage.getItem('notifications');
     this.notificationsEnabled.set(notifications !== 'false');
@@ -74,8 +79,7 @@ export class SettingsComponent {
    * Change language preference
    */
   onLanguageChange(lang: string): void {
-    this.language.set(lang);
-    localStorage.setItem('language', lang);
+    this.languageService.setLanguage(lang as 'hi' | 'en');
     console.log('Language changed to:', lang);
   }
 
@@ -102,7 +106,11 @@ export class SettingsComponent {
   exportData(): void {
     const records = localStorage.getItem('harvester_records');
     if (!records) {
-      this.dialogService.alert('कोई डेटा एक्सपोर्ट करने के लिए नहीं है', 'सूचना', 'info');
+      this.dialogService.alert(
+        this.translationService.get('messages.noDataToExport'),
+        this.translationService.get('common.edit'),
+        'info'
+      );
       return;
     }
 
@@ -110,10 +118,18 @@ export class SettingsComponent {
       const data = JSON.parse(records);
       const csvContent = this.convertToCSV(data);
       this.downloadCSV(csvContent, 'harvester_records.csv');
-      this.dialogService.alert('डेटा सफलतापूर्वक एक्सपोर्ट किया गया', 'सफलता', 'success');
+      this.dialogService.alert(
+        this.translationService.get('messages.dataExported'),
+        this.translationService.get('common.save'),
+        'success'
+      );
     } catch (error) {
       console.error('Error exporting data:', error);
-      this.dialogService.alert('डेटा एक्सपोर्ट करने में त्रुटि', 'त्रुटि', 'error');
+      this.dialogService.alert(
+        this.translationService.get('messages.saveError'),
+        this.translationService.get('common.delete'),
+        'error'
+      );
     }
   }
 
@@ -121,16 +137,22 @@ export class SettingsComponent {
    * Clear all data (with confirmation)
    */
   clearAllData(): void {
+    const confirmMessage = this.translationService.get('messages.deleteConfirm').replace('{{farmerName}}', 'all');
+    
     this.dialogService.confirm(
-      'क्या आप सभी डेटा हटाना चाहते हैं? यह कार्य अपरिवर्तनीय है।',
-      'पुष्टि करें',
-      'हाँ, हटाएं',
-      'रद्द करें',
+      confirmMessage,
+      this.translationService.get('messages.deleteConfirmMessage'),
+      this.translationService.get('common.delete'),
+      this.translationService.get('common.cancel'),
       'warning'
     ).subscribe(confirmed => {
       if (confirmed) {
         localStorage.removeItem('harvester_records');
-        this.dialogService.alert('सभी डेटा सफलतापूर्वक हटा दिया गया', 'सफलता', 'success');
+        this.dialogService.alert(
+          this.translationService.get('messages.dataCleared'),
+          this.translationService.get('common.save'),
+          'success'
+        );
       }
     });
   }
@@ -139,11 +161,13 @@ export class SettingsComponent {
    * Reset settings to default
    */
   resetSettings(): void {
+    const confirmMessage = this.translationService.get('messages.resetConfirm');
+    
     this.dialogService.confirm(
-      'क्या आप सभी सेटिंग्स डिफ़ॉल्ट में रीसेट करना चाहते हैं?',
-      'पुष्टि करें',
-      'हाँ, रीसेट करें',
-      'रद्द करें',
+      confirmMessage,
+      this.translationService.get('messages.resetConfirmMessage'),
+      this.translationService.get('settings.resetButton'),
+      this.translationService.get('common.cancel'),
       'warning'
     ).subscribe(confirmed => {
       if (confirmed) {
@@ -153,7 +177,11 @@ export class SettingsComponent {
         localStorage.removeItem('currency');
         this.loadSettings();
         document.documentElement.setAttribute('data-theme', 'light');
-        this.dialogService.alert('सेटिंग्स डिफ़ॉल्ट में रीसेट कर दी गई हैं', 'सफलता', 'success');
+        this.dialogService.alert(
+          this.translationService.get('messages.settingsReset'),
+          this.translationService.get('common.save'),
+          'success'
+        );
       }
     });
   }

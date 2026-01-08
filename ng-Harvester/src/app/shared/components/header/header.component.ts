@@ -10,5 +10,5 @@ import { MatIconButton } from '@angular/material/button';
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
-  title = input<string>('हार्वेस्टर ट्रैकर');
+  title = input<string>('Harvester Tracker');
 }

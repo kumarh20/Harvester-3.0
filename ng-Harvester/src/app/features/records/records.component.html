@@ -1,15 +1,15 @@
 <div class="records-container">
     <!-- Header -->
     <div class="records-header">
-        <h1 class="header-title">सभी रिकॉर्ड</h1>
-        <p class="header-subtitle">कुल {{ recordCount() }} रिकॉर्ड मिले</p>
+        <h1 class="header-title">{{ translationService.get('records.title') }}</h1>
+        <p class="header-subtitle">{{ translationService.getWithParams('records.subtitle', { count: recordCount() }) }}</p>
     </div>
 
     <!-- Search Box -->
     <mat-card class="search-card">
         <mat-form-field appearance="outline" class="search-field">
-            <mat-label>खोजें</mat-label>
-            <input matInput type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()" placeholder="नाम, नंबर या तारीख से खोजें" />
+            <mat-label>{{ translationService.get('common.search') }}</mat-label>
+            <input matInput type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()" [placeholder]="translationService.get('records.searchPlaceholder')" />
             <mat-icon matPrefix>search</mat-icon>
         </mat-form-field>
     </mat-card>
@@ -19,9 +19,9 @@
         <!-- Empty State -->
         <div *ngIf="recordCount() === 0" class="empty-state">
             <mat-icon class="empty-icon">inbox</mat-icon>
-            <h3 class="empty-title">कोई रिकॉर्ड नहीं मिला</h3>
+            <h3 class="empty-title">{{ translationService.get('records.noRecords') }}</h3>
             <p class="empty-subtitle">
-                {{ searchQuery() ? 'खोज को बदलकर दोबारा कोशिश करें' : 'नई एंट्री जोड़ने के लिए "नई एंट्री" टैब पर जाएं' }}
+                {{ searchQuery() ? translationService.get('records.changeSearch') : translationService.get('records.addNewRecord') }}
             </p>
         </div>
 
@@ -45,8 +45,8 @@
 
                     <div class="record-right">
                         <div class="pending-badge" [class.paid]="record.pendingAmount <= 0" [class.pending]="record.pendingAmount > 0">
-                            {{ record.pendingAmount
-                            <=0 ? 'पूरा भुगतान' : formatCurrency(record.pendingAmount) }} </div>
+                            {{ record.pendingAmount <= 0 ? translationService.get('records.fullPayment') : formatCurrency(record.pendingAmount) }}
+                        </div>
                                 <mat-icon class="expand-icon">
                                     {{ isExpanded(record.id) ? 'expand_less' : 'expand_more' }}
                                 </mat-icon>
@@ -57,31 +57,31 @@
                     <div *ngIf="isExpanded(record.id)" class="record-details">
                         <div class="details-grid">
                             <div class="detail-item">
-                                <span class="detail-label">तारीख</span>
+                                <span class="detail-label">{{ translationService.get('records.date') }}</span>
                                 <span class="detail-value">{{ record.date }}</span>
                             </div>
                             <div class="detail-item">
-                                <span class="detail-label">ज़मीन (एकड़)</span>
+                                <span class="detail-label">{{ translationService.get('records.land') }}</span>
                                 <span class="detail-value">{{ record.landInAcres }}</span>
                             </div>
                             <div class="detail-item">
-                                <span class="detail-label">प्रति एकड़ दर</span>
+                                <span class="detail-label">{{ translationService.get('records.rate') }}</span>
                                 <span class="detail-value">{{ formatCurrency(record.ratePerAcre) }}</span>
                             </div>
                             <div class="detail-item highlight">
-                                <span class="detail-label">कुल राशि</span>
+                                <span class="detail-label">{{ translationService.get('records.totalAmount') }}</span>
                                 <span class="detail-value">{{ formatCurrency(record.totalPayment) }}</span>
                             </div>
                             <div class="detail-item highlight">
-                                <span class="detail-label">नकद भुगतान</span>
-                                <span class="detail-value">{{ formatCurrency(record.nakadPaid) }}</span>
+                                <span class="detail-label">{{ translationService.get('records.cashPaid') }}</span>
+                                <span class="detail-value">{{ formatCurrency(record.paidOnSight) }}</span>
                             </div>
                             <div class="detail-item" [class.warning]="record.pendingAmount > 0" [class.success]="record.pendingAmount <= 0">
-                                <span class="detail-label">बकाया राशि</span>
+                                <span class="detail-label">{{ translationService.get('records.pendingAmount') }}</span>
                                 <span class="detail-value">{{ formatCurrency(record.pendingAmount) }}</span>
                             </div>
                             <div *ngIf="record.fullPaymentDate" class="detail-item">
-                                <span class="detail-label">पूरा भुगतान तारीख</span>
+                                <span class="detail-label">{{ translationService.get('records.fullPayment') }}</span>
                                 <span class="detail-value">{{ record.fullPaymentDate }}</span>
                             </div>
                         </div>
@@ -90,11 +90,11 @@
                         <div class="record-actions">
                             <button mat-stroked-button color="primary" (click)="editRecord(record); $event.stopPropagation()">
               <mat-icon>edit</mat-icon>
-              संपादित करें
+              {{ translationService.get('records.editRecord') }}
             </button>
                             <button mat-stroked-button color="warn" (click)="deleteRecord(record.id); $event.stopPropagation()">
               <mat-icon>delete</mat-icon>
-              हटाएं
+              {{ translationService.get('records.deleteRecord') }}
             </button>
                         </div>
                     </div>

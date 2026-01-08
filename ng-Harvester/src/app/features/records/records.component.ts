@@ -12,6 +12,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { RecordsService } from '../../core/services/records.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { DialogService } from '../../shared/services/dialog.service';
+import { TranslationService } from '../../shared/services/translation.service';
+import { LanguageService } from '../../shared/services/language.service';
 
 interface Record {
   id: string;
@@ -21,7 +23,7 @@ interface Record {
   landInAcres: number;
   ratePerAcre: number;
   totalPayment: number;
-  nakadPaid: number;
+  paidOnSight: number;
   pendingAmount: number;
   fullPaymentDate?: string;
 }
@@ -52,7 +54,9 @@ export class RecordsComponent implements OnInit {
     public recordsService: RecordsService,
     private toastService: ToastService,
     private dialogService: DialogService,
-    private router: Router
+    private router: Router,
+    public translationService: TranslationService,
+    private languageService: LanguageService
   ) {}
 
   ngOnInit(): void {
@@ -80,22 +84,22 @@ export class RecordsComponent implements OnInit {
     const record = this.recordsService.getAllRecords().find(r => r.id === id);
     if (!record) return;
 
-    const confirmMessage = `क्या आप वाकई "${record.farmerName}" का रिकॉर्ड डिलीट करना चाहते हैं?\n\nयह क्रिया को वापस नहीं किया जा सकता।`;
+    const confirmMessage = this.translationService.getWithParams('messages.deleteConfirm', { farmerName: record.farmerName });
     
     this.dialogService.confirm(
       confirmMessage,
-      'पुष्टि करें',
-      'हाँ, डिलीट करें',
-      'रद्द करें',
+      this.translationService.get('messages.deleteConfirmMessage'),
+      this.translationService.get('common.delete'),
+      this.translationService.get('common.cancel'),
       'warning'
     ).subscribe(async confirmed => {
       if (confirmed) {
         try {
           await this.recordsService.deleteRecord(id);
-          this.toastService.success('रिकॉर्ड सफलतापूर्वक डिलीट हो गया');
+          this.toastService.success(this.translationService.get('messages.recordDeleted'));
         } catch (error) {
           console.error('Error deleting record:', error);
-          this.toastService.error('रिकॉर्ड डिलीट करने में समस्या आई');
+          this.toastService.error(this.translationService.get('messages.deleteError'));
         }
       }
     });
@@ -125,7 +129,8 @@ export class RecordsComponent implements OnInit {
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('hi-IN', {
+    const locale = this.languageService.isHindi() ? 'hi-IN' : 'en-IN';
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'INR',
       maximumFractionDigits: 0

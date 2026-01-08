@@ -1,4 +1,4 @@
-import { Component, signal, ViewEncapsulation, OnInit } from '@angular/core';
+import { Component, signal, computed, ViewEncapsulation, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RecordsService } from '../../core/services/records.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { TranslationService } from '../../shared/services/translation.service';
 
 @Component({
   selector: 'app-add-new',
@@ -48,12 +49,32 @@ export class AddNewComponent implements OnInit {
   isEditMode = signal(false);
   editingRecordId = signal<string | null>(null);
 
+  // Computed signals for form titles
+  formTitle = computed(() => 
+    this.isEditMode() 
+      ? this.translationService.get('form.editRecord')
+      : this.translationService.get('form.addNewRecord')
+  );
+  
+  formSubtitle = computed(() => 
+    this.isEditMode()
+      ? this.translationService.get('form.editRecord')
+      : this.translationService.get('form.farmerInfo')
+  );
+  
+  submitButtonText = computed(() =>
+    this.isEditMode()
+      ? this.translationService.get('common.update')
+      : this.translationService.get('common.save')
+  );
+
   constructor(
     private fb: FormBuilder,
     private recordsService: RecordsService,
     private toastService: ToastService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    public translationService: TranslationService
   ) {
     this.initializeForm();
   }
@@ -68,7 +89,7 @@ export class AddNewComponent implements OnInit {
       date: [new Date(), Validators.required],
       landInAcres: [0, [Validators.required, Validators.min(0.01)]],
       ratePerAcre: [2500, [Validators.required, Validators.min(1)]],
-      nakadPaid: [0, [Validators.min(0)]],
+      paidOnSight: [0, [Validators.min(0)]],
       fullPaymentDate: ['']
     });
 
@@ -118,7 +139,7 @@ export class AddNewComponent implements OnInit {
       console.log('📊 Numeric values:', {
         landInAcres: record.landInAcres,
         ratePerAcre: record.ratePerAcre,
-        nakadPaid: record.nakadPaid,
+        paidOnSight: record.paidOnSight,
         totalPayment: record.totalPayment
       });
 
@@ -129,15 +150,15 @@ export class AddNewComponent implements OnInit {
         date: dateObj,
         landInAcres: Number(record.landInAcres) || 0,
         ratePerAcre: Number(record.ratePerAcre) || 0,
-        nakadPaid: Number(record.nakadPaid) || 0,
+        paidOnSight: Number(record.paidOnSight) || 0,
         fullPaymentDate: paymentDateObj || ''
       });
 
       console.log('✅ Form patched with values:', this.recordForm.value);
 
-      this.toastService.info(`${record.farmerName} का रिकॉर्ड एडिट करें`);
+      this.toastService.info(this.translationService.get('form.editRecord'));
     } else {
-      this.toastService.error('रिकॉर्ड नहीं मिला');
+      this.toastService.error(this.translationService.get('messages.recordNotFound'));
       this.router.navigate(['/records']);
     }
   }
@@ -257,10 +278,10 @@ export class AddNewComponent implements OnInit {
   updateCalculations(): void {
     const landInAcres = this.recordForm.get('landInAcres')?.value || 0;
     const ratePerAcre = this.recordForm.get('ratePerAcre')?.value || 0;
-    const nakadPaid = this.recordForm.get('nakadPaid')?.value || 0;
+    const paidOnSight = this.recordForm.get('paidOnSight')?.value || 0;
 
     const total = landInAcres * ratePerAcre;
-    const pending = total - nakadPaid;
+    const pending = total - paidOnSight;
 
     this.totalPayment.set(total);
     this.pendingPayment.set(pending);
@@ -274,7 +295,7 @@ export class AddNewComponent implements OnInit {
 
     // ✨ Check form validity (Reactive Forms built-in validation)
     if (this.recordForm.invalid) {
-      this.toastService.error('कृपया सभी आवश्यक फील्ड सही तरीके से भरें');
+      this.toastService.error(this.translationService.get('errors.fillAllFields'));
       this.recordForm.markAllAsTouched(); // Show validation errors
       return;
     }
@@ -283,14 +304,16 @@ export class AddNewComponent implements OnInit {
     const formValue = this.recordForm.value;
 
     // Check if cash payment exceeds total
-    if (formValue.nakadPaid > this.totalPayment()) {
-      this.toastService.error('नकद राशि कुल राशि से अधिक नहीं हो सकती');
+    if (formValue.paidOnSight > this.totalPayment()) {
+      this.toastService.error(this.translationService.get('errors.cashExceedsTotal'));
       return;
     }
 
     // Show loading state
     this.isSubmitting.set(true);
-    const loadingMessage = this.isEditMode() ? 'रिकॉर्ड अपडेट हो रहा है...' : 'रिकॉर्ड सेव हो रहा है...';
+    const loadingMessage = this.isEditMode() 
+      ? this.translationService.get('common.updating')
+      : this.translationService.get('common.saving');
     this.toastService.info(loadingMessage);
 
     try {
@@ -301,7 +324,7 @@ export class AddNewComponent implements OnInit {
         date: this.convertDateToISO(formValue.date),
         landInAcres: Number(formValue.landInAcres),
         ratePerAcre: Number(formValue.ratePerAcre),
-        nakadPaid: Number(formValue.nakadPaid),
+        paidOnSight: Number(formValue.paidOnSight),
         fullPaymentDate: formValue.fullPaymentDate ? this.convertDateToISO(formValue.fullPaymentDate) : '',
         totalPayment: this.totalPayment(),
         pendingAmount: this.pendingPayment()
@@ -312,7 +335,7 @@ export class AddNewComponent implements OnInit {
         console.log('📤 Updating record with data:', recordData);
 
         await this.recordsService.updateRecord(this.editingRecordId()!, recordData);
-        this.toastService.success('रिकॉर्ड सफलतापूर्वक अपडेट हो गया! ✅');
+        this.toastService.success(this.translationService.get('messages.recordUpdated'));
 
         // Navigate back to records page
         this.router.navigate(['/records']);
@@ -321,14 +344,16 @@ export class AddNewComponent implements OnInit {
         console.log('📤 Saving new record with data:', recordData);
 
         await this.recordsService.addRecord(recordData as any);
-        this.toastService.success('रिकॉर्ड सफलतापूर्वक सेव हो गया! 🎉');
+        this.toastService.success(this.translationService.get('messages.recordSaved'));
 
         // Reset form
         this.resetForm();
       }
     } catch (error) {
       console.error('Error saving/updating record:', error);
-      const errorMessage = this.isEditMode() ? 'रिकॉर्ड अपडेट करने में समस्या हुई' : 'रिकॉर्ड सेव करने में समस्या हुई';
+      const errorMessage = this.isEditMode() 
+        ? this.translationService.get('messages.updateError')
+        : this.translationService.get('messages.saveError');
       this.toastService.error(errorMessage);
     } finally {
       this.isSubmitting.set(false);
@@ -345,7 +370,7 @@ export class AddNewComponent implements OnInit {
       date: new Date(),
       landInAcres: 0,
       ratePerAcre: 2500,
-      nakadPaid: 0,
+      paidOnSight: 0,
       fullPaymentDate: ''
     });
     this.isEditMode.set(false);
@@ -356,24 +381,7 @@ export class AddNewComponent implements OnInit {
    * Cancel edit mode and navigate back
    */
   cancelEdit(): void {
-    this.toastService.info('एडिट मोड बंद किया गया');
+    this.toastService.info(this.translationService.get('common.cancel'));
     this.router.navigate(['/records']);
-  }
-
-  // Getters for template
-  get formTitle(): string {
-    return this.isEditMode() ? 'रिकॉर्ड एडिट करें' : 'नई एंट्री';
-  }
-
-  get formSubtitle(): string {
-    if (this.isEditMode()) {
-      const farmerName = this.recordForm.get('farmerName')?.value || '';
-      return `${farmerName} का रिकॉर्ड अपडेट करें`;
-    }
-    return 'नया रिकॉर्ड जोड़ें';
-  }
-
-  get submitButtonText(): string {
-    return this.isEditMode() ? 'अपडेट करें' : 'सेव करें';
   }
 }

@@ -9,7 +9,7 @@ export interface Record {
   date: string;
   landInAcres: number;
   ratePerAcre: number;
-  nakadPaid: number;
+  paidOnSight: number;
   fullPaymentDate: string;
   totalPayment: number;
   pendingAmount: number;
@@ -50,7 +50,9 @@ export class RecordsService {
         // Fallback to localStorage
         const stored = localStorage.getItem('harvester_records');
         if (stored) {
-          this.recordsSignal.set(JSON.parse(stored));
+          const parsed = JSON.parse(stored);
+          const migrated = this.migrateOldData(parsed);
+          this.recordsSignal.set(migrated);
         }
       }
     } catch (error) {
@@ -59,7 +61,9 @@ export class RecordsService {
       const stored = localStorage.getItem('harvester_records');
       if (stored) {
         try {
-          this.recordsSignal.set(JSON.parse(stored));
+          const parsed = JSON.parse(stored);
+          const migrated = this.migrateOldData(parsed);
+          this.recordsSignal.set(migrated);
         } catch (parseError) {
           console.error('Error parsing localStorage records:', parseError);
           this.recordsSignal.set([]);
@@ -68,6 +72,36 @@ export class RecordsService {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  /**
+   * Migrate old data with Hindi column names to English
+   */
+  private migrateOldData(data: any[]): Record[] {
+    if (!Array.isArray(data)) {
+      return [];
+    }
+
+    return data.map((item: any) => {
+      // If already in English format, return as is
+      if (item.farmerName !== undefined) {
+        return item as Record;
+      }
+
+      // Migrate from old field names to current structure
+      return {
+        id: item.id || item.ID || Date.now().toString(),
+        farmerName: item.farmerName || '',
+        contactNumber: item.contactNumber || '',
+        date: item.date || '',
+        landInAcres: parseFloat(item.landInAcres?.toString() || '0'),
+        ratePerAcre: parseFloat(item.ratePerAcre?.toString() || '0'),
+        totalPayment: parseFloat(item.totalPayment?.toString() || '0'),
+        paidOnSight: parseFloat(item.paidOnSight?.toString() || item.nakadPaid?.toString() || '0'),
+        pendingAmount: parseFloat(item.pendingAmount?.toString() || (parseFloat(item.totalPayment?.toString() || '0') - parseFloat(item.paidOnSight?.toString() || item.nakadPaid?.toString() || '0'))),
+        fullPaymentDate: item.fullPaymentDate || ''
+      };
+    });
   }
 
   /**

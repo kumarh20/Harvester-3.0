@@ -6,6 +6,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { RecordsService, Record } from '../../core/services/records.service';
+import { TranslationService } from '../../shared/services/translation.service';
+import { LanguageService } from '../../shared/services/language.service';
 
 type PeriodType = 'today' | 'week' | 'month' | 'all';
 
@@ -52,8 +54,11 @@ export class DashboardComponent implements OnInit {
     return this.calculateStats(this.filteredRecords());
   });
 
-  constructor(public recordsService: RecordsService) {
-    
+  constructor(
+    public recordsService: RecordsService,
+    public translationService: TranslationService,
+    private languageService: LanguageService
+  ) {
     this.updatePeriodCounts();
   }
 
@@ -175,7 +180,8 @@ export class DashboardComponent implements OnInit {
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('hi-IN', {
+    const locale = this.languageService.isHindi() ? 'hi-IN' : 'en-IN';
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'INR',
       maximumFractionDigits: 0

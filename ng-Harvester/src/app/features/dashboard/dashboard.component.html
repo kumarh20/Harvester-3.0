@@ -1,29 +1,29 @@
 <div class="dashboard-container">
     <!-- Header -->
     <div class="dashboard-header">
-        <h1 class="header-title">सारांश</h1>
-        <p class="header-subtitle">आपके रिकॉर्ड का अवलोकन</p>
+        <h1 class="header-title">{{ translationService.get('dashboard.title') }}</h1>
+        <p class="header-subtitle">{{ translationService.get('dashboard.subtitle') }}</p>
     </div>
 
     <!-- Period Selector -->
     <mat-card class="period-selector-card">
         <mat-card-content>
-            <h3 class="period-title">समय अवधि चुनें</h3>
+            <h3 class="period-title">{{ translationService.get('dashboard.selectPeriod') }}</h3>
             <div class="period-buttons">
                 <button mat-raised-button [class.active]="selectedPeriod() === 'today'" (click)="selectPeriod('today')" class="period-button">
-          <div class="period-label">आज</div>
+          <div class="period-label">{{ translationService.get('dashboard.today') }}</div>
           <div class="period-count">{{ todayCount() }}</div>
         </button>
                 <button mat-raised-button [class.active]="selectedPeriod() === 'week'" (click)="selectPeriod('week')" class="period-button">
-          <div class="period-label">सप्ताह</div>
+          <div class="period-label">{{ translationService.get('dashboard.week') }}</div>
           <div class="period-count">{{ weekCount() }}</div>
         </button>
                 <button mat-raised-button [class.active]="selectedPeriod() === 'month'" (click)="selectPeriod('month')" class="period-button">
-          <div class="period-label">महीना</div>
+          <div class="period-label">{{ translationService.get('dashboard.month') }}</div>
           <div class="period-count">{{ monthCount() }}</div>
         </button>
                 <button mat-raised-button [class.active]="selectedPeriod() === 'all'" (click)="selectPeriod('all')" class="period-button">
-          <div class="period-label">सभी</div>
+          <div class="period-label">{{ translationService.get('dashboard.all') }}</div>
           <div class="period-count">{{ allCount() }}</div>
         </button>
             </div>
@@ -39,7 +39,7 @@
                     <mat-icon class="stat-icon">people</mat-icon>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-title">कुल रिकॉर्ड</span>
+                    <span class="stat-title">{{ translationService.get('dashboard.totalRecords') }}</span>
                     <div class="stat-value">{{ stats().totalRecords }}</div>
                 </div>
             </mat-card-content>
@@ -52,9 +52,9 @@
                     <mat-icon class="stat-icon">location_on</mat-icon>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-title">कुल ज़मीन</span>
+                    <span class="stat-title">{{ translationService.get('dashboard.totalLand') }}</span>
                     <div class="stat-value">{{ formatNumber(stats().totalLand) }}</div>
-                    <div class="stat-subtitle">एकड़</div>
+                    <div class="stat-subtitle">{{ translationService.get('records.land') }}</div>
                 </div>
             </mat-card-content>
         </mat-card>
@@ -66,7 +66,7 @@
                     <mat-icon class="stat-icon">currency_rupee</mat-icon>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-title">कुल भुगतान</span>
+                    <span class="stat-title">{{ translationService.get('dashboard.totalAmount') }}</span>
                     <div class="stat-value">{{ formatCurrency(stats().totalPayment) }}</div>
                 </div>
             </mat-card-content>
@@ -79,7 +79,7 @@
                     <mat-icon class="stat-icon">alert_circle</mat-icon>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-title">कुल बकाया</span>
+                    <span class="stat-title">{{ translationService.get('dashboard.pendingAmount') }}</span>
                     <div class="stat-value">{{ formatCurrency(stats().totalPending) }}</div>
                 </div>
             </mat-card-content>
@@ -91,21 +91,21 @@
         <mat-card-header>
             <mat-card-title>
                 <mat-icon class="additional-stats-icon">info</mat-icon>
-                अतिरिक्त विवरण
+                {{ translationService.get('dashboard.totalRecords') }}
             </mat-card-title>
         </mat-card-header>
         <mat-card-content>
             <div class="additional-stats-container">
                 <div class="additional-stat-item">
-                    <span class="additional-stat-label">औसत ज़मीन प्रति रिकॉर्ड</span>
-                    <span class="additional-stat-value">{{ formatNumber(stats().avgLandPerRecord) }} एकड़</span>
+                    <span class="additional-stat-label">{{ translationService.get('dashboard.averageLand') }}</span>
+                    <span class="additional-stat-value">{{ formatNumber(stats().avgLandPerRecord) }} {{ translationService.get('records.land') }}</span>
                 </div>
                 <div class="additional-stat-item">
-                    <span class="additional-stat-label">औसत भुगतान प्रति रिकॉर्ड</span>
+                    <span class="additional-stat-label">{{ translationService.get('dashboard.totalAmount') }}</span>
                     <span class="additional-stat-value">{{ formatCurrency(stats().avgPaymentPerRecord) }}</span>
                 </div>
                 <div class="additional-stat-item">
-                    <span class="additional-stat-label">औसत दर प्रति एकड़</span>
+                    <span class="additional-stat-label">{{ translationService.get('dashboard.averageRate') }}</span>
                     <span class="additional-stat-value">{{ formatCurrency(stats().averageRate) }}</span>
                 </div>
             </div>

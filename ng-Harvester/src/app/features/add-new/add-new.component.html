@@ -13,25 +13,25 @@
         <mat-card-content>
             <form [formGroup]="recordForm" (ngSubmit)="onFormSubmit($event)">
                 <!-- Form Title -->
-                <div class="form-section-title">किसान की जानकारी</div>
+                <div class="form-section-title">{{ translationService.get('form.farmerInfo') }}</div>
 
                 <!-- Row 1: Farmer Name & Contact -->
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
-                        <mat-label>किसान का नाम</mat-label>
-                        <input matInput type="text" placeholder="पूरा नाम" formControlName="farmerName" required />
+                        <mat-label>{{ translationService.get('form.farmerName') }}</mat-label>
+                        <input matInput type="text" [placeholder]="translationService.get('form.farmerNamePlaceholder')" formControlName="farmerName" required />
                         <mat-icon matPrefix>person</mat-icon>
                         @if (recordForm.get('farmerName')?.invalid && recordForm.get('farmerName')?.touched) {
-                        <mat-error>कृपया नाम दर्ज करें (कम से कम 2 अक्षर)</mat-error>
+                        <mat-error>{{ translationService.get('errors.farmerNameRequired') }}</mat-error>
                         }
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="form-field">
-                        <mat-label>मोबाइल नंबर</mat-label>
-                        <input matInput type="tel" placeholder="10 अंक" formControlName="contactNumber" maxlength="10" required />
+                        <mat-label>{{ translationService.get('form.contactNumber') }}</mat-label>
+                        <input matInput type="tel" [placeholder]="translationService.get('form.contactNumberPlaceholder')" formControlName="contactNumber" maxlength="10" required />
                         <mat-icon matPrefix>phone</mat-icon>
                         @if (recordForm.get('contactNumber')?.invalid && recordForm.get('contactNumber')?.touched) {
-                        <mat-error>कृपया 10 अंकों का मोबाइल नंबर दर्ज करें</mat-error>
+                        <mat-error>{{ translationService.get('errors.contactNumberInvalid') }}</mat-error>
                         }
                     </mat-form-field>
                 </div>
@@ -39,22 +39,22 @@
                 <!-- Row 2: Date & Land -->
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
-                        <mat-label>तारीख़</mat-label>
+                        <mat-label>{{ translationService.get('form.date') }}</mat-label>
                         <input matInput [matDatepicker]="datePicker" formControlName="date" required />
                         <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
                         <mat-datepicker #datePicker></mat-datepicker>
                         <mat-icon matPrefix>event</mat-icon>
                         @if (recordForm.get('date')?.invalid && recordForm.get('date')?.touched) {
-                        <mat-error>कृपया तारीख़ चुनें</mat-error>
+                        <mat-error>{{ translationService.get('errors.dateRequired') }}</mat-error>
                         }
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="form-field">
-                        <mat-label>ज़मीन (एकड़)</mat-label>
-                        <input matInput type="number" placeholder="0.00" formControlName="landInAcres" step="0.01" required />
+                        <mat-label>{{ translationService.get('form.landInAcres') }}</mat-label>
+                        <input matInput type="number" [placeholder]="translationService.get('form.landInAcresPlaceholder')" formControlName="landInAcres" step="0.01" required />
                         <mat-icon matPrefix>location_on</mat-icon>
                         @if (recordForm.get('landInAcres')?.invalid && recordForm.get('landInAcres')?.touched) {
-                        <mat-error>कृपया ज़मीन का क्षेत्रफल दर्ज करें (0 से अधिक)</mat-error>
+                        <mat-error>{{ translationService.get('errors.landRequired') }}</mat-error>
                         }
                     </mat-form-field>
                 </div>
@@ -62,16 +62,16 @@
                 <!-- Row 3: Rate & Total -->
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
-                        <mat-label>दर (₹/एकड़)</mat-label>
-                        <input matInput type="number" placeholder="2500" formControlName="ratePerAcre" step="100" required />
+                        <mat-label>{{ translationService.get('form.ratePerAcre') }}</mat-label>
+                        <input matInput type="number" [placeholder]="translationService.get('form.ratePerAcrePlaceholder')" formControlName="ratePerAcre" step="100" required />
                         <mat-icon matPrefix>currency_rupee</mat-icon>
                         @if (recordForm.get('ratePerAcre')?.invalid && recordForm.get('ratePerAcre')?.touched) {
-                        <mat-error>कृपया वैध दर दर्ज करें (1 से अधिक)</mat-error>
+                        <mat-error>{{ translationService.get('errors.rateRequired') }}</mat-error>
                         }
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="form-field">
-                        <mat-label>कुल रुपये</mat-label>
+                        <mat-label>{{ translationService.get('form.totalAmount') }}</mat-label>
                         <input matInput type="number" [value]="totalPayment()" disabled class="calculated-input" />
                         <mat-icon matPrefix>calculate</mat-icon>
                     </mat-form-field>
@@ -80,13 +80,13 @@
                 <!-- Row 4: Payment & Payment Date -->
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
-                        <mat-label>नक़द भुगतान (₹)</mat-label>
-                        <input matInput type="number" placeholder="0" formControlName="nakadPaid" step="100" />
+                        <mat-label>{{ translationService.get('form.cashPayment') }}</mat-label>
+                        <input matInput type="number" [placeholder]="translationService.get('form.cashPaymentPlaceholder')" formControlName="paidOnSight" step="100" />
                         <mat-icon matPrefix>wallet</mat-icon>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="form-field">
-                        <mat-label>भुगतान तारीख़</mat-label>
+                        <mat-label>{{ translationService.get('form.paymentDate') }}</mat-label>
                         <input matInput [matDatepicker]="paymentDatePicker" formControlName="fullPaymentDate" />
                         <mat-datepicker-toggle matSuffix [for]="paymentDatePicker"></mat-datepicker-toggle>
                         <mat-datepicker #paymentDatePicker></mat-datepicker>
@@ -97,15 +97,15 @@
                 <!-- Payment Summary -->
                 <div class="payment-summary">
                     <div class="summary-row">
-                        <span class="summary-label">कुल रुपये:</span>
+                        <span class="summary-label">{{ translationService.get('form.totalAmount') }}:</span>
                         <span class="summary-value">₹{{ totalPayment() | number: '1.0-0' }}</span>
                     </div>
                     <div class="summary-row">
-                        <span class="summary-label">नक़द भुगतान:</span>
-                        <span class="summary-value">₹{{ recordForm.get('nakadPaid')?.value | number: '1.0-0' }}</span>
+                        <span class="summary-label">{{ translationService.get('form.cashPayment') }}:</span>
+                        <span class="summary-value">₹{{ recordForm.get('paidOnSight')?.value | number: '1.0-0' }}</span>
                     </div>
                     <div class="summary-row summary-pending">
-                        <span class="summary-label">बाक़ी रुपये:</span>
+                        <span class="summary-label">{{ translationService.get('records.pendingAmount') }}:</span>
                         <span class="summary-value" [class.pending-zero]="pendingPayment() <= 0">
               ₹{{ pendingPayment() | number: '1.0-0' }}
             </span>
@@ -117,21 +117,21 @@
                     <button mat-raised-button color="primary" type="submit" class="save-btn" [disabled]="isSubmitting()">
                         @if (isSubmitting()) {
                             <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
-                            <span>{{ isEditMode() ? 'अपडेट हो रहा है...' : 'सेव हो रहा है...' }}</span>
+                            <span>{{ isEditMode() ? translationService.get('common.updating') : translationService.get('common.saving') }}</span>
                         } @else {
                             <ng-container>
                                 <mat-icon>{{ isEditMode() ? 'update' : 'save' }}</mat-icon>
-                                <span>{{ submitButtonText }}</span>
+                                <span>{{ submitButtonText() }}</span>
                             </ng-container>
                         }
                     </button> @if (isEditMode()) {
                     <button mat-stroked-button type="button" (click)="cancelEdit()" class="cancel-btn" [disabled]="isSubmitting()">
                             <mat-icon>close</mat-icon>
-                            <span>रद्द करें</span>
+                            <span>{{ translationService.get('common.cancel') }}</span>
                         </button> } @else {
                     <button mat-stroked-button type="button" (click)="resetForm()" class="clear-btn" [disabled]="isSubmitting()">
                             <mat-icon>clear</mat-icon>
-                            <span>साफ़ करें</span>
+                            <span>{{ translationService.get('common.clear') }}</span>
                         </button> }
                 </div>
             </form>

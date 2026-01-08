@@ -1,8 +1,8 @@
 <div class="more-container">
     <!-- Header -->
     <div class="more-header">
-        <h1>अधिक विकल्प</h1>
-        <p class="subtitle">अतिरिक्त विशेषताएं और जानकारी</p>
+        <h1>{{ translationService.get('more.title') }}</h1>
+        <p class="subtitle">{{ translationService.get('more.subtitle') }}</p>
     </div>
 
     <!-- Options Grid -->
@@ -28,34 +28,34 @@
         <mat-expansion-panel-header (click)="expandedAbout.set(!expandedAbout())">
             <mat-panel-title>
                 <mat-icon>info_outline</mat-icon>
-                ऐप के बारे में
+                {{ translationService.get('more.about') }}
             </mat-panel-title>
             <mat-panel-description>
-                {{appName}} v{{appVersion}}
+                {{appName()}} v{{appVersion}}
             </mat-panel-description>
         </mat-expansion-panel-header>
 
         <div class="panel-content">
             <div class="info-item">
-                <span class="info-label">ऐप का नाम:</span>
-                <span class="info-value">{{appName}}</span>
+                <span class="info-label">{{ translationService.get('more.appName') }}</span>
+                <span class="info-value">{{appName()}}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">संस्करण:</span>
+                <span class="info-label">{{ translationService.get('more.version') }}</span>
                 <span class="info-value">{{appVersion}}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">विवरण:</span>
-                <span class="info-value">हार्वेस्टर ट्रैकर एक आधुनिक ऐप्लिकेशन है जो किसानों को अपने हार्वेस्टर डेटा को आसानी से ट्रैक करने में मदद करता है।</span>
+                <span class="info-label">{{ translationService.get('more.description') }}</span>
+                <span class="info-value">{{ translationService.get('more.description') }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">विकास:</span>
-                <span class="info-value">Angular 19 + Material Design के साथ बनाया गया</span>
+                <span class="info-label">{{ translationService.get('more.development') }}</span>
+                <span class="info-value">Angular 19 + Material Design</span>
             </div>
 
             <button mat-raised-button color="accent" (click)="shareApp()" class="share-button">
         <mat-icon>share</mat-icon>
-        ऐप साझा करें
+        {{ translationService.get('more.shareApp') }}
       </button>
         </div>
     </mat-expansion-panel>
@@ -65,29 +65,29 @@
         <mat-expansion-panel-header (click)="expandedHelp.set(!expandedHelp())">
             <mat-panel-title>
                 <mat-icon>help_outline</mat-icon>
-                सहायता और समर्थन
+                {{ translationService.get('more.help') }}
             </mat-panel-title>
             <mat-panel-description>
-                अक्सर पूछे जाने वाले प्रश्न
+                {{ translationService.get('more.helpSubtitle') }}
             </mat-panel-description>
         </mat-expansion-panel-header>
 
         <div class="panel-content">
             <div class="help-item">
-                <h4>नया रिकॉर्ड कैसे जोड़ें?</h4>
-                <p>"नई प्रविष्टि" टैब में जाएं, सभी विवरण भरें और "सहेजें" क्लिक करें।</p>
+                <h4>{{ translationService.get('more.howToAddRecord') }}</h4>
+                <p>{{ translationService.get('more.howToAddRecordAnswer') }}</p>
             </div>
             <div class="help-item">
-                <h4>रिकॉर्ड कैसे संपादित करें?</h4>
-                <p>"रिकॉर्ड" टैब में, किसी रिकॉर्ड को विस्तृत करें और "संपादित करें" बटन क्लिक करें।</p>
+                <h4>{{ translationService.get('more.howToEditRecord') }}</h4>
+                <p>{{ translationService.get('more.howToEditRecordAnswer') }}</p>
             </div>
             <div class="help-item">
-                <h4>डेटा कैसे एक्सपोर्ट करें?</h4>
-                <p>"अधिक विकल्प" > "डेटा एक्सपोर्ट" पर जाएं और CSV फाइल डाउनलोड करें।</p>
+                <h4>{{ translationService.get('more.howToExport') }}</h4>
+                <p>{{ translationService.get('more.howToExportAnswer') }}</p>
             </div>
             <div class="help-item">
-                <h4>थीम कैसे बदलें?</h4>
-                <p>"सेटिंग्स" टैब में "थीम सेटिंग्स" का उपयोग करें।</p>
+                <h4>{{ translationService.get('more.howToChangeTheme') }}</h4>
+                <p>{{ translationService.get('more.howToChangeThemeAnswer') }}</p>
             </div>
         </div>
     </mat-expansion-panel>
@@ -97,10 +97,10 @@
         <mat-expansion-panel-header (click)="expandedContact.set(!expandedContact())">
             <mat-panel-title>
                 <mat-icon>contact_mail</mat-icon>
-                संपर्क करें
+                {{ translationService.get('more.contact') }}
             </mat-panel-title>
             <mat-panel-description>
-                हमसे जुड़ें
+                {{ translationService.get('more.contactSubtitle') }}
             </mat-panel-description>
         </mat-expansion-panel-header>
 
@@ -108,28 +108,28 @@
             <div class="contact-item">
                 <mat-icon>email</mat-icon>
                 <div class="contact-info">
-                    <span class="contact-label">ईमेल:</span>
-                    <span class="contact-value">support@harvestertracker.com</span>
+                    <span class="contact-label">{{ translationService.get('more.email') }}</span>
+                    <span class="contact-value">support&#64;harvestertracker.com</span>
                 </div>
             </div>
             <div class="contact-item">
                 <mat-icon>phone</mat-icon>
                 <div class="contact-info">
-                    <span class="contact-label">फोन:</span>
+                    <span class="contact-label">{{ translationService.get('more.phone') }}</span>
                     <span class="contact-value">+91 XXXX-XXXX-XXXX</span>
                 </div>
             </div>
             <div class="contact-item">
                 <mat-icon>location_on</mat-icon>
                 <div class="contact-info">
-                    <span class="contact-label">स्थान:</span>
-                    <span class="contact-value">भारत</span>
+                    <span class="contact-label">{{ translationService.get('more.location') }}</span>
+                    <span class="contact-value">{{ translationService.get('more.locationValue') }}</span>
                 </div>
             </div>
 
             <button mat-raised-button color="primary" class="contact-button">
         <mat-icon>message</mat-icon>
-        प्रतिक्रिया भेजें
+        {{ translationService.get('more.sendFeedback') }}
       </button>
         </div>
     </mat-expansion-panel>

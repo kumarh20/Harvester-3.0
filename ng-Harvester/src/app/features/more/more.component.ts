@@ -5,6 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { DialogService } from '../../shared/services/dialog.service';
+import { TranslationService } from '../../shared/services/translation.service';
+import { computed } from '@angular/core';
 
 interface Option {
   id: string;
@@ -29,29 +31,33 @@ interface Option {
   encapsulation: ViewEncapsulation.None
 })
 export class MoreComponent {
-  constructor(private dialogService: DialogService) {}
+  constructor(
+    private dialogService: DialogService,
+    public translationService: TranslationService
+  ) {}
   appVersion = '1.0.0';
-  appName = 'हार्वेस्टर ट्रैकर';
 
-  options = signal<Option[]>([
+  appName = computed(() => this.translationService.get('app.appTitle'));
+
+  options = computed<Option[]>(() => [
     {
       id: 'export',
-      title: 'डेटा एक्सपोर्ट',
-      description: 'अपना डेटा डाउनलोड करें',
+      title: this.translationService.get('settings.exportData'),
+      description: this.translationService.get('settings.exportData'),
       icon: 'download',
       action: () => this.exportData()
     },
     {
       id: 'import',
-      title: 'डेटा इम्पोर्ट',
-      description: 'डेटा अपलोड करें',
+      title: this.translationService.get('settings.exportData'),
+      description: this.translationService.get('settings.exportData'),
       icon: 'upload',
       action: () => this.importData()
     },
     {
       id: 'about',
-      title: 'ऐप के बारे में',
-      description: 'वर्जन 1.0.0',
+      title: this.translationService.get('more.about'),
+      description: this.translationService.get('more.version') + ' ' + this.appVersion,
       icon: 'info',
       action: () => this.showAbout()
     }
@@ -67,7 +73,11 @@ export class MoreComponent {
   exportData(): void {
     const records = localStorage.getItem('harvester_records');
     if (!records) {
-      this.dialogService.alert('कोई डेटा एक्सपोर्ट करने के लिए नहीं है', 'सूचना', 'info');
+      this.dialogService.alert(
+        this.translationService.get('messages.noDataToExport'),
+        this.translationService.get('common.edit'),
+        'info'
+      );
       return;
     }
 
@@ -75,10 +85,18 @@ export class MoreComponent {
       const data = JSON.parse(records);
       const csvContent = this.convertToCSV(data);
       this.downloadCSV(csvContent, 'harvester_records.csv');
-      this.dialogService.alert('डेटा सफलतापूर्वक एक्सपोर्ट किया गया', 'सफलता', 'success');
+      this.dialogService.alert(
+        this.translationService.get('messages.dataExported'),
+        this.translationService.get('common.save'),
+        'success'
+      );
     } catch (error) {
       console.error('Error exporting data:', error);
-      this.dialogService.alert('डेटा एक्सपोर्ट करने में त्रुटि', 'त्रुटि', 'error');
+      this.dialogService.alert(
+        this.translationService.get('messages.saveError'),
+        this.translationService.get('common.delete'),
+        'error'
+      );
     }
   }
 
@@ -105,15 +123,27 @@ export class MoreComponent {
           } else if (file.name.endsWith('.csv')) {
             data = this.parseCSV(content);
           } else {
-            this.dialogService.alert('कृपया .json या .csv फाइल चुनें', 'त्रुटि', 'error');
+            this.dialogService.alert(
+              this.translationService.get('messages.saveError'),
+              this.translationService.get('common.delete'),
+              'error'
+            );
             return;
           }
 
           localStorage.setItem('harvester_records', JSON.stringify(data));
-          this.dialogService.alert('डेटा सफलतापूर्वक इम्पोर्ट किया गया', 'सफलता', 'success');
+          this.dialogService.alert(
+            this.translationService.get('messages.dataImported'),
+            this.translationService.get('common.save'),
+            'success'
+          );
         } catch (error) {
           console.error('Error importing data:', error);
-          this.dialogService.alert('डेटा इम्पोर्ट करने में त्रुटि', 'त्रुटि', 'error');
+          this.dialogService.alert(
+            this.translationService.get('messages.saveError'),
+            this.translationService.get('common.delete'),
+            'error'
+          );
         }
       };
 
@@ -134,16 +164,20 @@ export class MoreComponent {
    * Share app information
    */
   shareApp(): void {
-    const text = `${this.appName} - हार्वेस्टर ट्रैकर ऐप्लिकेशन। अपने किसान डेटा को आसानी से ट्रैक करें।`;
+    const text = `${this.appName()} - ${this.translationService.get('more.description')}`;
 
     if (navigator.share) {
       navigator.share({
-        title: this.appName,
+        title: this.appName(),
         text: text
       });
     } else {
       navigator.clipboard.writeText(text);
-      this.dialogService.alert('शेयर करने के लिए क्लिपबोर्ड में कॉपी किया गया', 'सफलता', 'success');
+      this.dialogService.alert(
+        this.translationService.get('messages.copiedToClipboard'),
+        this.translationService.get('common.save'),
+        'success'
+      );
     }
   }
 
