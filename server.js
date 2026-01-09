@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = 3000;
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5NB4jNiSvLSjPGSundACpnrYAA-773h0fSPzgJ9GgxWwOBJQC-4mvvHQHnzqV2GGf/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsHmtZ3-k4h6LYh69Jf9SyVv1SQoo3A3EJpYVkfCb61bMwsUrkeBBoirNI2s_vZMNK/exec';
 
 const mimeTypes = {
     '.html': 'text/html',
