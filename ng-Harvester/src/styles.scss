@@ -8,40 +8,53 @@
 /* Angular Material Prebuilt Theme */
 
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
+/* Custom green theme override - will be applied via CSS variables */
 
 /* Theme CSS Variables */
 
 :root {
-    /* Modern Color Palette */
-    --primary-purple: #6366F1;
-    --primary-purple-dark: #4F46E5;
-    --primary-purple-light: #8B5CF6;
-    --secondary-blue: #3B82F6;
-    --accent-green: #10B981;
+    /* Modern Dark Blue Color Palette */
+    --primary-blue: #1565C0;
+    --primary-blue-dark: #0D47A1;
+    --primary-blue-light: #42A5F5;
+    --primary-blue-darker: #0A3D91;
+    --secondary-blue: #64B5F6;
+    --accent-blue: #1976D2;
     --accent-yellow: #F59E0B;
     --accent-pink: #EC4899;
+    /* Backward Compatibility - Map old variables to dark blue */
+    --primary-green: #1565C0;
+    --primary-green-dark: #0D47A1;
+    --primary-green-light: #42A5F5;
+    --primary-green-darker: #0A3D91;
+    --secondary-green: #64B5F6;
+    --primary-purple: #1565C0;
+    --primary-purple-dark: #0D47A1;
+    --primary-purple-light: #42A5F5;
     /* Light Theme Colors */
     --bg-primary: #F8FAFC;
     --bg-secondary: #F1F5F9;
     --bg-card: #FFFFFF;
-    --bg-gradient: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
-    --bg-gradient-light: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+    --bg-gradient: linear-gradient(135deg, #1565C0 0%, #42A5F5 100%);
+    --bg-gradient-light: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
     --text-primary: #1E293B;
     --text-secondary: #64748B;
     --text-muted: #94A3B8;
     --text-white: #FFFFFF;
     --text-on-primary: #FFFFFF;
-    /* Navigation Colors */
-    --nav-bg: rgba(255, 255, 255, 0.95);
-    --nav-border: rgba(99, 102, 241, 0.1);
-    --nav-icon-inactive: #94A3B8;
-    --nav-icon-hover: #6366F1;
+    /* Navigation Colors - Dark Blue Theme */
+    --nav-bg: rgba(21, 101, 192, 0.95);
+    --nav-border: rgba(21, 101, 192, 0.2);
+    --nav-icon-inactive: rgba(255, 255, 255, 0.7);
+    --nav-icon-hover: #FFFFFF;
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    --shadow-purple: 0 10px 25px -5px rgba(99, 102, 241, 0.25);
+    --shadow-blue: 0 10px 25px -5px rgba(21, 101, 192, 0.25);
+    --shadow-green: 0 10px 25px -5px rgba(21, 101, 192, 0.25);
+    --shadow-purple: 0 10px 25px -5px rgba(21, 101, 192, 0.25); /* Keep for backward compatibility */
     /* Border Radius */
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
@@ -84,10 +97,10 @@
     --bg-tertiary: #1F2937;
     --bg-card: #1A2233;
     
-    /* Gradient Backgrounds */
-    --bg-gradient: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    /* Gradient Backgrounds - Dark Blue Theme */
+    --bg-gradient: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%);
     --bg-gradient-light: linear-gradient(135deg, #1F2937 0%, #2D3748 100%);
-    --bg-gradient-soft: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+    --bg-gradient-soft: linear-gradient(135deg, rgba(21, 101, 192, 0.15) 0%, rgba(66, 165, 245, 0.1) 100%);
     
     /* Text Colors - High Contrast & Readable */
     --text-primary: #F1F5F9;
@@ -100,32 +113,34 @@
     --border-color: #2D3748;
     --border-light: #374151;
     
-    /* Navigation Colors - Dark Theme */
-    --nav-bg: rgba(26, 34, 51, 0.95);
-    --nav-border: rgba(99, 102, 241, 0.2);
-    --nav-icon-inactive: #94A3B8;
-    --nav-icon-hover: #A78BFA;
+    /* Navigation Colors - Dark Theme Blue */
+    --nav-bg: rgba(13, 71, 161, 0.95);
+    --nav-border: rgba(21, 101, 192, 0.3);
+    --nav-icon-inactive: rgba(255, 255, 255, 0.7);
+    --nav-icon-hover: #64B5F6;
     
     /* Shadows - Enhanced for Dark Theme */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8), 0 10px 10px -5px rgba(0, 0, 0, 0.6);
-    --shadow-purple: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
-    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+    --shadow-blue: 0 10px 25px -5px rgba(21, 101, 192, 0.4);
+    --shadow-green: 0 10px 25px -5px rgba(21, 101, 192, 0.4);
+    --shadow-purple: 0 10px 25px -5px rgba(21, 101, 192, 0.4);
+    --shadow-glow: 0 0 20px rgba(21, 101, 192, 0.3);
     
     /* State Colors - Vibrant for Dark Mode */
     --success-bg: rgba(16, 185, 129, 0.15);
     --success-text: #34D399;
     --warning-bg: rgba(239, 68, 68, 0.15);
     --warning-text: #F87171;
-    --info-bg: rgba(59, 130, 246, 0.15);
-    --info-text: #60A5FA;
+    --info-bg: rgba(21, 101, 192, 0.15);
+    --info-text: #64B5F6;
     
-    /* Accent Colors - More Vibrant */
-    --accent-primary: #7C92FF;
-    --accent-secondary: #A78BFA;
-    --accent-tertiary: #60A5FA;
+    /* Accent Colors - Dark Blue Theme */
+    --accent-primary: #42A5F5;
+    --accent-secondary: #64B5F6;
+    --accent-tertiary: #1976D2;
 }
 
 
@@ -154,12 +169,13 @@ body {
 }
 
 
-/* Material Component Theme Overrides */
+/* Material Component Theme Overrides - Green Theme */
 
 .mat-mdc-card {
     background-color: var(--bg-card) !important;
     color: var(--text-primary) !important;
     box-shadow: var(--shadow-md) !important;
+    border-radius: 12px !important;
 }
 
 .mat-mdc-form-field {
@@ -172,6 +188,26 @@ body {
 
 .mat-mdc-form-field-label {
     color: var(--text-secondary) !important;
+}
+
+/* Material Theme Color Overrides - Dark Blue */
+.mat-primary {
+    --mdc-theme-primary: #1565C0 !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-form-field-focus-overlay {
+    background-color: rgba(21, 101, 192, 0.04) !important;
+}
+
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__leading,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__notch,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__trailing {
+    border-color: #1565C0 !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-floating-label,
+.mat-mdc-form-field.mat-focused .mdc-floating-label {
+    color: #1565C0 !important;
 }
 
 /* Modern Button Styles */
@@ -201,26 +237,26 @@ body {
 .mat-mdc-raised-button,
 .mat-mdc-unelevated-button {
     &.mat-primary {
-        background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%) !important;
+        background: linear-gradient(135deg, #1565C0 0%, #42A5F5 100%) !important;
         color: white !important;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+        box-shadow: 0 4px 12px rgba(21, 101, 192, 0.3) !important;
         
         &:hover:not(:disabled) {
-            background: linear-gradient(135deg, #5558E3 0%, #7C3AED 100%) !important;
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+            background: linear-gradient(135deg, #0D47A1 0%, #1976D2 100%) !important;
+            box-shadow: 0 8px 24px rgba(21, 101, 192, 0.4) !important;
         }
         
         [data-theme="dark"] & {
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5) !important;
+            box-shadow: 0 4px 12px rgba(21, 101, 192, 0.5) !important;
             
             &:hover:not(:disabled) {
-                box-shadow: 0 8px 24px rgba(99, 102, 241, 0.6) !important;
+                box-shadow: 0 8px 24px rgba(21, 101, 192, 0.6) !important;
             }
         }
     }
     
     &.mat-accent {
-        background: linear-gradient(135deg, #3B82F6 0%, #6366F1 100%) !important;
+        background: linear-gradient(135deg, #42A5F5 0%, #64B5F6 100%) !important;
         color: white !important;
     }
     
@@ -231,38 +267,38 @@ body {
 }
 
 .mat-mdc-stroked-button {
-    border: 2px solid #6366F1 !important;
-    color: #6366F1 !important;
+    border: 2px solid #1565C0 !important;
+    color: #1565C0 !important;
     background: transparent !important;
     
     &:hover:not(:disabled) {
-        background: rgba(99, 102, 241, 0.08) !important;
-        border-color: #5558E3 !important;
+        background: rgba(21, 101, 192, 0.08) !important;
+        border-color: #0D47A1 !important;
     }
     
     [data-theme="dark"] & {
-        border-color: #A78BFA !important;
-        color: #A78BFA !important;
+        border-color: #42A5F5 !important;
+        color: #42A5F5 !important;
         
         &:hover:not(:disabled) {
-            background: rgba(167, 139, 250, 0.12) !important;
-            border-color: #C4B5FD !important;
+            background: rgba(66, 165, 245, 0.12) !important;
+            border-color: #64B5F6 !important;
         }
     }
 }
 
 .mat-mdc-button {
-    color: #6366F1 !important;
+    color: #1565C0 !important;
     
     &:hover:not(:disabled) {
-        background: rgba(99, 102, 241, 0.08) !important;
+        background: rgba(21, 101, 192, 0.08) !important;
     }
     
     [data-theme="dark"] & {
-        color: #A78BFA !important;
+        color: #42A5F5 !important;
         
         &:hover:not(:disabled) {
-            background: rgba(167, 139, 250, 0.12) !important;
+            background: rgba(66, 165, 245, 0.12) !important;
         }
     }
 }
@@ -282,7 +318,7 @@ body {
         // Input text color
         .mat-mdc-input-element {
             color: #F1F5F9 !important;
-            caret-color: #A78BFA;
+            caret-color: #42A5F5;
         }
         
         // Label colors
@@ -295,7 +331,7 @@ body {
         &.mat-focused {
             .mat-mdc-floating-label,
             .mdc-floating-label {
-                color: #A78BFA !important;
+                color: #42A5F5 !important;
             }
         }
         
@@ -308,13 +344,13 @@ body {
         // Prefix/Suffix icons
         .mat-mdc-form-field-icon-prefix .mat-icon,
         .mat-mdc-form-field-icon-suffix .mat-icon {
-            color: #A78BFA !important;
+            color: #42A5F5 !important;
         }
     }
     
     // Date picker styling
     .mat-datepicker-toggle {
-        color: #A78BFA !important;
+        color: #42A5F5 !important;
     }
     
     // Select dropdown
@@ -386,7 +422,7 @@ body {
         [data-theme="dark"] & {
             background: var(--bg-card) !important;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7),
-                        0 0 40px rgba(99, 102, 241, 0.15) !important;
+                        0 0 40px rgba(21, 101, 192, 0.15) !important;
         }
         
         .mat-mdc-dialog-surface {
@@ -588,7 +624,7 @@ body {
     border-radius: var(--radius-2xl);
     padding: var(--space-5);
     margin-bottom: var(--space-4);
-    box-shadow: var(--shadow-purple);
+    box-shadow: var(--shadow-blue);
     position: relative;
     overflow: hidden;
 }
