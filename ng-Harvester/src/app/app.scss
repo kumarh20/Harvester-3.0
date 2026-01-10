@@ -112,11 +112,24 @@
 // 2. COMPACT MODERN HEADER STYLES
 // ============================================
 .modern-header {
-    background: var(--bg-primary);
-    padding: var(--space-4) var(--space-6) var(--space-4);
+    background: linear-gradient(180deg, #165dae 0%, #0e467d 100%);
+    padding: var(--space-4) var(--space-6);
     position: relative;
     z-index: 100;
     transition: all 0.3s ease;
+    height: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    // border-bottom-left-radius: 24px;
+    // border-bottom-right-radius: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    [data-theme="dark"] & {
+        background: linear-gradient(180deg, #0D47A1 0%, #1565C0 100%);
+    }
+    @media screen and (max-width: 600px) {
+      box-shadow: none;
+    }
 }
 
 // Title and Toggle on Same Line
@@ -133,15 +146,15 @@
     gap: var(--space-3);
 }
 
-// Language Toggle
+// Language Toggle - White pill
 .language-toggle {
-    background: var(--bg-card);
-    border: 1px solid var(--nav-border);
-    border-radius: var(--radius-lg);
+    background: #FFFFFF;
+    border: none;
+    border-radius: 20px; // Rounded capsule
     padding: var(--space-2) var(--space-3);
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     min-width: 50px;
     height: 32px;
     display: flex;
@@ -150,13 +163,12 @@
     flex-shrink: 0;
     &:hover {
         transform: scale(1.05);
-        box-shadow: var(--shadow-md);
-        background: var(--bg-gradient-light);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
     [data-theme="dark"] & {
-        border-color: rgba(139, 92, 246, 0.3);
+        background: rgba(255, 255, 255, 0.95);
         &:hover {
-            background: rgba(139, 92, 246, 0.1);
+            background: #FFFFFF;
         }
     }
 }
@@ -164,41 +176,53 @@
 .language-code {
     font-size: var(--font-size-sm);
     font-weight: 700;
-    color: var(--text-primary);
+    color: #1E6FD9;
     letter-spacing: 0.5px;
     [data-theme="dark"] & {
-        color: var(--text-primary);
+        color: #1E6FD9;
     }
 }
 
 .user-name {
     font-size: var(--font-size-xl);
-    font-weight: 700;
-    color: var(--text-primary);
+    font-weight: 600;
+    color: #FFFFFF;
     letter-spacing: -0.3px;
     display: flex;
     align-items: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     [data-theme="dark"] & {
-        color: var(--text-primary);
+        color: #FFFFFF;
     }
 }
 
-// Compact Theme Toggle
+// Compact Theme Toggle - Circular with subtle glow
 .theme-toggle {
-    background: var(--bg-card);
-    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--radius-full);
     padding: var(--space-2);
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: var(--shadow-md);
-    width: 60px;
-    height: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 40px;
+    height: 40px;
     position: relative;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     &:hover {
         transform: scale(1.05);
-        box-shadow: var(--shadow-lg);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2), 0 0 20px rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.3);
+    }
+    [data-theme="dark"] & {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.25);
+        &:hover {
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15), 0 0 20px rgba(255, 255, 255, 0.08);
+        }
     }
 }
 
@@ -315,7 +339,7 @@
     overflow-y: auto;
     margin-top: 0;
     margin-bottom: 120px;
-    padding: var(--space-6);
+    // padding: var(--space-6);
     background: var(--bg-primary);
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
@@ -332,21 +356,26 @@
     width: calc(100% - 40px);
     .nav-container {
         position: relative;
-        background: var(--nav-bg);
+        // Glass capsule container
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border-radius: 24px;
+        border-radius: 28px;
         padding: 8px;
         display: flex;
         justify-content: space-around;
         align-items: center;
-        gap: 8px;
-        box-shadow: var(--shadow-xl);
+        gap: 4px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
         overflow: hidden;
-        transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-        border: 1px solid var(--nav-border);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        [data-theme="dark"] & {
+            background: rgba(30, 41, 59, 0.85);
+            border-color: rgba(107, 134, 200, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
     }
-    
     // Smooth sliding background indicator
     .sliding-background {
         position: absolute;
@@ -358,8 +387,7 @@
         border-radius: 18px;
         box-shadow: var(--shadow-blue);
         z-index: 1;
-        transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-                    width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
         will-change: transform, width;
         pointer-events: none;
     }
@@ -374,17 +402,35 @@
         user-select: none;
         min-height: 48px;
         transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        border-radius: 20px;
+        // Center Home button elevated
+        &:nth-child(3) {
+            // Home button (center)
+            z-index: 11;
+        }
         &:hover:not(.active) {
             .nav-icon {
-                color: var(--nav-icon-hover);
+                color: #0e467d;
                 transform: scale(1.1);
             }
         }
+        // Active tab highlighted blue
         &.active {
+            background: linear-gradient(180deg, #165dae 0%, #0e467d 100%);
+            box-shadow: 0 4px 12px rgba(30, 111, 217, 0.3);
             .nav-icon {
-                color: var(--text-white);
-                filter: drop-shadow(0 0 8px rgba(21, 101, 192, 0.4));
+                color: #FFFFFF;
+                filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
                 transform: scale(1.05);
+            }
+            .nav-label {
+                color: #FFFFFF;
+            }
+        }
+        // Inactive icons muted
+        &:not(.active) {
+            .nav-icon {
+                color: #94A3B8;
             }
         }
     }
@@ -439,7 +485,6 @@
         transform: translateX(-50%) translateY(0);
     }
 }
-
 
 @keyframes slideInFromRight {
     0% {
@@ -552,4 +597,3 @@
         }
     }
 }
-
