@@ -38,15 +38,6 @@
             </div>
         </div>
 
-        <!-- Balance Card - Only visible on Dashboard -->
-        @if (isActive('/dashboard')) {
-            <div class="balance-card">
-                <div class="balance-header">
-                    <span class="balance-label">{{ translationService.get('app.totalBalance') }}</span>
-                </div>
-                <div class="balance-amount">{{ getTotalBalance() }}</div>
-            </div>
-        }
     </header>
 
     <!-- Main Content Area -->

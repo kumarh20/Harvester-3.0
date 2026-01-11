@@ -277,28 +277,6 @@
     }
 }
 
-// Compact Balance Card
-.balance-card {
-    background: var(--bg-gradient);
-    border-radius: var(--radius-2xl);
-    padding: var(--space-5);
-    color: var(--text-white);
-    box-shadow: var(--shadow-blue);
-    margin-bottom: var(--space-4);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    &::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-        pointer-events: none;
-    }
-}
 
 .balance-header {
     display: flex;

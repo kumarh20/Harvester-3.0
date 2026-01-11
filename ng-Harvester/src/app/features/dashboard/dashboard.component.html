@@ -1,4 +1,14 @@
 <div class="dashboard-container">
+  <!-- Balance Card -->
+  <div class="balance-card">
+    <div class="balance-label">Total Balance</div>
+    <div class="balance-amount">{{formatCurrency(stats().totalPayment)}}</div>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+
+  
     <!-- Header -->
     <div class="dashboard-header">
         <h1 class="header-title">{{ translationService.get('dashboard.title') }}</h1>
@@ -111,13 +121,15 @@
             </div>
         </mat-card-content>
     </mat-card>
+    <button mat-raised-button>
+              <mat-icon>download</mat-icon>
+              Export Data
+            </button>
+    <button mat-raised-button>
+              <mat-icon>refresh</mat-icon>
+              Refresh
+            </button>
+</mat-card-content>
+</mat-card>
 </div>
 
-<button mat-raised-button>
-          <mat-icon>download</mat-icon>
-          Export Data
-        </button>
-<button mat-raised-button>
-          <mat-icon>refresh</mat-icon>
-          Refresh
-        </button>

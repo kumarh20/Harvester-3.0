@@ -1,218 +1,288 @@
+// ==========================================
+// 🎨 PAGE 3: DASHBOARD
+// Glassmorphism Design with Soft Blue Gradient
+// ==========================================
 .dashboard-container {
-    padding: var(--space-4);
-    max-width: 100%;
-    
+    min-height: 100vh;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+   background: #e2eafa;
     [data-theme="dark"] & {
-        background: var(--bg-primary);
+        background: linear-gradient(180deg, #0D47A1 0%, #1565C0 35%, #1E293B 100%);
+    }
+    @media screen and (max-width: 600px) {
+        padding: 12px;
     }
 }
 
-.dashboard-header {
-    margin-bottom: var(--space-6);
-    text-align: center;
-    .header-title {
-        font-size: var(--text-3xl);
+// Total Balance Hero Card (TOP) - Styled globally (app.component.html balance-card)
+// Since ViewEncapsulation.None, we can style it from here
+:host ::ng-deep .balance-card {
+    max-width: 100%;
+    width: 100%;
+    height: 90px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, #165dae 0%, #0e467d 100%);
+    color: white;
+    box-shadow: 0 18px 36px rgba(30, 111, 217, 0.35);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    // Subtle sparkle / glow overlay
+    &::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    [data-theme="dark"] & {
+        background: linear-gradient(180deg, #165dae 0%, #0e467d 100%);
+        box-shadow: 0 18px 36px rgba(30, 111, 217, 0.45);
+    }
+    .balance-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.95);
+        margin-bottom: 8px;
+        position: relative;
+        z-index: 2;
+    }
+    .balance-amount {
+        font-size: 36px;
         font-weight: 700;
-        color: var(--primary-blue);
-        margin: 0 0 var(--space-1) 0;
+        color: white;
+        line-height: 1.2;
+        position: relative;
+        z-index: 2;
+    }
+}
+
+// Dashboard Title Section
+.dashboard-header {
+    margin-bottom: 10px;
+    text-align: center;
+    padding: 0 8px;
+    .header-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1E293B; // Dark blue
+        margin: 0 0 8px 0;
         [data-theme="dark"] & {
-            color: var(--secondary-blue);
+            color: #F1F5F9;
         }
     }
     .header-subtitle {
-        font-size: var(--text-sm);
-        color: var(--text-muted);
+        font-size: 14px;
+        color: #64748B; // Muted blue-grey
+        margin: 0;
+        font-weight: 400;
+        [data-theme="dark"] & {
+            color: #94A3B8;
+        }
+    }
+}
+
+// Select Time Period Card - Glass container
+.period-selector-card {
+    margin-bottom: 20px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4) !important;
+    border: none;
+    overflow: hidden;
+    [data-theme="dark"] & {
+        background: rgba(30, 41, 59, 0.85);
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3);
+    }
+    mat-card-content {
+        padding: 15px;
+    }
+    .period-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
         margin: 0;
         [data-theme="dark"] & {
-            color: var(--text-muted);
+            color: #F1F5F9;
         }
+    }
+    .mat-mdc-card-content:last-child{
+      padding-bottom:10px;
+    }
+    .mat-mdc-card-content:first-child{
+      padding-top:10px;
     }
 }
 
-.period-selector-card {
-    margin-bottom: var(--space-6);
-    border-radius: var(--radius-md);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    
-    [data-theme="dark"] & {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5),
-                    0 0 20px rgba(99, 102, 241, 0.1);
-    }
-    
-    mat-card-content {
-        padding: var(--space-5);
-    }
-    
-    .period-title {
-        font-size: var(--text-lg);
-        font-weight: 600;
-        color: var(--text-primary);
-        margin: 0 0 var(--space-4) 0;
-        
-        [data-theme="dark"] & {
-            color: var(--text-primary);
-        }
-    }
-}
-
+// Period Buttons - 2x2 grid layout
 .period-buttons {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: var(--space-3);
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
     @media (max-width: 600px) {
         grid-template-columns: repeat(2, 1fr);
+        gap: 0px;
     }
 }
 
+// Period Button - Each button styling
 .period-button {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-2);
-    border-radius: var(--radius-sm);
-    border: 2px solid var(--border-color);
-    background: var(--bg-secondary);
-    color: var(--text-primary);
+    gap: 6px;
+    height: 54px;
+    padding: 12px 8px;
+    border-radius: 14px;
+    border: none;
+    background: #FFFFFF;
+    color: #1E293B;
     cursor: pointer;
     transition: all 0.3s ease;
-    
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     [data-theme="dark"] & {
-        background: rgba(15, 23, 42, 0.5);
-        border-color: rgba(99, 102, 241, 0.3);
-        color: var(--text-primary);
+        background: rgba(30, 41, 59, 0.8);
+        color: #F1F5F9;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
-    
-    &:hover {
-        border-color: var(--primary-blue);
-        background: rgba(21, 101, 192, 0.05);
-        
+    &:hover:not(.active) {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
         [data-theme="dark"] & {
-            background: rgba(21, 101, 192, 0.15);
-            border-color: #42A5F5;
-            box-shadow: 0 0 15px rgba(21, 101, 192, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
     }
-    
+    // Active Button - Blue gradient background
     &.active {
-        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
-        border-color: transparent;
+        background: linear-gradient(180deg, #165dae 0%, #0e467d 100%);
+        border: none;
         color: white;
-        box-shadow: 0 4px 12px rgba(21, 101, 192, 0.3);
-        transform: scale(1.02);
-        
+        box-shadow: 0 8px 20px rgba(22, 93, 174, 0.35);
+        transform: translateY(-2px);
+        .period-label,
+        .period-count {
+            color: white;
+        }
         [data-theme="dark"] & {
-            box-shadow: 0 4px 12px rgba(21, 101, 192, 0.5),
-                        0 0 20px rgba(21, 101, 192, 0.3);
+            background: linear-gradient(180deg, #165dae 0%, #0e467d 100%);
+            box-shadow: 0 8px 20px rgba(22, 93, 174, 0.45);
         }
     }
-    
     .period-label {
-        font-size: var(--text-sm);
+        font-size: 13px;
         font-weight: 600;
     }
-    
     .period-count {
-        font-size: var(--text-lg);
+        font-size: 18px;
         font-weight: 700;
     }
 }
 
+// Quick Stats Cards - 4 Cards horizontal layout
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--space-4);
-    margin-bottom: var(--space-6);
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
     @media (max-width: 600px) {
-        grid-template-columns: 1fr;
-        gap: var(--space-3);
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
     }
 }
 
+// Stat Card - Common glass look
 .stat-card {
-    border-radius: var(--radius-md);
+    border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    border: 1px solid var(--border-color);
-    
+    border: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     [data-theme="dark"] & {
-        background: var(--bg-card);
-        border-color: var(--border-color);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        background: rgba(30, 41, 59, 0.88);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
-    
     mat-card-content {
-        padding: var(--space-4);
+        padding: 16px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
     }
-    
     &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-        
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         [data-theme="dark"] & {
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6),
-                        0 0 25px rgba(21, 101, 192, 0.2);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
         }
     }
-    
+    // Card 1: Total Records - Blue icon box
     &.primary-stat {
-        background: linear-gradient(135deg, rgba(21, 101, 192, 0.1) 0%, rgba(66, 165, 245, 0.05) 100%);
-        
+        background: rgba(255, 255, 255, 0.88);
         [data-theme="dark"] & {
-            background: linear-gradient(135deg, rgba(21, 101, 192, 0.2) 0%, rgba(66, 165, 245, 0.15) 100%);
-            border-color: rgba(21, 101, 192, 0.3);
+            background: rgba(30, 41, 59, 0.88);
         }
     }
-    
+    // Card 2: Total Land - Green gradient icon box
     &.secondary-stat {
-        background: linear-gradient(135deg, rgba(66, 165, 245, 0.1) 0%, rgba(100, 181, 246, 0.05) 100%);
-        
+        background: rgba(255, 255, 255, 0.88);
         [data-theme="dark"] & {
-            background: linear-gradient(135deg, rgba(66, 165, 245, 0.2) 0%, rgba(100, 181, 246, 0.15) 100%);
-            border-color: rgba(66, 165, 245, 0.3);
+            background: rgba(30, 41, 59, 0.88);
         }
     }
-    
+    // Card 3: Total Amount - Green gradient tint background
     &.success-stat {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(52, 211, 153, 0.05) 100%);
-        
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(52, 211, 153, 0.08) 100%);
         [data-theme="dark"] & {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(52, 211, 153, 0.15) 100%);
-            border-color: rgba(16, 185, 129, 0.3);
         }
     }
-    
+    // Card 4: Pending Amount - Red gradient tint background
     &.warning-stat {
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(248, 113, 113, 0.05) 100%);
-        
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(248, 113, 113, 0.08) 100%);
         [data-theme="dark"] & {
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(248, 113, 113, 0.15) 100%);
-            border-color: rgba(239, 68, 68, 0.3);
         }
     }
 }
 
+// Stat Icon Container - Rounded square
 .stat-icon-container {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-md);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px; // Rounded square
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    // Card 1: Total Records - Blue icon box
     .stat-card.primary-stat & {
-        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        background: linear-gradient(180deg, #165dae 0%, #0e467d 100%);
     }
+    // Card 2: Total Land - Green gradient icon box
     .stat-card.secondary-stat & {
-        background: linear-gradient(135deg, #42A5F5 0%, #64B5F6 100%);
+        background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
     }
+    // Card 3: Total Amount - Green gradient (same as card 2)
     .stat-card.success-stat & {
         background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
     }
+    // Card 4: Pending Amount - Red gradient
     .stat-card.warning-stat & {
         background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
     }
@@ -220,167 +290,188 @@
 
 .stat-icon {
     color: white;
-    font-size: 28px;
-    width: 28px;
-    height: 28px;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
 }
 
 .stat-content {
     flex: 1;
+    min-width: 0;
 }
 
 .stat-title {
-    font-size: var(--text-sm);
+    font-size: 13px;
     font-weight: 500;
-    color: var(--text-muted);
-    margin: 0;
-    
+    color: #64748B; // Muted
+    margin: 0 0 4px 0;
     [data-theme="dark"] & {
-        color: var(--text-secondary);
+        color: #94A3B8;
     }
 }
 
 .stat-value {
-    font-size: var(--text-2xl);
+    font-size: 20px;
     font-weight: 700;
-    color: var(--text-primary);
-    margin: var(--space-1) 0 0 0;
-    
+    color: #1E293B; // Bold
+    margin: 0;
+    line-height: 1.2;
     [data-theme="dark"] & {
-        color: var(--text-primary);
+        color: #F1F5F9;
     }
 }
 
 .stat-subtitle {
-    font-size: var(--text-xs);
-    color: var(--text-muted);
-    margin-top: var(--space-1);
-    
+    font-size: 11px;
+    color: #94A3B8;
+    margin-top: 2px;
     [data-theme="dark"] & {
-        color: var(--text-muted);
+        color: #64748B;
     }
 }
 
+// Insights Section - Single glass card
 .additional-stats-card {
-    border-radius: var(--radius-md);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--border-color);
-    
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4) !important;
+    border: none;
+    margin-bottom: 20px;
+    overflow: hidden;
     [data-theme="dark"] & {
-        background: var(--bg-card);
-        border-color: var(--border-color);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5),
-                    0 0 20px rgba(99, 102, 241, 0.1);
+        background: rgba(30, 41, 59, 0.88);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
-    
     mat-card-header {
-        background: var(--bg-secondary);
-        border-bottom: 1px solid var(--border-color);
-        padding: var(--space-4);
-        
+        background: transparent;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        padding: 20px 20px 16px;
         [data-theme="dark"] & {
-            background: rgba(15, 23, 42, 0.5);
-            border-bottom-color: rgba(21, 101, 192, 0.2);
+            border-bottom-color: rgba(255, 255, 255, 0.1);
         }
-        
         mat-card-title {
             display: flex;
             align-items: center;
-            gap: var(--space-2);
-            font-size: var(--text-lg);
+            gap: 8px;
+            font-size: 16px;
             font-weight: 600;
-            color: var(--text-primary);
+            color: #1E293B;
             margin: 0;
-            
             [data-theme="dark"] & {
-                color: var(--text-primary);
+                color: #F1F5F9;
             }
         }
     }
-    
     mat-card-content {
-        padding: var(--space-4);
+        padding: 20px;
     }
 }
 
 .additional-stats-icon {
-    color: var(--primary-blue);
+    color: #165dae;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
     [data-theme="dark"] & {
-        color: var(--secondary-blue);
+        color: #165dae;
     }
 }
 
 .additional-stats-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-4);
-    @media (max-width: 600px) {
-        grid-template-columns: 1fr;
-        gap: var(--space-3);
-    }
-}
-
-.additional-stat-item {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    background: var(--bg-secondary);
-    border-radius: var(--radius-sm);
-    border-left: 4px solid var(--primary-blue);
-    
+    gap: 16px;
+}
+
+// Insights Rows - Each row with left blue indicator bar
+.additional-stat-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    border-left: 4px solid #165dae; // Left blue indicator bar
+    padding-left: 12px;
     [data-theme="dark"] & {
-        background: rgba(15, 23, 42, 0.5);
-        border-left-color: #42A5F5;
-        border: 1px solid rgba(66, 165, 245, 0.2);
-        border-left: 4px solid #42A5F5;
+        border-left-color: #165dae;
     }
-    
     .additional-stat-label {
-        font-size: var(--text-xs);
+        font-size: 11px;
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: var(--text-muted);
-        
+        color: #64748B; // Small uppercase
+        min-width: 140px;
         [data-theme="dark"] & {
-            color: var(--text-secondary);
+            color: #94A3B8;
         }
     }
-    
     .additional-stat-value {
-        font-size: var(--text-lg);
+        font-size: 16px;
         font-weight: 700;
-        color: var(--primary-blue);
-        
+        color: #1E293B; // Bold
+        flex: 1;
         [data-theme="dark"] & {
-            color: #42A5F5;
-            text-shadow: 0 0 10px rgba(66, 165, 245, 0.3);
+            color: #F1F5F9;
         }
     }
 }
 
-
-p {
+// Action Buttons - Export Data & Refresh (inside content, not bottom nav)
+button[mat-raised-button] {
+    border-radius: 24px; // Rounded pill
+    background: #FFFFFF;
+    color: #1E293B;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 12px 20px;
+    margin-right: 12px;
     margin-top: 16px;
-    color: rgba(0, 0, 0, 0.5);
-}
-
-.quick-actions-card {
-    .actions-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 12px;
-        margin-top: 16px;
-        button {
-            height: 48px;
-            mat-icon {
-                margin-right: 8px;
-            }
+    border: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    mat-icon {
+        margin-right: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+    &:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    [data-theme="dark"] & {
+        background: rgba(30, 41, 59, 0.9);
+        color: #F1F5F9;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        &:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
         }
     }
 }
-mat-card-title {
-    font-size: 20px;
-    font-weight: 600;
+
+// Compact Balance Card
+.balance-card {
+  background: linear-gradient(180deg, #165dae 0%, #0e467d 100%);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-5);
+  color: var(--text-white);
+  box-shadow: var(--shadow-blue);
+  margin-bottom: var(--space-4);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  &::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+  }
 }
