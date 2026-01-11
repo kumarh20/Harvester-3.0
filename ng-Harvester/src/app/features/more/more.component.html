@@ -1,23 +1,39 @@
 <div class="more-container">
-    <!-- Header -->
-    <div class="more-header">
-        <h1>{{ translationService.get('more.title') }}</h1>
-        <p class="subtitle">{{ translationService.get('more.subtitle') }}</p>
+    <!-- Profile Section -->
+    <div class="profile-section">
+        <div class="profile-card">
+            <div class="profile-avatar">
+                <mat-icon>account_circle</mat-icon>
+            </div>
+            <div class="profile-info">
+                <h2 class="profile-name">User Name</h2>
+                <p class="profile-email">user@example.com</p>
+            </div>
+            <button class="edit-profile-button">
+                <mat-icon>edit</mat-icon>
+              
+            </button>
+        </div>
     </div>
 
-    <!-- Options Grid -->
-    <div class="options-grid">
+    <!-- More Options Title Block -->
+    <div class="more-options-title">
+        <h2 class="section-title">More Options</h2>
+        <p class="section-subtitle">Additional features and information</p>
+    </div>
+
+    <!-- Primary Action Cards -->
+    <div class="primary-cards">
         @for (option of options(); track option.id) {
-        <mat-card class="option-card" (click)="option.action && option.action()">
+        <mat-card class="primary-card" (click)="option.action && option.action()">
             <mat-card-content>
-                <div class="option-icon-container">
-                    <mat-icon class="option-icon">{{option.icon}}</mat-icon>
+                <div class="card-icon-badge">
+                    <mat-icon class="card-icon">{{option.icon}}</mat-icon>
                 </div>
-                <div class="option-info">
-                    <h3 class="option-title">{{option.title}}</h3>
-                    <p class="option-description">{{option.description}}</p>
+                <div class="card-content">
+                    <h3 class="card-title">{{option.title}}</h3>
                 </div>
-                <mat-icon class="option-arrow">arrow_forward</mat-icon>
+                <mat-icon class="card-arrow">arrow_forward</mat-icon>
             </mat-card-content>
         </mat-card>
         }
