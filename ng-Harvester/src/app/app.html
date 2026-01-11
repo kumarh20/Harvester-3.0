@@ -13,7 +13,7 @@
                     <span class="language-code">{{ getCurrentLanguage().toUpperCase() }}</span>
                 </button>
                 <!-- Theme Toggle -->
-            <button class="theme-toggle" (click)="toggleTheme()" aria-label="Toggle theme">
+                <button class="theme-toggle" (click)="toggleTheme()" aria-label="Toggle theme">
                 <div class="toggle-track">
                     <div class="toggle-thumb">
                         <!-- Sun Icon -->
@@ -48,45 +48,13 @@
     <!-- Floating Navigation Bar with New Design -->
     <nav class="floating-navigation">
         <div class="nav-container" #navContainer>
-            <!-- Single sliding background indicator -->
-            <div class="sliding-background" #slidingBg></div>
-            
+            <!-- Active pill background (slides to active tab) -->
+            <div class="active-pill" #slidingBg></div>
+
             @for (item of navItems; track item.route; let i = $index) {
-            <div class="nav-item" 
-                 [class.active]="isActive(item.route)" 
-                 (click)="onNavChange(item.route)"
-                 #navItem>
+            <div class="nav-item" [class.active]="isActive(item.route)" (click)="onNavChange(item.route)" #navItem>
                 <div class="nav-content">
-                    <div class="icon-wrapper">
-                        <svg class="nav-icon" [class.active-icon]="isActive(item.route)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <!-- Add New Icon -->
-                            <circle *ngIf="item.label === 'Add New'" cx="12" cy="12" r="10"/>
-                            <polyline *ngIf="item.label === 'Add New'" points="12 8 12 16 8 12 16 12"/>
-
-                            <!-- Records/List Icon -->
-                            <line *ngIf="item.label === 'Records'" x1="8" y1="6" x2="21" y2="6"/>
-                            <line *ngIf="item.label === 'Records'" x1="8" y1="12" x2="21" y2="12"/>
-                            <line *ngIf="item.label === 'Records'" x1="8" y1="18" x2="21" y2="18"/>
-                            <line *ngIf="item.label === 'Records'" x1="3" y1="6" x2="3.01" y2="6"/>
-                            <line *ngIf="item.label === 'Records'" x1="3" y1="12" x2="3.01" y2="12"/>
-                            <line *ngIf="item.label === 'Records'" x1="3" y1="18" x2="3.01" y2="18"/>
-
-                            <!-- Dashboard Icon -->
-                            <rect *ngIf="item.label === 'Dashboard'" x="3" y="3" width="7" height="7"/>
-                            <rect *ngIf="item.label === 'Dashboard'" x="14" y="3" width="7" height="7"/>
-                            <rect *ngIf="item.label === 'Dashboard'" x="14" y="14" width="7" height="7"/>
-                            <rect *ngIf="item.label === 'Dashboard'" x="3" y="14" width="7" height="7"/>
-
-                            <!-- Settings Icon -->
-                            <circle *ngIf="item.label === 'Settings'" cx="12" cy="12" r="3"/>
-                            <path *ngIf="item.label === 'Settings'" d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"/>
-
-                            <!-- More Icon -->
-                            <circle *ngIf="item.label === 'More'" cx="5" cy="12" r="2"/>
-                            <circle *ngIf="item.label === 'More'" cx="12" cy="12" r="2"/>
-                            <circle *ngIf="item.label === 'More'" cx="19" cy="12" r="2"/>
-                        </svg>
-                    </div>
+                    <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
                     <span class="nav-label" *ngIf="isActive(item.route)">{{ getNavLabel(item.label) }}</span>
                 </div>
             </div>

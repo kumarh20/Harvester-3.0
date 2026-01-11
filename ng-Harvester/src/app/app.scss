@@ -128,7 +128,7 @@
         background: linear-gradient(180deg, #0D47A1 0%, #1565C0 100%);
     }
     @media screen and (max-width: 600px) {
-      box-shadow: none;
+        box-shadow: none;
     }
 }
 
@@ -277,7 +277,6 @@
     }
 }
 
-
 .balance-header {
     display: flex;
     justify-content: space-between;
@@ -316,7 +315,7 @@
     flex: 1;
     overflow-y: auto;
     margin-top: 0;
-    margin-bottom: 120px;
+    margin-bottom: 80px;
     // padding: var(--space-6);
     background: var(--bg-primary);
     scroll-behavior: smooth;
@@ -325,49 +324,52 @@
 
 .floating-navigation {
     position: fixed;
-    bottom: 20px;
+    bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
-    padding: 0 20px;
+    padding: 0 16px;
     max-width: 500px;
-    width: calc(100% - 40px);
+    width: calc(100% - 32px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     .nav-container {
         position: relative;
-        // Glass capsule container
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-radius: 28px;
+        background: #F7F4FA;
+        border-radius: 24px;
         padding: 8px;
         display: flex;
         justify-content: space-around;
         align-items: center;
-        gap: 4px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-        overflow: hidden;
+        gap: 0;
+        box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.06);
+        overflow: visible;
         transition: all 0.3s ease;
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        width: 100%;
+        min-height: 64px;
         [data-theme="dark"] & {
-            background: rgba(30, 41, 59, 0.85);
-            border-color: rgba(107, 134, 200, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            background: #2D1B3D;
         }
     }
-    // Smooth sliding background indicator
-    .sliding-background {
+    // Active pill background (slides to active tab)
+    .active-pill {
         position: absolute;
         top: 8px;
         bottom: 8px;
-        left: 0;
+        left: 8px;
+        height: 40px;
         width: 0;
-        background: var(--bg-gradient);
-        border-radius: 18px;
-        box-shadow: var(--shadow-blue);
+        background: rgba(22, 93, 174, 0.13); // Theme primary at 13% opacity
+        border-radius: 999px;
         z-index: 1;
-        transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1), width 150ms cubic-bezier(0.4, 0, 0.2, 1);
         will-change: transform, width;
         pointer-events: none;
+        [data-theme="dark"] & {
+            background: rgba(22, 93, 174, 0.2);
+        }
     }
     .nav-item {
         position: relative;
@@ -378,37 +380,38 @@
         cursor: pointer;
         z-index: 10;
         user-select: none;
-        min-height: 48px;
-        transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-        border-radius: 20px;
-        // Center Home button elevated
-        &:nth-child(3) {
-            // Home button (center)
-            z-index: 11;
-        }
-        &:hover:not(.active) {
-            .nav-icon {
-                color: #0e467d;
-                transform: scale(1.1);
-            }
-        }
-        // Active tab highlighted blue
+        min-height: 40px;
+        transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 0;
+        // Active tab - pill with icon + text
         &.active {
-            background: linear-gradient(180deg, #165dae 0%, #0e467d 100%);
-            box-shadow: 0 4px 12px rgba(30, 111, 217, 0.3);
+            .nav-content {
+                flex-direction: row;
+                gap: 6px;
+            }
             .nav-icon {
-                color: #FFFFFF;
-                filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
-                transform: scale(1.05);
+                color: #165dae; // Theme primary color
+                font-size: 22px;
+                width: 20px;
+                height: 20px;
             }
             .nav-label {
-                color: #FFFFFF;
+                opacity: 1;
+                color: #165dae; // Theme primary color
+                font-size: 13px;
+                font-weight: 600;
             }
         }
-        // Inactive icons muted
+        // Inactive icons - icon only, muted gray
         &:not(.active) {
             .nav-icon {
-                color: #94A3B8;
+                color: #9E9E9E;
+                font-size: 22px;
+                width: 20px;
+                height: 20px;
+            }
+            .nav-label {
+                display: none;
             }
         }
     }
@@ -417,121 +420,82 @@
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        padding: 12px;
+        gap: 6px;
+        padding: 0;
         white-space: nowrap;
-        transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
         position: relative;
         z-index: 10;
     }
-    .icon-wrapper {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
+    .nav-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1);
         flex-shrink: 0;
     }
-    .nav-icon {
-        width: 24px;
-        height: 24px;
-        color: var(--nav-icon-inactive);
-        transition: color 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
-        &.active-icon {
-            color: var(--text-white);
-        }
-    }
     .nav-label {
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
-        color: var(--text-white);
-        letter-spacing: 0.3px;
+        color: #165dae;
+        letter-spacing: 0;
         text-align: center;
         line-height: 1.2;
-        animation: slideInFromRight 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-}
-
-@keyframes slideDown {
-    from {
         opacity: 0;
-        transform: translateX(-50%) translateY(-3px);
+        transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
     }
-    to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-}
-
-@keyframes slideInFromRight {
-    0% {
-        opacity: 0;
-        transform: translateX(20px) scale(0.8);
-    }
-    60% {
-        opacity: 1;
-        transform: translateX(-2px) scale(1.05);
-    }
-    100% {
-        opacity: 1;
-        transform: translateX(0) scale(1);
+    // Bottom handle indicator
+    .nav-handle {
+        width: 36px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.25);
+        margin-top: 0;
+        [data-theme="dark"] & {
+            background: rgba(255, 255, 255, 0.3);
+        }
     }
 }
 
-@keyframes labelFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-4px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
+// Responsive styles
 @media (max-width: 600px) {
     .floating-navigation {
         bottom: 12px;
         padding: 0 12px;
+        width: calc(100% - 24px);
         .nav-container {
-            min-width: auto;
-            width: 100%;
-            padding: 6px 4px;
-            gap: 2px;
-        }
-        .nav-item {
-            min-height: 58px;
-        }
-        .nav-content {
-            flex-direction: column;
-            padding: 8px 4px;
-            gap: 3px;
-        }
-        .icon-wrapper {
-            width: 22px;
-            height: 22px;
-        }
-        .nav-icon {
-            width: 22px;
-            height: 22px;
-        }
-        .nav-label {
-            font-size: 9px;
-            letter-spacing: 0.1px;
-            animation: labelFadeIn 0.3s ease-out;
-        }
-    }
-}
-
-@media (max-width: 380px) {
-    .floating-navigation {
-        padding: 0 8px;
-        .nav-item {
+            padding: 6px;
             min-height: 56px;
         }
-        .nav-label {
-            font-size: 8px;
+        .active-pill {
+            top: 6px;
+            bottom: 6px;
+            left: -11px;
+            height: 44px;
+        }
+        .nav-item {
+            min-height: 44px;
+            &.active {
+                .nav-icon {
+                    font-size: 22px;
+                    width: 22px;
+                    height: 22px;
+                }
+                .nav-label {
+                    font-size: 12px;
+                }
+            }
+            &:not(.active) {
+                .nav-icon {
+                    font-size: 22px;
+                    width: 22px;
+                    height: 22px;
+                }
+            }
+        }
+        .nav-handle {
+            width: 32px;
+            height: 3px;
         }
     }
 }
@@ -539,39 +503,18 @@
 @media (min-width: 601px) {
     .floating-navigation {
         .nav-container {
-            min-width: 340px;
-            max-width: 420px;
-            padding: 8px;
-            gap: 8px;
+            max-width: 480px;
+            padding: 10px;
+            min-height: 68px;
+        }
+        .active-pill {
+            top: 10px;
+            bottom: 10px;
+            left: 10px;
+            height: 48px;
         }
         .nav-item {
             min-height: 48px;
-        }
-        .nav-content {
-            flex-direction: row;
-            padding: 12px;
-            gap: 10px;
-        }
-        .icon-wrapper {
-            width: 24px;
-            height: 24px;
-        }
-        .nav-icon {
-            width: 24px;
-            height: 24px;
-        }
-        .nav-label {
-            font-size: 14px;
-            letter-spacing: 0.3px;
-        }
-    }
-}
-
-@media (min-width: 768px) {
-    .floating-navigation {
-        .nav-container {
-            min-width: 400px;
-            max-width: 480px;
         }
     }
 }
