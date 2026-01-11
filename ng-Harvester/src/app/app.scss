@@ -315,7 +315,7 @@
     flex: 1;
     overflow-y: auto;
     margin-top: 0;
-    margin-bottom: 80px;
+    margin-bottom: 56px;
     // padding: var(--space-6);
     background: var(--bg-primary);
     scroll-behavior: smooth;
@@ -324,9 +324,9 @@
 
 .floating-navigation {
     position: fixed;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
+    // bottom: 16px;
+    // left: 50%;
+    // transform: translateX(-50%);
     z-index: 1000;
     padding: 0 16px;
     max-width: 500px;
@@ -460,9 +460,9 @@
 // Responsive styles
 @media (max-width: 600px) {
     .floating-navigation {
-        bottom: 12px;
-        padding: 0 12px;
-        width: calc(100% - 24px);
+        bottom: 0px;
+        padding: 0 0px;
+        width: 100%;
         .nav-container {
             padding: 6px;
             min-height: 56px;
