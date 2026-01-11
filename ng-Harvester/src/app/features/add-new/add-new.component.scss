@@ -353,13 +353,14 @@
     button {
         flex: 1;
         font-weight: 600;
-        height: 56px;
+        height: 45px;
         gap: 8px;
-        border-radius: 22px;
+        border-radius: 8px;
         font-size: 16px;
         transition: all 0.3s ease;
         border: none;
         cursor: pointer;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
         mat-icon {
             margin-right: 8px;
         }
@@ -376,6 +377,7 @@
     }
     // Save Entry Button (Primary CTA)
     .save-btn {
+        margin: 0;
         background: linear-gradient(180deg, #165dae 0%, #0e467d 100%) !important;
         color: white;
         box-shadow: 0 12px 24px rgba(30, 111, 217, 0.35);
@@ -425,7 +427,7 @@
 // Responsive design
 @media (max-width: 768px) {
     .add-new-container {
-        padding: 0 12px;
+        padding: 0 12px 20px;
     }
     .form-card {
         mat-card-content {
