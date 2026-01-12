@@ -47,6 +47,8 @@
                         <div class="pending-badge" [class.paid]="record.pendingAmount <= 0" [class.pending]="record.pendingAmount > 0">
                             {{ record.pendingAmount <= 0 ? translationService.get('records.fullPayment') : formatCurrency(record.pendingAmount) }}
                         </div>
+                        <mat-icon color="primary" (click)="editRecord(record); $event.stopPropagation()">edit</mat-icon>
+                        <mat-icon color="warn" (click)="deleteRecord(record.id); $event.stopPropagation()">delete</mat-icon>
                                 <mat-icon class="expand-icon">
                                     {{ isExpanded(record.id) ? 'expand_less' : 'expand_more' }}
                                 </mat-icon>
