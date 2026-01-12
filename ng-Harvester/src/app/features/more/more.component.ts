@@ -31,6 +31,7 @@ interface Option {
   encapsulation: ViewEncapsulation.None
 })
 export class MoreComponent {
+  email: string = 'user@example.com';
   constructor(
     private dialogService: DialogService,
     public translationService: TranslationService
