@@ -137,11 +137,11 @@ export class App implements AfterViewInit {
 
     // Calculate position and width for the pill
     // Pill should fit the content (icon + text when active)
-    const left = activeRect.left - containerRect.left;
-    const contentWidth = activeElement.querySelector('.nav-content')?.getBoundingClientRect().width || activeRect.width;
+    const left = (activeRect.left - containerRect.left) + 12;
+    const contentWidth = activeElement.querySelector('.nav-item')?.getBoundingClientRect().width || activeRect.width;
 
     // Pill padding: 12px 16px, so we need to account for that
-    const pillWidth = Math.max(contentWidth, 40) + 30; // Minimum 40px height = width for pill shape
+    const pillWidth = Math.max(contentWidth, 40); // Minimum 40px height = width for pill shape
 
     // Apply to pill (positioned absolutely within container)
     pillElement.style.transform = `translateX(${left}px)`;

@@ -315,7 +315,8 @@
     flex: 1;
     overflow-y: auto;
     margin-top: 0;
-    margin-bottom: 70px;
+    max-height: 82vh;
+    // margin-bottom: 70px;
     // padding: var(--space-6);
     background: var(--bg-primary);
     scroll-behavior: smooth;
@@ -338,7 +339,7 @@
     .nav-container {
         position: relative;
         background: #F7F4FA;
-        border-radius: 24px;
+        border-radius: 8px;
         padding: 8px;
         display: flex;
         justify-content: space-around;
@@ -355,14 +356,15 @@
     }
     // Active pill background (slides to active tab)
     .active-pill {
+      color: white;
         position: absolute;
         top: 8px;
         bottom: 8px;
         left: 8px;
         height: 40px;
         width: 0;
-        background: rgba(22, 93, 174, 0.13); // Theme primary at 13% opacity
-        border-radius: 999px;
+        background: rgb(18 82 152); // Theme primary at 13% opacity
+        border-radius: 10px;
         z-index: 1;
         transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1), width 150ms cubic-bezier(0.4, 0, 0.2, 1);
         will-change: transform, width;
@@ -400,6 +402,7 @@
                 color: #165dae; // Theme primary color
                 font-size: 13px;
                 font-weight: 600;
+                color: white;
             }
         }
         // Inactive icons - icon only, muted gray
@@ -480,6 +483,7 @@
                     font-size: 22px;
                     width: 22px;
                     height: 22px;
+                    color: white;
                 }
                 .nav-label {
                     font-size: 12px;
