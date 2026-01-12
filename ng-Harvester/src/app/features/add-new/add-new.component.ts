@@ -48,6 +48,7 @@ export class AddNewComponent implements OnInit {
   // Edit mode state
   isEditMode = signal(false);
   editingRecordId = signal<string | null>(null);
+  currentDate = new Date();
 
   // Computed signals for form titles
   formTitle = computed(() => 

@@ -58,7 +58,7 @@
                         <div class="details-grid">
                             <div class="detail-item">
                                 <span class="detail-label">{{ translationService.get('records.date') }}</span>
-                                <span class="detail-value">{{ record.date }}</span>
+                                <span class="detail-value">{{ record.date | date:'dd/MM/yyyy' }}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">{{ translationService.get('records.land') }}</span>

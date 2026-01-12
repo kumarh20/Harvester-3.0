@@ -40,7 +40,7 @@
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>{{ translationService.get('form.date') }}</mat-label>
-                        <input matInput [matDatepicker]="datePicker" formControlName="date" required />
+                        <input matInput [matDatepicker]="datePicker" formControlName="date" [max]="currentDate" required  />
                         <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
                         <mat-datepicker #datePicker></mat-datepicker>
                         <mat-icon matPrefix>event</mat-icon>
