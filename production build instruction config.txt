@@ -1,3 +1,3 @@
 --Production ready build command in docs folder------------------------
 
-ng build --configuration production --output-path ../docs --base-href /ng-harvester/
+ng build --configuration production --output-path ../docs --base-href /Harvester-3.0/
