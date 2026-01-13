@@ -166,5 +166,9 @@ Full Payment Date : ${data.fullPaymentDate}
 <strong>Pending Amount : </strong><b>${data.pendingAmount}</b>
   `;
   }
+
+  callNumber(contactNumber: string): void {
+    window.open(`tel:${contactNumber}`, '_blank');
+  }
   
 }

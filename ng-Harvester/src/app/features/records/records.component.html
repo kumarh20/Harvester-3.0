@@ -38,7 +38,7 @@
                             <div class="farmer-name">{{ record.farmerName }}</div>
                             <div class="farmer-contact">
                                 <mat-icon class="contact-icon">phone</mat-icon>
-                                <span>{{ record.contactNumber }}</span>
+                                <span (click)="callNumber(record.contactNumber); $event.stopPropagation()">{{ record.contactNumber }}</span>
                             </div>
                         </div>
                     </div>
