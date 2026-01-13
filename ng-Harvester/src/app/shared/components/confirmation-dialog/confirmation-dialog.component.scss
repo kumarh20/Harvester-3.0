@@ -1,6 +1,7 @@
 .confirmation-dialog {
   min-width: 320px;
   max-width: 500px;
+  background-color: white;
 }
 
 .dialog-header {
@@ -90,6 +91,9 @@ mat-dialog-actions {
   }
 }
 
+.confirm-button{
+  margin: 0;
+}
 
 
 
