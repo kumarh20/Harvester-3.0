@@ -385,10 +385,13 @@
         min-height: 40px;
         transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
         border-radius: 0;
+        .nav-content{
+          flex-direction: column;
+        }
         // Active tab - pill with icon + text
         &.active {
             .nav-content {
-                flex-direction: row;
+                flex-direction: column;
                 gap: 6px;
             }
             .nav-icon {
@@ -402,7 +405,7 @@
                 color: #165dae; // Theme primary color
                 font-size: 13px;
                 font-weight: 600;
-                color: white;
+                // color: white;
             }
         }
         // Inactive icons - icon only, muted gray
@@ -414,7 +417,11 @@
                 height: 20px;
             }
             .nav-label {
-                display: none;
+                // display: none;
+                color: #9E9E9E;
+                font-size: 13px;
+                font-weight: 600;
+                opacity: 1;
             }
         }
     }
@@ -483,10 +490,9 @@
                     font-size: 22px;
                     width: 22px;
                     height: 22px;
-                    color: white;
                 }
                 .nav-label {
-                    font-size: 12px;
+                    font-size: 13px;
                 }
             }
             &:not(.active) {

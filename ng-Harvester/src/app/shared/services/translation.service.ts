@@ -78,6 +78,7 @@ export interface Translations {
     fullPayment: string;
     editRecord: string;
     deleteRecord: string;
+    shareRecord: string;
   };
 
   // Dashboard
@@ -250,7 +251,8 @@ const getEnglishTranslations = (): Translations => ({
     pendingAmount: 'Pending Amount',
     fullPayment: 'Full Payment',
     editRecord: 'Edit',
-    deleteRecord: 'Delete'
+    deleteRecord: 'Delete',
+    shareRecord: 'share'
   },
   dashboard: {
     title: 'Dashboard',
@@ -415,7 +417,8 @@ const TRANSLATIONS: Record<Language, Translations> = {
       pendingAmount: 'Pending Amount',
       fullPayment: 'Full Payment',
       editRecord: 'Edit',
-      deleteRecord: 'Delete'
+      deleteRecord: 'Delete',
+      shareRecord: 'share'
     },
     dashboard: {
       title: 'Dashboard',

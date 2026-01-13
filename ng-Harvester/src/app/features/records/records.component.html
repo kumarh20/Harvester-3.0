@@ -91,13 +91,20 @@
                         <!-- Action Buttons -->
                         <div class="record-actions">
                             <button mat-stroked-button color="primary" (click)="editRecord(record); $event.stopPropagation()">
-              <mat-icon>edit</mat-icon>
-              {{ translationService.get('records.editRecord') }}
-            </button>
+                            <mat-icon>edit</mat-icon>
+                            {{ translationService.get('records.editRecord') }}
+                          </button>
+                            <button mat-stroked-button color="primary" (click)="shareRecord(record); $event.stopPropagation()">
+                            <div class="share-icon-container">
+                              <span class="share-icon"></span>
+                            {{ translationService.get('records.shareRecord') }}
+                            </div>
+                          </button>
+
                             <button mat-stroked-button color="warn" (click)="deleteRecord(record.id); $event.stopPropagation()">
-              <mat-icon>delete</mat-icon>
-              {{ translationService.get('records.deleteRecord') }}
-            </button>
+                            <mat-icon>delete</mat-icon>
+                            {{ translationService.get('records.deleteRecord') }}
+                          </button>
                         </div>
                     </div>
             </mat-card>

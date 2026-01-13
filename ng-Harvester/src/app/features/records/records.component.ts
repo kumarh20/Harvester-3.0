@@ -136,4 +136,35 @@ export class RecordsComponent implements OnInit {
       maximumFractionDigits: 0
     }).format(amount);
   }
+
+  shareRecord(record: Record){
+    const text: string = this.buildShareText(record);
+  
+    if (navigator.share) {
+      navigator.share({
+        title: 'Farmer Record',
+        text: text
+      });
+    } else {
+      alert('Share option is not supported on this browser');
+    }
+  }
+
+  buildShareText(data: Record): string {
+    return `
+  📋 Farmer Record
+  
+Name           : ${data.farmerName}
+Contact Number : ${data.contactNumber}
+Date           : ${data.date}
+Land In Acres  : ${data.landInAcres} 
+Rate Per Acre  : ${data.ratePerAcre}
+Total Payment  : ${data.totalPayment}
+Paid On Sight  : ${data.paidOnSight}
+Full Payment Date : ${data.fullPaymentDate}
+----------------------------------------
+<strong>Pending Amount : </strong><b>${data.pendingAmount}</b>
+  `;
+  }
+  
 }

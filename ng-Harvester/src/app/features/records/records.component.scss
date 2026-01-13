@@ -517,3 +517,17 @@ mat-form-field {
 .mdc-notched-outline__trailing {
     border-right: none !important;
 }
+.share-icon-container{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.share-icon {
+    background: url('../../../../Images/what.png') no-repeat center center;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+    background-size: cover;
+}
