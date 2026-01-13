@@ -3,3 +3,6 @@
 ng build --configuration production --output-path ../docs --base-href /Harvester-3.0/
 
 ng build --output-path ../docs
+
+--for ng-harvester repo--
+ng build --configuration production --base-href /ng-harvester/
