@@ -163,12 +163,12 @@ Total Payment  : ${data.totalPayment}
 Paid On Sight  : ${data.paidOnSight}
 Full Payment Date : ${data.fullPaymentDate}
 ----------------------------------------
-<strong>Pending Amount : </strong><b>${data.pendingAmount}</b>
+Pending Amount : ${data.pendingAmount}
   `;
   }
 
   callNumber(contactNumber: string): void {
-    window.open(`tel:${contactNumber}`, '_blank');
+    window.open(`tel:${contactNumber}`, '_system');
   }
   
 }
