@@ -1,0 +1,681 @@
+// ============================================
+// PIXEL-PERFECT AUTH PAGE
+// DO NOT MODIFY PROPORTIONS OR SPACING
+// ============================================
+// Color Variables (Harvester Brand)
+$primary-dark: #165dae;
+$primary: #165dae;
+$primary-light: #60a5fa;
+$primary-soft: #93c5fd;
+$bg-page: #EEF3FA;
+$bg-card: #FFFFFF;
+$bg-input: #F9FAFB;
+$text-primary: #111827;
+$text-secondary: #6B7280;
+$border-color: #E5E7EB;
+// ============================================
+// ROOT CONTAINER
+// ============================================
+.auth-page {
+    position: relative;
+    min-height: 100vh;
+    height: 100vh;
+    background: $bg-page;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+// ============================================
+// ABSTRACT BACKGROUND (NEVER CHANGES)
+// ============================================
+.abstract-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 65vh;
+    background: radial-gradient(circle at 80% 20%, rgba(186, 230, 253, 0.3), transparent 50%), radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.25), transparent 55%), linear-gradient(180deg, rgba(37, 99, 235, 1) 0%, rgba(59, 130, 246, 0.95) 40%, rgba(96, 165, 250, 0.9) 75%, rgba(147, 197, 253, 0.85) 100%);
+    overflow: hidden;
+    z-index: 1;
+    // Abstract Blobs
+    .blob {
+        position: absolute;
+        border-radius: 50%;
+        will-change: transform, opacity;
+    }
+    // Blob 1: Dark navy sphere top-left
+    .blob-1 {
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle at 35% 35%, rgba(96, 165, 250, 0.5) 0%, rgba(59, 130, 246, 0.85) 20%, rgba(37, 99, 235, 1) 50%, rgba(30, 58, 138, 0.95) 100%);
+        top: -25px;
+        left: -20px;
+        filter: blur(0);
+        opacity: 0.85;
+        animation: drift-1 12s ease-in-out infinite;
+        animation-delay: 0s;
+    }
+    // Blob 2: Light white/blue sphere top-right
+    .blob-2 {
+        width: 260px;
+        height: 260px;
+        background: radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.9) 0%, rgba(241, 245, 249, 0.85) 25%, rgba(186, 230, 253, 0.7) 55%, rgba(147, 197, 253, 0.3) 100%);
+        top: -45px;
+        right: -50px;
+        filter: blur(0);
+        opacity: 0.9;
+        animation: drift-2 10s ease-in-out infinite;
+        animation-delay: 2s;
+    }
+    // Blob 3: Medium blue sphere center-right
+    .blob-3 {
+        width: 160px;
+        height: 160px;
+        background: radial-gradient(circle at 38% 38%, rgba(186, 230, 253, 0.6) 0%, rgba(96, 165, 250, 0.85) 30%, rgba(59, 130, 246, 0.8) 70%, rgba(37, 99, 235, 0.5) 100%);
+        top: 32%;
+        right: 8%;
+        filter: blur(0);
+        opacity: 0.8;
+        animation: drift-3 9s ease-in-out infinite;
+        animation-delay: 3s;
+    }
+    // Blob 4: Small light sphere bottom-left
+    .blob-4 {
+        width: 140px;
+        height: 140px;
+        background: radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.95) 0%, rgba(241, 245, 249, 0.8) 35%, rgba(186, 230, 253, 0.6) 70%, rgba(147, 197, 253, 0.2) 100%);
+        bottom: 28%;
+        left: 10%;
+        filter: blur(0);
+        opacity: 0.85;
+        animation: drift-4 8s ease-in-out infinite;
+        animation-delay: 1.5s;
+    }
+    // Blob 5: Large dark blue sphere bottom-center
+    .blob-5 {
+        width: 350px;
+        height: 350px;
+        background: radial-gradient(circle at 38% 38%, rgba(96, 165, 250, 0.4) 0%, rgba(59, 130, 246, 0.75) 25%, rgba(37, 99, 235, 0.9) 55%, rgba(30, 58, 138, 0.85) 100%);
+        bottom: -90px;
+        left: 20%;
+        filter: blur(0);
+        opacity: 0.8;
+        animation: drift-1 14s ease-in-out infinite reverse;
+        animation-delay: 4s;
+    }
+    // Organic Wave overlay
+    .wave {
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 140px;
+        background: linear-gradient(180deg, rgba(147, 197, 253, 0) 0%, rgba(96, 165, 250, 0.15) 45%, rgba(59, 130, 246, 0.25) 100%);
+        opacity: 0.6;
+        border-radius: 50% 50% 0 0 / 35% 35% 0 0;
+        filter: blur(0);
+        animation: wave-breathe 7s ease-in-out infinite;
+        animation-delay: 1s;
+    }
+}
+
+// ============================================
+// ORGANIC CALM ANIMATIONS (BARELY NOTICEABLE)
+// ============================================
+// Blob 1: Ultra-gentle circular float
+@keyframes drift-1 {
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+    25% {
+        transform: translate(12px, -18px) scale(1.02);
+    }
+    50% {
+        transform: translate(18px, -10px) scale(1.025);
+    }
+    75% {
+        transform: translate(8px, 8px) scale(1.01);
+    }
+}
+
+// Blob 2: Soft diagonal drift
+@keyframes drift-2 {
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+    30% {
+        transform: translate(-15px, 12px) scale(0.98);
+    }
+    60% {
+        transform: translate(-22px, 18px) scale(0.97);
+    }
+    85% {
+        transform: translate(-10px, 8px) scale(0.985);
+    }
+}
+
+// Blob 3: Horizontal breathing motion
+@keyframes drift-3 {
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+    20% {
+        transform: translate(12px, -8px) scale(1.015);
+    }
+    45% {
+        transform: translate(18px, -14px) scale(1.02);
+    }
+    70% {
+        transform: translate(15px, -6px) scale(1.01);
+    }
+}
+
+// Blob 4: Gentle vertical float
+@keyframes drift-4 {
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+    35% {
+        transform: translate(-10px, -18px) scale(1.015);
+    }
+    65% {
+        transform: translate(-18px, -28px) scale(1.025);
+    }
+    90% {
+        transform: translate(-8px, -12px) scale(1.008);
+    }
+}
+
+// Wave: Ultra-subtle breathing
+@keyframes wave-breathe {
+    0%,
+    100% {
+        transform: translateY(0) scaleX(1);
+    }
+    50% {
+        transform: translateY(-4px) scaleX(1.008);
+    }
+}
+
+// ============================================
+// BACK BUTTON
+// ============================================
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    backdrop-filter: blur(10px);
+    mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+    span {
+        display: none;
+        margin-left: 8px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    &:hover {
+        background: rgba(0, 0, 0, 0.4);
+    }
+    &:active {
+        opacity: 0.8;
+    }
+}
+
+// ============================================
+// WHITE CARD CONTAINER
+// ============================================
+.auth-card {
+    position: relative;
+    z-index: 5;
+    width: 90%;
+    max-width: 440px;
+    background: $bg-card;
+    border-radius: 32px;
+    padding: 32px 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+    margin-bottom: 24px;
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+// ============================================
+// STATE 1: WELCOME
+// ============================================
+.welcome-state {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 40px 0;
+}
+
+.welcome-content {
+    margin-bottom: 48px;
+}
+
+.welcome-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.5px;
+}
+
+.welcome-subtitle {
+    font-size: 14px;
+    color: $text-secondary;
+    opacity: 0.85;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 280px;
+}
+
+.welcome-actions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    max-width: 320px;
+}
+
+.action-button {
+    flex: 1;
+    height: 48px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    text-transform: none;
+    transition: all 0.2s ease;
+    &.primary {
+        background: $primary;
+        color: white;
+        &:hover {
+            background: $primary-dark;
+        }
+        &:active {
+            opacity: 0.9;
+        }
+    }
+    &.secondary {
+        background: transparent;
+        border: 1px solid $border-color;
+        color: $text-primary;
+        &:hover {
+            background: #F9FAFB;
+        }
+        &:active {
+            opacity: 0.8;
+        }
+    }
+}
+
+// ============================================
+// STATE 2 & 3: LOGIN / SIGNUP FORMS
+// ============================================
+.form-state {
+    padding-top: 8px;
+}
+
+.form-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0 0 24px 0;
+    text-align: center;
+    letter-spacing: -0.3px;
+}
+
+form {
+    flex: 1;
+}
+
+// Material Form Field Styling
+.auth-form-field {
+    width: 100%;
+    margin-bottom: 16px;
+    // Outline style
+     ::ng-deep {
+        .mat-mdc-text-field-wrapper {
+            background: $bg-input;
+        }
+        .mat-mdc-form-field-flex {
+            height: 56px;
+        }
+        // Outline border
+        .mdc-notched-outline__leading,
+        .mdc-notched-outline__notch,
+        .mdc-notched-outline__trailing {
+            border-color: $border-color !important;
+        }
+        // Focused state
+        .mat-mdc-form-field.mat-focused {
+            .mdc-notched-outline__leading,
+            .mdc-notched-outline__notch,
+            .mdc-notched-outline__trailing {
+                border-color: $primary !important;
+                border-width: 2px !important;
+            }
+        }
+        // Label color
+        .mdc-floating-label {
+            color: $text-secondary !important;
+        }
+        .mat-mdc-form-field.mat-focused .mdc-floating-label {
+            color: $primary !important;
+        }
+        // Input text
+        .mat-mdc-input-element {
+            color: $text-primary;
+            font-size: 14px;
+        }
+        // Placeholder
+        .mat-mdc-input-element::placeholder {
+            color: $text-secondary;
+            opacity: 0.6;
+        }
+        // Prefix icon
+        .mat-mdc-form-field-icon-prefix {
+            color: $text-secondary;
+            padding-right: 8px;
+            mat-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+            }
+        }
+        .mat-mdc-form-field.mat-focused .mat-mdc-form-field-icon-prefix {
+            color: $primary;
+        }
+        // Remove default margins
+        .mat-mdc-form-field-subscript-wrapper {
+            display: none;
+        }
+    }
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: $text-primary;
+    margin-bottom: 6px;
+}
+
+.form-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    background: $bg-input;
+    border: 1px solid $border-color;
+    border-radius: 12px;
+    font-size: 14px;
+    color: $text-primary;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    &::placeholder {
+        color: $text-secondary;
+        opacity: 0.6;
+    }
+    &:focus {
+        outline: none;
+        border-color: $primary;
+        background: white;
+    }
+    &:hover {
+        border-color: darken($border-color, 5%);
+    }
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.form-checkbox {
+    margin-bottom: 20px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: $text-secondary;
+    cursor: pointer;
+    user-select: none;
+    input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin-right: 8px;
+        cursor: pointer;
+        accent-color: $primary;
+    }
+    span {
+        line-height: 1.4;
+    }
+}
+
+.forgot-link {
+    font-size: 13px;
+    color: $primary;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s ease;
+    &:hover {
+        opacity: 0.8;
+    }
+}
+
+.submit-button {
+    width: 100%;
+    height: 48px;
+    border-radius: 14px;
+    background: $primary;
+    color: white;
+    font-size: 15px;
+    font-weight: 500;
+    text-transform: none;
+    margin-bottom: 20px;
+    transition: all 0.2s ease;
+    &:hover:not(:disabled) {
+        background: $primary-dark;
+    }
+    &:active:not(:disabled) {
+        opacity: 0.9;
+    }
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.divider {
+    position: relative;
+    text-align: center;
+    margin: 20px 0;
+    span {
+        position: relative;
+        background: $bg-card;
+        padding: 0 12px;
+        font-size: 12px;
+        color: $text-secondary;
+        z-index: 1;
+    }
+    &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: $border-color;
+        z-index: 0;
+    }
+}
+
+.social-auth {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.social-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: $bg-input;
+    border: 1px solid $border-color;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    svg {
+        width: 20px;
+        height: 20px;
+        color: $text-primary;
+    }
+    &.facebook svg {
+        color: #1877F2;
+    }
+    &.twitter svg {
+        color: #1DA1F2;
+    }
+    // Google uses multiple colors in SVG - no override needed
+    &.apple svg {
+        color: #000000;
+    }
+    &:hover {
+        background: darken($bg-input, 3%);
+        border-color: darken($border-color, 10%);
+    }
+    &:active {
+        opacity: 0.8;
+    }
+}
+
+.form-footer {
+    text-align: center;
+    font-size: 13px;
+    color: $text-secondary;
+    margin: 0;
+    .link {
+        color: $primary;
+        text-decoration: none;
+        font-weight: 500;
+        transition: opacity 0.2s ease;
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+}
+
+// ============================================
+// RESPONSIVE
+// ============================================
+@media (max-width: 480px) {
+    .auth-card {
+        width: 95%;
+        padding: 28px 20px;
+        min-height: 480px;
+    }
+    .welcome-title {
+        font-size: 24px;
+    }
+    .form-title {
+        font-size: 20px;
+    }
+}
+
+@media (min-width: 768px) {
+    .auth-card {
+        max-width: 480px;
+    }
+    .back-button {
+        width: auto;
+        padding: 0 16px;
+        border-radius: 22px;
+        span {
+            display: inline;
+        }
+    }
+}
+
+// ============================================
+// ACCESSIBILITY
+// ============================================
+*:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+}
+
+button:focus-visible {
+    outline-offset: 4px;
+}
+
+// ============================================
+// REDUCED MOTION SUPPORT
+// ============================================
+@media (prefers-reduced-motion: reduce) {
+    .abstract-background {
+        .blob,
+        .wave {
+            animation: none !important;
+        }
+    }
+    .card-content {
+        animation: none !important;
+    }
+}
+
+
+mat-form-field {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  max-height: 55px;
+  margin-bottom: 15px;
+  border-radius: 7px;
+}
+
+.mdc-notched-outline__leading{
+  border-left: none !important;
+}
+.mat-mdc-notch-piece{
+  border: none !important;
+}
+.mdc-notched-outline__trailing{
+  border-right: none !important;
+}

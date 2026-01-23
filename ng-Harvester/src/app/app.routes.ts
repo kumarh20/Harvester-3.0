@@ -5,12 +5,17 @@ import { AddNewComponent } from './features/add-new/add-new.component';
 import { RecordsComponent } from './features/records/records.component';
 import { SettingsComponent } from './features/settings/settings.component';
 import { MoreComponent } from './features/more/more.component';
+import { AuthPageComponent } from './features/auth/auth-page.component';
 
 export const routes: Routes = [
   {
     path: '',
     redirectTo: '/dashboard',
     pathMatch: 'full'
+  },
+  {
+    path: 'auth',
+    component: AuthPageComponent
   },
   {
     path: 'dashboard',
