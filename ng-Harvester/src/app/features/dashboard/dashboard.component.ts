@@ -77,7 +77,7 @@ export class DashboardComponent implements OnInit {
   }
 
   private parseDate(dateString: string): Date | null {
-    const parts = dateString.split('-');
+    const parts = typeof dateString === 'string' ? dateString?.split('-') : [];
     if (parts.length === 3) {
       const day = parseInt(parts[0], 10);
       const month = parseInt(parts[1], 10) - 1; // JavaScript months are 0-indexed

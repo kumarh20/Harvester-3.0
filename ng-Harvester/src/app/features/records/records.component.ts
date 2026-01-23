@@ -61,6 +61,7 @@ export class RecordsComponent implements OnInit {
 
   ngOnInit(): void {
     // Records are automatically loaded from service
+    this.recordsService.loadRecords();
   }
 
   // Computed filtered records based on search
@@ -77,6 +78,8 @@ export class RecordsComponent implements OnInit {
     );
   });
 
+
+
   // Computed record count
   recordCount = computed(() => this.filteredRecords().length);
 
@@ -85,7 +88,7 @@ export class RecordsComponent implements OnInit {
     if (!record) return;
 
     const confirmMessage = this.translationService.getWithParams('messages.deleteConfirm', { farmerName: record.farmerName });
-    
+
     this.dialogService.confirm(
       confirmMessage,
       this.translationService.get('messages.deleteConfirmMessage'),
@@ -139,7 +142,7 @@ export class RecordsComponent implements OnInit {
 
   shareRecord(record: Record){
     const text: string = this.buildShareText(record);
-  
+
     if (navigator.share) {
       navigator.share({
         title: 'Farmer Record',
@@ -153,11 +156,11 @@ export class RecordsComponent implements OnInit {
   buildShareText(data: Record): string {
     return `
   📋 Farmer Record
-  
+
 Name           : ${data.farmerName}
 Contact Number : ${data.contactNumber}
 Date           : ${data.date}
-Land In Acres  : ${data.landInAcres} 
+Land In Acres  : ${data.landInAcres}
 Rate Per Acre  : ${data.ratePerAcre}
 Total Payment  : ${data.totalPayment}
 Paid On Sight  : ${data.paidOnSight}
@@ -170,5 +173,5 @@ Pending Amount : ${data.pendingAmount}
   callNumber(contactNumber: string): void {
     window.open(`tel:${contactNumber}`, '_system');
   }
-  
+
 }
