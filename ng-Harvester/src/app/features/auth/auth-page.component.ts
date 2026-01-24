@@ -39,6 +39,7 @@ type AuthState = 'WELCOME' | 'LOGIN' | 'SIGNUP';
 })
 export class AuthPageComponent {
   currentState = signal<AuthState>('WELCOME');
+  timeGreeting = signal(this.getTimeGreeting());
   loginForm!: FormGroup;
   signupForm!: FormGroup;
   rememberMe = signal(false);
@@ -89,6 +90,13 @@ export class AuthPageComponent {
         Validators.pattern(strongPasswordPattern)
       ]]
     });
+  }
+
+  private getTimeGreeting(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning!';
+    if (hour < 17) return 'Good afternoon!';
+    return 'Good evening!';
   }
 
 
