@@ -93,11 +93,21 @@ export class AuthPageComponent {
   }
 
   private getTimeGreeting(): string {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning!';
-    if (hour < 17) return 'Good afternoon!';
+    const now = new Date();
+    const hour = now.getHours(); // 0–23
+    const isAM = hour < 12;
+  
+    if (isAM) {
+      return 'Good morning!';
+    }
+  
+    if (hour < 17) {
+      return 'Good afternoon!';
+    }
+  
     return 'Good evening!';
   }
+  
 
 
   async onLogin(): Promise<void> {
