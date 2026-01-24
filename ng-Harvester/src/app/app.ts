@@ -248,4 +248,8 @@ export class App implements AfterViewInit {
     const key = labelMap[label] || label;
     return this.translationService.get(key);
   }
+
+  showNavigation() {
+    return !(this.router.url.includes('auth'));
+  }
 }

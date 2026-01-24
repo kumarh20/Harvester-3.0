@@ -46,7 +46,7 @@
     </main>
 
     <!-- Floating Navigation Bar with New Design -->
-    <nav class="floating-navigation">
+    <nav *ngIf="showNavigation()" class="floating-navigation">
         <div class="nav-container" #navContainer>
             <!-- Active pill background (slides to active tab) -->
             <!-- <div class="active-pill" #slidingBg></div> -->
