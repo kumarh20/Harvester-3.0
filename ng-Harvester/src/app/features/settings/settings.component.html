@@ -115,6 +115,10 @@
         <mat-icon>restore</mat-icon>
         {{ translationService.get('settings.resetButton') }}
       </button>
+      <button mat-stroked-button color="accent" (click)="logout()" class="full-width-button">
+        <mat-icon>logout</mat-icon>
+        {{ translationService.get('settings.logout') }}
+      </button>
         </mat-card-content>
     </mat-card>
 </div>

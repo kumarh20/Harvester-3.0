@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
 import { DialogService } from '../../shared/services/dialog.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
+import { AuthService } from '../../services/auth/auth-service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-settings',
@@ -44,7 +46,9 @@ export class SettingsComponent {
   constructor(
     private dialogService: DialogService,
     public translationService: TranslationService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private authService: AuthService,
+    private router: Router
   ) {
     this.loadSettings();
   }
@@ -227,5 +231,10 @@ export class SettingsComponent {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  async logout() {
+    await this.authService.logout();
+    this.router.navigate(['/auth']);
   }
 }

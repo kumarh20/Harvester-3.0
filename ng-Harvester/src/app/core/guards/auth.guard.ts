@@ -1,18 +1,15 @@
 import { inject } from '@angular/core';
-import { Router, CanActivateFn } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
+import { Auth } from '@angular/fire/auth';
 
-export const authGuard: CanActivateFn = (route, state) => {
+export const authGuard: CanActivateFn = () => {
+  const auth = inject(Auth);
   const router = inject(Router);
 
-  // Check if user is authenticated
-  // For development, you can set: localStorage.setItem('isAuthenticated', 'true');
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-
-  if (isAuthenticated) {
+  if (auth.currentUser) {
     return true;
-  } else {
-    console.warn('Authentication required. Set localStorage.setItem("isAuthenticated", "true") to proceed.');
-    // In production, redirect to login: router.navigate(['/login']);
-    return true; // Allow access for development
   }
+
+  router.navigate(['/auth']);
+  return false;
 };

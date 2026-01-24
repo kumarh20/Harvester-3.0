@@ -46,34 +46,51 @@
             <h2 class="form-title">Welcome back</h2>
 
             <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+                <!-- Phone Number Field -->
                 <mat-form-field appearance="outline" class="auth-form-field">
-                    <mat-label>Email</mat-label>
-                    <input matInput type="email" formControlName="email" placeholder="kristin.watson@example.com">
-                    <mat-icon matPrefix>email</mat-icon>
+                    <mat-label>Phone Number</mat-label>
+                    <input matInput type="tel" formControlName="phone" placeholder="Enter your phone number">
+                    <mat-icon matPrefix>phone</mat-icon>
+                    @if (loginForm.get('phone')?.hasError('required') && loginForm.get('phone')?.touched) {
+                    <mat-error>Phone number is required</mat-error>
+                    } @if (loginForm.get('phone')?.hasError('pattern') && loginForm.get('phone')?.touched) {
+                    <mat-error>Please enter a valid 10-digit phone number</mat-error>
+                    }
                 </mat-form-field>
 
+                <!-- Password Field -->
                 <mat-form-field appearance="outline" class="auth-form-field">
                     <mat-label>Password</mat-label>
-                    <input matInput type="password" formControlName="password" placeholder="••••••••••">
+                    <input matInput [type]="hideLoginPassword() ? 'password' : 'text'" formControlName="password" placeholder="Enter your password">
                     <mat-icon matPrefix>lock</mat-icon>
+                    <button mat-icon-button matSuffix type="button" (click)="hideLoginPassword.set(!hideLoginPassword())" [attr.aria-label]="'Toggle password visibility'">
+                        <mat-icon>{{hideLoginPassword() ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    </button> @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched) {
+                    <mat-error>Password is required</mat-error>
+                    } @if (loginForm.get('password')?.hasError('minlength') && loginForm.get('password')?.touched) {
+                    <mat-error>Password must be at least 8 characters</mat-error>
+                    } @if (loginForm.get('password')?.hasError('pattern') && loginForm.get('password')?.touched) {
+                    <mat-error>Password must contain uppercase, lowercase, number & special character</mat-error>
+                    }
                 </mat-form-field>
 
                 <div class="form-options">
                     <label class="checkbox-label">
-              <input
-                type="checkbox"
-                [checked]="rememberMe()"
-                (change)="rememberMe.set($any($event.target).checked)">
-              <span>Remember me</span>
-            </label>
+                        <input
+                            type="checkbox"
+                            [checked]="rememberMe()"
+                            (change)="rememberMe.set($any($event.target).checked)">
+                        <span>Remember me</span>
+                    </label>
                     <a href="#" class="forgot-link" (click)="$event.preventDefault()">
-              Forgot password?
-            </a>
+                        Forgot password?
+                    </a>
                 </div>
 
+                <!-- Sign In Button -->
                 <button type="submit" class="submit-button" [disabled]="loginForm.invalid" mat-flat-button>
-            Sign in
-          </button>
+                    Sign in
+                </button>
             </form>
 
             <div class="divider">
@@ -121,40 +138,65 @@
             <h2 class="form-title">Get Started</h2>
 
             <form [formGroup]="signupForm" (ngSubmit)="onSignup()">
+                <!-- Full Name Field -->
                 <mat-form-field appearance="outline" class="auth-form-field">
                     <mat-label>Full Name</mat-label>
                     <input matInput type="text" formControlName="fullName" placeholder="Enter Full Name">
                     <mat-icon matPrefix>person</mat-icon>
+                    @if (signupForm.get('fullName')?.hasError('required') && signupForm.get('fullName')?.touched) {
+                    <mat-error>Full name is required</mat-error>
+                    } @if (signupForm.get('fullName')?.hasError('minlength') && signupForm.get('fullName')?.touched) {
+                    <mat-error>Name must be at least 2 characters</mat-error>
+                    } @if (signupForm.get('fullName')?.hasError('maxlength') && signupForm.get('fullName')?.touched) {
+                    <mat-error>Name cannot exceed 50 characters</mat-error>
+                    }
                 </mat-form-field>
 
+                <!-- Phone Number Field -->
                 <mat-form-field appearance="outline" class="auth-form-field">
-                    <mat-label>Email</mat-label>
-                    <input matInput type="email" formControlName="email" placeholder="Enter Email">
-                    <mat-icon matPrefix>email</mat-icon>
+                    <mat-label>Phone Number</mat-label>
+                    <input matInput type="tel" formControlName="phone" placeholder="Enter phone number">
+                    <mat-icon matPrefix>phone</mat-icon>
+                    @if (signupForm.get('phone')?.hasError('required') && signupForm.get('phone')?.touched) {
+                    <mat-error>Phone number is required</mat-error>
+                    } @if (signupForm.get('phone')?.hasError('pattern') && signupForm.get('phone')?.touched) {
+                    <mat-error>Please enter a valid 10-digit phone number</mat-error>
+                    }
                 </mat-form-field>
 
+                <!-- Password Field -->
                 <mat-form-field appearance="outline" class="auth-form-field">
                     <mat-label>Password</mat-label>
-                    <input matInput type="password" formControlName="password" placeholder="Enter Password">
+                    <input matInput [type]="hideSignupPassword() ? 'password' : 'text'" formControlName="password" placeholder="Create a password">
                     <mat-icon matPrefix>lock</mat-icon>
+                    <button mat-icon-button matSuffix type="button" (click)="hideSignupPassword.set(!hideSignupPassword())" [attr.aria-label]="'Toggle password visibility'">
+                        <mat-icon>{{hideSignupPassword() ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    </button> @if (signupForm.get('password')?.hasError('required') && signupForm.get('password')?.touched) {
+                    <mat-error>Password is required</mat-error>
+                    } @if (signupForm.get('password')?.hasError('minlength') && signupForm.get('password')?.touched) {
+                    <mat-error>Password must be at least 8 characters</mat-error>
+                    } @if (signupForm.get('password')?.hasError('pattern') && signupForm.get('password')?.touched) {
+                    <mat-error>Must include: uppercase, lowercase, number & special character (@$!%*?&)</mat-error>
+                    }
                 </mat-form-field>
 
                 <div class="form-checkbox">
                     <label class="checkbox-label">
-              <input
-                type="checkbox"
-                [checked]="agreeToTerms()"
-                (change)="agreeToTerms.set($any($event.target).checked)">
-              <span>
-                I agree to the processing of
-                <a href="#" class="link" (click)="$event.preventDefault()">Personal data</a>
-              </span>
-            </label>
+                        <input
+                            type="checkbox"
+                            [checked]="agreeToTerms()"
+                            (change)="agreeToTerms.set($any($event.target).checked)">
+                        <span>
+                            I agree to the processing of
+                            <a href="#" class="link" (click)="$event.preventDefault()">Personal data</a>
+                        </span>
+                    </label>
                 </div>
 
+                <!-- Sign Up Button -->
                 <button type="submit" class="submit-button" [disabled]="signupForm.invalid || !agreeToTerms()" mat-flat-button>
-            Sign up
-          </button>
+                    Sign up
+                </button>
             </form>
 
             <div class="divider">
@@ -197,3 +239,5 @@
         }
     </div>
 </div>
+<!-- Firebase reCAPTCHA (Invisible) -->
+<div id="recaptcha-container"></div>

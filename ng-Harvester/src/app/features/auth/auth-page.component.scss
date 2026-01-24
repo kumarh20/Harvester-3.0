@@ -36,7 +36,7 @@ $border-color: #E5E7EB;
     top: 0;
     left: 0;
     right: 0;
-    height: 65vh;
+    height: 100vh;
     background: radial-gradient(circle at 80% 20%, rgba(186, 230, 253, 0.3), transparent 50%), radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.25), transparent 55%), linear-gradient(180deg, rgba(37, 99, 235, 1) 0%, rgba(59, 130, 246, 0.95) 40%, rgba(96, 165, 250, 0.9) 75%, rgba(147, 197, 253, 0.85) 100%);
     overflow: hidden;
     z-index: 1;
@@ -247,7 +247,10 @@ $border-color: #E5E7EB;
 // WHITE CARD CONTAINER
 // ============================================
 .auth-card {
-    position: relative;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     z-index: 5;
     width: 90%;
     max-width: 440px;
@@ -611,7 +614,7 @@ form {
     .auth-card {
         width: 95%;
         padding: 28px 20px;
-        min-height: 480px;
+        min-height: 283px;
     }
     .welcome-title {
         font-size: 24px;
@@ -623,7 +626,7 @@ form {
 
 @media (min-width: 768px) {
     .auth-card {
-        max-width: 480px;
+        max-width: 283px;
     }
     .back-button {
         width: auto;

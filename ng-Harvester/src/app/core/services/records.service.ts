@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { FirestoreService } from '../../services/firestore-service';
+import { FirestoreService } from '../../services/firestore/firestore-service';
 
 export interface Record {
   id: string;
@@ -27,7 +27,7 @@ export class RecordsService {
   constructor(private firestoreService: FirestoreService) {}
 
   async loadRecords(): Promise<void> {
-    const records = await this.firestoreService.getAllRecords();
+    const records = await this.firestoreService.getUserRecords();
     this.recordsSignal.set(records);
   }
   

@@ -7,6 +7,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { DialogService } from '../../shared/services/dialog.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { computed } from '@angular/core';
+import { AuthService } from '../../services/auth/auth-service';
+import { Router } from '@angular/router';
 
 interface Option {
   id: string;
@@ -34,7 +36,9 @@ export class MoreComponent {
   email: string = 'user@example.com';
   constructor(
     private dialogService: DialogService,
-    public translationService: TranslationService
+    public translationService: TranslationService,
+    private authService: AuthService,
+    private router: Router
   ) {}
   appVersion = '1.0.0';
 
