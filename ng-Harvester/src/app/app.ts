@@ -1,4 +1,4 @@
-import { Component, signal, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, signal, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild, ViewEncapsulation, OnInit } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -9,6 +9,8 @@ import { LoaderComponent } from './shared/components/loader/loader.component';
 import { RecordsService } from './core/services/records.service';
 import { TranslationService } from './shared/services/translation.service';
 import { LanguageService } from './shared/services/language.service';
+import { Auth, onAuthStateChanged } from '@angular/fire/auth';
+import { IdleService } from './core/services/idle-service';
 
 interface NavItem {
   label: string;
@@ -37,7 +39,7 @@ interface NavItem {
     ])
   ]
 })
-export class App implements AfterViewInit {
+export class App implements OnInit, AfterViewInit {
   protected activeRoute = signal('/dashboard');
   protected currentTab = signal('dashboard');
   protected isDarkTheme = signal(false);
@@ -57,10 +59,12 @@ export class App implements AfterViewInit {
   ];
 
   constructor(
+    private auth: Auth,
     private router: Router,
     private recordsService: RecordsService,
     public translationService: TranslationService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private idleService: IdleService
   ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -76,6 +80,19 @@ export class App implements AfterViewInit {
     if (this.router.url === '/' || this.router.url === '') {
       this.router.navigate(['/dashboard']);
     }
+  }
+
+  ngOnInit(): void {
+    onAuthStateChanged(this.auth, (user) => {
+      if (user) {
+        // ✅ Firebase ke paas valid session hai
+        this.idleService.startWatching(); // 👈 important
+        this.router.navigate(['/dashboard']);
+      } else {
+        // ❌ User login nahi hai
+        this.router.navigate(['/auth']);
+      }
+    });
   }
 
   ngAfterViewInit(): void {

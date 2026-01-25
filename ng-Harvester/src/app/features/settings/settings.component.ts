@@ -234,7 +234,8 @@ export class SettingsComponent {
   }
 
   async logout() {
-    await this.authService.logout();
-    this.router.navigate(['/auth']);
+    await this.authService.logout().then(() => {
+      this.router.navigate(['/auth']);
+    });
   }
 }
