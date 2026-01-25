@@ -1,0 +1,8 @@
+@if (loaderService.isLoading()) {
+<div class="loader-overlay" [class.fade-out]="loaderService.isHiding()">
+    <div class="loader-content">
+        <img src="assets/funnel.gif" alt="Loading..." class="loader-gif" />
+        <p class="loader-tagline">Secure • Fast • Reliable</p>
+    </div>
+</div>
+}

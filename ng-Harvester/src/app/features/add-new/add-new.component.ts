@@ -12,6 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RecordsService } from '../../core/services/records.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { LoaderService } from '../../shared/services/loader.service';
 import { TranslationService } from '../../shared/services/translation.service';
 
 @Component({
@@ -75,7 +76,8 @@ export class AddNewComponent implements OnInit {
     private toastService: ToastService,
     private route: ActivatedRoute,
     private router: Router,
-    public translationService: TranslationService
+    public translationService: TranslationService,
+    private loaderService: LoaderService
   ) {
     this.initializeForm();
   }
@@ -312,6 +314,8 @@ export class AddNewComponent implements OnInit {
 
     // Show loading state
     this.isSubmitting.set(true);
+    this.loaderService.show();
+    
     const loadingMessage = this.isEditMode() 
       ? this.translationService.get('common.updating')
       : this.translationService.get('common.saving');
@@ -358,6 +362,7 @@ export class AddNewComponent implements OnInit {
       this.toastService.error(errorMessage);
     } finally {
       this.isSubmitting.set(false);
+      this.loaderService.hide();
     }
   }
 

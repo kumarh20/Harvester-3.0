@@ -12,6 +12,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { RecordsService } from '../../core/services/records.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { DialogService } from '../../shared/services/dialog.service';
+import { LoaderService } from '../../shared/services/loader.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
 
@@ -56,12 +57,21 @@ export class RecordsComponent implements OnInit {
     private dialogService: DialogService,
     private router: Router,
     public translationService: TranslationService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private loaderService: LoaderService
   ) {}
 
-  ngOnInit(): void {
-    // Records are automatically loaded from service
-    this.recordsService.loadRecords();
+  async ngOnInit(): Promise<void> {
+    // Show loader while fetching records
+    this.loaderService.show();
+
+    try {
+      // Records are automatically loaded from service
+      await this.recordsService.loadRecords();
+    } finally {
+      // Hide loader once records are loaded
+      this.loaderService.hide();
+    }
   }
 
   // Computed filtered records based on search

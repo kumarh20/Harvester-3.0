@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { AuthService } from '../../services/auth/auth-service';
 import { UserService } from '../../services/user/user-service';
+import { LoaderService } from '../../shared/services/loader.service';
 import { Router } from '@angular/router';
 type AuthState = 'WELCOME' | 'LOGIN' | 'SIGNUP';
 
@@ -53,7 +54,8 @@ export class AuthPageComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private loaderService: LoaderService
   ) {
     this.initializeForms();
   }
@@ -113,6 +115,9 @@ export class AuthPageComponent {
   async onLogin(): Promise<void> {
     if (this.loginForm.invalid) return;
 
+    // Show loader
+    this.loaderService.show();
+
     try {
       const phone = this.loginForm.get('phone')?.value;
       const password = this.loginForm.get('password')?.value;
@@ -122,15 +127,21 @@ export class AuthPageComponent {
       await this.userService.updateLastLogin(user.uid);
 
       // Navigate to dashboard
-      this.router.navigate(['/dashboard']);
+      await this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Login error:', error);
       // Handle error (show message to user)
+    } finally {
+      // Hide loader
+      this.loaderService.hide();  
     }
   }
 
   async onSignup(): Promise<void> {
     if (this.signupForm.invalid || !this.agreeToTerms()) return;
+
+    // Show loader
+    this.loaderService.show();
 
     try {
       const fullName = this.signupForm.get('fullName')?.value;
@@ -143,40 +154,15 @@ export class AuthPageComponent {
       await this.userService.createUser(user.uid, fullName, phone);
 
       // Navigate to dashboard
-      this.router.navigate(['/dashboard']);
+      await this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Signup error:', error);
       // Handle error (show message to user)
+    } finally {
+      // Hide loader
+      this.loaderService.hide();
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   setState(state: AuthState): void {
     this.currentState.set(state);

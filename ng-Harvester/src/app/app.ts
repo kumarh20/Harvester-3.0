@@ -5,6 +5,7 @@ import { filter } from 'rxjs/operators';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatIconModule } from '@angular/material/icon';
 import { ToastComponent } from './shared/components/toast/toast.component';
+import { LoaderComponent } from './shared/components/loader/loader.component';
 import { RecordsService } from './core/services/records.service';
 import { TranslationService } from './shared/services/translation.service';
 import { LanguageService } from './shared/services/language.service';
@@ -21,7 +22,8 @@ interface NavItem {
     CommonModule,
     RouterOutlet,
     MatIconModule,
-    ToastComponent
+    ToastComponent,
+    LoaderComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
