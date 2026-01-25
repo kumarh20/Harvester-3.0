@@ -1,4 +1,11 @@
 <div class="records-container">
+    <!-- Skeleton Loading -->
+    @if (isLoading()) {
+        <app-record-skeleton [count]="4"></app-record-skeleton>
+    }
+
+    <!-- Content -->
+    @if (!isLoading()) {
     <!-- Header -->
     <div class="records-header">
         <h1 class="header-title">{{ translationService.get('records.title') }}</h1>
@@ -108,6 +115,7 @@
                         </div>
                     </div>
             </mat-card>
-            </div>
         </div>
     </div>
+    }
+</div>

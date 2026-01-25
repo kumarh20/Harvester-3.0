@@ -12,9 +12,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { RecordsService } from '../../core/services/records.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { DialogService } from '../../shared/services/dialog.service';
-import { LoaderService } from '../../shared/services/loader.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
+import { RecordSkeletonComponent } from '../../shared/components/skeleton/record-skeleton/record-skeleton.component';
 
 interface Record {
   id: string;
@@ -42,7 +42,8 @@ interface Record {
     MatIconModule,
     MatButtonModule,
     MatListModule,
-    MatExpansionModule
+    MatExpansionModule,
+    RecordSkeletonComponent
   ],
   templateUrl: './records.component.html',
   styleUrl: './records.component.scss'
@@ -50,6 +51,7 @@ interface Record {
 export class RecordsComponent implements OnInit {
   searchQuery = signal('');
   expandedId = signal<string | null>(null);
+  isLoading = signal(true);
 
   constructor(
     public recordsService: RecordsService,
@@ -57,20 +59,16 @@ export class RecordsComponent implements OnInit {
     private dialogService: DialogService,
     private router: Router,
     public translationService: TranslationService,
-    private languageService: LanguageService,
-    private loaderService: LoaderService
+    private languageService: LanguageService
   ) {}
 
   async ngOnInit(): Promise<void> {
-    // Show loader while fetching records
-    this.loaderService.show();
+    this.isLoading.set(true);
 
     try {
-      // Records are automatically loaded from service
       await this.recordsService.loadRecords();
     } finally {
-      // Hide loader once records are loaded
-      this.loaderService.hide();
+      this.isLoading.set(false);
     }
   }
 

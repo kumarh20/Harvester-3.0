@@ -1,4 +1,11 @@
 <div class="dashboard-container">
+  <!-- Skeleton Loading -->
+  @if (isLoading()) {
+    <app-dashboard-skeleton></app-dashboard-skeleton>
+  }
+
+  <!-- Content -->
+  @if (!isLoading()) {
   <!-- Balance Card -->
   <div class="balance-card">
     <div class="balance-label">Total Balance</div>
@@ -131,5 +138,5 @@
             </button>
 </mat-card-content>
 </mat-card>
+  }
 </div>
-

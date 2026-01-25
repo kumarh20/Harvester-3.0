@@ -8,6 +8,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { RecordsService, Record } from '../../core/services/records.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
+import { DashboardSkeletonComponent } from '../../shared/components/skeleton/dashboard-skeleton/dashboard-skeleton.component';
 
 type PeriodType = 'today' | 'week' | 'month' | 'all';
 
@@ -30,7 +31,8 @@ interface Stats {
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatGridListModule
+    MatGridListModule,
+    DashboardSkeletonComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -43,6 +45,7 @@ export class DashboardComponent implements OnInit {
   weekCount = signal(0);
   monthCount = signal(0);
   allCount = signal(0);
+  isLoading = signal(true);
 
   filteredRecords = computed(() => {
     const period = this.selectedPeriod();
@@ -62,11 +65,20 @@ export class DashboardComponent implements OnInit {
     this.updatePeriodCounts();
   }
 
-  ngOnInit(): void {
-    this.updatePeriodCounts();
+  async ngOnInit(): Promise<void> {
+    this.isLoading.set(true);
 
-    // Update counts whenever records change
-    // This ensures period counts update after adding/deleting records
+    try {
+      await this.recordsService.loadRecords();
+      this.updatePeriodCounts();
+      
+      setTimeout(() => {
+        this.isLoading.set(false);
+      }, 800);
+    } catch (error) {
+      this.isLoading.set(false);
+    }
+
     const intervalId = setInterval(() => {
       this.updatePeriodCounts();
     }, 1000);
