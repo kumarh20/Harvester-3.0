@@ -151,6 +151,7 @@ export interface Translations {
       resetSettings: string;
       resetDescription: string;
       resetButton: string;
+      logout: string;
     };
 
     // More
@@ -316,7 +317,8 @@ const getEnglishTranslations = (): Translations => ({
     clearAllData: 'Clear All Data',
     resetSettings: 'Reset',
     resetDescription: 'Reset all settings to default values',
-    resetButton: 'Reset Settings'
+    resetButton: 'Reset Settings',
+    logout: 'Logout'
   },
   more: {
     title: 'More Options',
@@ -482,7 +484,8 @@ const TRANSLATIONS: Record<Language, Translations> = {
       clearAllData: 'Clear All Data',
       resetSettings: 'Reset',
       resetDescription: 'Reset all settings to default values',
-      resetButton: 'Reset Settings'
+      resetButton: 'Reset Settings',
+      logout: 'Logout'
     },
     more: {
       title: 'More Options',
