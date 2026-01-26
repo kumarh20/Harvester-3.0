@@ -496,3 +496,15 @@
         }
     }
 }
+
+// Logout Card - Danger Zone
+.logout-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    cursor: pointer;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border: none;
+    border-left: 4px solid #EF4444; // Red vertical accent line on left
+}

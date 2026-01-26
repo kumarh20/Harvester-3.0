@@ -2,6 +2,7 @@ import { Component, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
 import { LanguageService } from '../../services/language.service';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-header',
@@ -16,7 +17,8 @@ export class HeaderComponent {
 
   constructor(
     public translationService: TranslationService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    public auth: Auth
   ) {}
 
   onThemeToggle(): void {
