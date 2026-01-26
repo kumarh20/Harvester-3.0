@@ -1,11 +1,12 @@
-import { Component, signal, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild, ViewEncapsulation, OnInit } from '@angular/core';
+import { Component, signal, ViewEncapsulation, OnInit } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { MatIconModule } from '@angular/material/icon';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { LoaderComponent } from './shared/components/loader/loader.component';
+import { HeaderComponent } from './shared/components/header/header.component';
+import { BottomNavigationComponent } from './shared/components/bottom-navigation/bottom-navigation.component';
 import { RecordsService } from './core/services/records.service';
 import { TranslationService } from './shared/services/translation.service';
 import { LanguageService } from './shared/services/language.service';
@@ -23,9 +24,10 @@ interface NavItem {
   imports: [
     CommonModule,
     RouterOutlet,
-    MatIconModule,
     ToastComponent,
-    LoaderComponent
+    LoaderComponent,
+    HeaderComponent,
+    BottomNavigationComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -39,14 +41,10 @@ interface NavItem {
     ])
   ]
 })
-export class App implements OnInit, AfterViewInit {
+export class App implements OnInit {
   protected activeRoute = signal('/dashboard');
   protected currentTab = signal('dashboard');
   protected isDarkTheme = signal(false);
-
-  @ViewChildren('navItem') navItemElements!: QueryList<ElementRef>;
-  @ViewChild('slidingBg') slidingBgElement!: ElementRef;
-  @ViewChild('navContainer') navContainerElement!: ElementRef;
 
   // Navigation items - labels kept as English for icon matching logic
   // Display will use translations via getNavLabel()
@@ -70,8 +68,6 @@ export class App implements OnInit, AfterViewInit {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
         this.activeRoute.set(event.url);
-        // Wait for view to update, then move slider
-        setTimeout(() => this.moveSliderToActive(), 0);
       });
 
     this.initializeTheme();
@@ -95,77 +91,10 @@ export class App implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit(): void {
-    // Initial slider position
-    setTimeout(() => this.moveSliderToActive(), 100);
-  }
-
   onNavChange(route: string): void {
     this.router.navigate([route]);
   }
 
-  isActive(route: string): boolean {
-    // Check if current route exactly matches or starts with the nav item route
-    // This handles both /add-new and /add-new/:id cases
-    const currentRoute = this.activeRoute();
-
-    // Exact match
-    if (currentRoute === route) {
-      return true;
-    }
-
-    // Check if current route starts with nav item route (for child routes like /add-new/:id)
-    // But don't match partial route segments (e.g., /settings shouldn't match /settings-advanced)
-    if (currentRoute.startsWith(route + '/')) {
-      return true;
-    }
-
-    return false;
-  }
-
-  moveSliderToActive(): void {
-    if (!this.slidingBgElement || !this.navItemElements) return;
-
-    const currentRoute = this.activeRoute();
-
-    // Find the active nav item using the same logic as isActive
-    const activeIndex = this.navItems.findIndex(item => {
-      // Exact match
-      if (currentRoute === item.route) {
-        return true;
-      }
-      // Check if current route starts with nav item route (for child routes)
-      if (currentRoute.startsWith(item.route + '/')) {
-        return true;
-      }
-      return false;
-    });
-
-    if (activeIndex === -1) return;
-
-    const navItemsArray = this.navItemElements.toArray();
-    if (navItemsArray.length === 0 || !navItemsArray[activeIndex]) return;
-
-    const activeElement = navItemsArray[activeIndex].nativeElement;
-    const containerElement = this.navContainerElement.nativeElement;
-    const pillElement = this.slidingBgElement.nativeElement;
-
-    // Get positions relative to container
-    const containerRect = containerElement.getBoundingClientRect();
-    const activeRect = activeElement.getBoundingClientRect();
-
-    // Calculate position and width for the pill
-    // Pill should fit the content (icon + text when active)
-    const left = (activeRect.left - containerRect.left) + 12;
-    const contentWidth = activeElement.querySelector('.nav-item')?.getBoundingClientRect().width || activeRect.width;
-
-    // Pill padding: 12px 16px, so we need to account for that
-    const pillWidth = Math.max(contentWidth, 40); // Minimum 40px height = width for pill shape
-
-    // Apply to pill (positioned absolutely within container)
-    pillElement.style.transform = `translateX(${left}px)`;
-    pillElement.style.width = `${pillWidth}px`;
-  }
 
   switchTab(tabName: string): void {
     this.currentTab.set(tabName);
@@ -270,5 +199,15 @@ export class App implements OnInit, AfterViewInit {
 
   showNavigation() {
     return !(this.router.url.includes('auth'));
+  }
+
+  /**
+   * Get nav items with translated labels
+   */
+  getNavItemsWithTranslations() {
+    return this.navItems.map(item => ({
+      ...item,
+      label: this.getNavLabel(item.label)
+    }));
   }
 }

@@ -1,0 +1,15 @@
+<nav class="floating-navigation">
+    <div class="nav-container" #navContainer>
+        <!-- Active pill background (slides to active tab) -->
+        <!-- <div class="active-pill" #slidingBg></div> -->
+
+        @for (item of navItems(); track item.route; let i = $index) {
+        <div class="nav-item" [class.active]="isActive(item.route)" (click)="onNavChange(item.route)" #navItem>
+            <div class="nav-content">
+                <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+                <span class="nav-label">{{ item.label }}</span>
+            </div>
+        </div>
+        }
+    </div>
+</nav>

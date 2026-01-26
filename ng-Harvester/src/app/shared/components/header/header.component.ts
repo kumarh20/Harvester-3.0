@@ -1,14 +1,33 @@
-import { Component, input } from '@angular/core';
-import { MatToolbar } from '@angular/material/toolbar';
-import { MatIcon } from '@angular/material/icon';
-import { MatIconButton } from '@angular/material/button';
+import { Component, output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslationService } from '../../services/translation.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-header',
-  imports: [MatToolbar, MatIcon, MatIconButton],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
-  title = input<string>('Harvester Tracker');
+  themeToggle = output<void>();
+  languageToggle = output<void>();
+
+  constructor(
+    public translationService: TranslationService,
+    private languageService: LanguageService
+  ) {}
+
+  onThemeToggle(): void {
+    this.themeToggle.emit();
+  }
+
+  onLanguageToggle(): void {
+    this.languageToggle.emit();
+  }
+
+  getCurrentLanguage(): string {
+    return this.languageService.getCurrentLanguage();
+  }
 }
