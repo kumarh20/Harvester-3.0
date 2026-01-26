@@ -30,10 +30,10 @@
             </div>
 
             <div class="welcome-actions">
-                <button class="action-button secondary" (click)="setState('LOGIN')" mat-stroked-button>
+                <button class="action-button primary" (click)="setState('LOGIN')" mat-raised-button color="primary">
             Sign in
           </button>
-                <button class="action-button primary" (click)="setState('SIGNUP')" mat-flat-button>
+                <button class="action-button primary" (click)="setState('SIGNUP')" mat-raised-button color="primary">
             Sign up
           </button>
             </div>
@@ -88,7 +88,7 @@
                 </div>
 
                 <!-- Sign In Button -->
-                <button type="submit" class="submit-button" [disabled]="loginForm.invalid" mat-flat-button>
+                <button type="submit" class="submit-button" [disabled]="loginForm.invalid" mat-raised-button color="primary">
                     Sign in
                 </button>
             </form>
@@ -194,7 +194,7 @@
                 </div>
 
                 <!-- Sign Up Button -->
-                <button type="submit" class="submit-button" [disabled]="signupForm.invalid || !agreeToTerms()" mat-flat-button>
+                <button type="submit" class="submit-button" [disabled]="signupForm.invalid || !agreeToTerms()" mat-raised-button color="primary">
                     Sign up
                 </button>
             </form>
