@@ -154,7 +154,8 @@ export class App implements OnInit {
       return sum + (record.totalPayment || 0);
     }, 0);
 
-    const locale = this.languageService.isHindi() ? 'hi-IN' : 'en-IN';
+    const currentLang = this.languageService.getCurrentLanguage();
+    const locale = currentLang === 'hi' ? 'hi-IN' : 'en-IN';
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'INR',

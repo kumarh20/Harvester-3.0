@@ -192,7 +192,8 @@ export class DashboardComponent implements OnInit {
   }
 
   formatCurrency(amount: number): string {
-    const locale = this.languageService.isHindi() ? 'hi-IN' : 'en-IN';
+    const currentLang = this.languageService.getCurrentLanguage();
+    const locale = currentLang === 'hi' ? 'hi-IN' : 'en-IN';
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'INR',

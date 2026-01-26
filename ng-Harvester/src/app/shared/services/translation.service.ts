@@ -79,6 +79,8 @@ export interface Translations {
     editRecord: string;
     deleteRecord: string;
     shareRecord: string;
+    today: string;
+    yesterday: string;
   };
 
   // Dashboard
@@ -253,7 +255,9 @@ const getEnglishTranslations = (): Translations => ({
     fullPayment: 'Full Payment',
     editRecord: 'Edit',
     deleteRecord: 'Delete',
-    shareRecord: 'share'
+    shareRecord: 'share',
+    today: 'Today',
+    yesterday: 'Yesterday'
   },
   dashboard: {
     title: 'Dashboard',
@@ -404,29 +408,31 @@ const TRANSLATIONS: Record<Language, Translations> = {
       fillAllFields: 'Please fill all required fields correctly'
     },
     records: {
-      title: 'All Records',
-      subtitle: 'Total {{count}} records found',
-      searchPlaceholder: 'Search by name, number or date',
-      noRecords: 'No records found',
-      noRecordsSubtitle: 'Go to "Add New" tab to add new entry',
-      changeSearch: 'Try changing your search',
-      addNewRecord: 'Go to "Add New" tab to add new entry',
-      date: 'Date',
-      land: 'Land (Acres)',
-      rate: 'Rate per Acre',
-      totalAmount: 'Total Amount',
-      cashPaid: 'Cash Paid',
-      pendingAmount: 'Pending Amount',
-      fullPayment: 'Full Payment',
-      editRecord: 'Edit',
-      deleteRecord: 'Delete',
-      shareRecord: 'share'
+      title: 'सभी रिकॉर्ड',
+      subtitle: 'कुल {{count}} रिकॉर्ड मिले',
+      searchPlaceholder: 'नाम, नंबर या तारीख से खोजें',
+      noRecords: 'कोई रिकॉर्ड नहीं मिला',
+      noRecordsSubtitle: 'नई एंट्री जोड़ने के लिए "नया जोड़ें" टैब पर जाएं',
+      changeSearch: 'अपनी खोज बदलने का प्रयास करें',
+      addNewRecord: 'नई एंट्री जोड़ने के लिए "नया जोड़ें" टैब पर जाएं',
+      date: 'तारीख',
+      land: 'जमीन (एकड़)',
+      rate: 'प्रति एकड़ दर',
+      totalAmount: 'कुल राशि',
+      cashPaid: 'नकद भुगतान',
+      pendingAmount: 'बकाया राशि',
+      fullPayment: 'पूर्ण भुगतान',
+      editRecord: 'संपादित करें',
+      deleteRecord: 'हटाएं',
+      shareRecord: 'साझा करें',
+      today: 'आज',
+      yesterday: 'कल'
     },
     dashboard: {
-      title: 'Dashboard',
-      subtitle: 'Overview of your records',
-      selectPeriod: 'Select Time Period',
-      today: 'Today',
+      title: 'डैशबोर्ड',
+      subtitle: 'आपके रिकॉर्ड का अवलोकन',
+      selectPeriod: 'समय अवधि चुनें',
+      today: 'आज',
       week: 'Week',
       month: 'Month',
       all: 'All',

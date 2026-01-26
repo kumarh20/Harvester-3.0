@@ -29,6 +29,12 @@ interface Record {
   fullPaymentDate?: string;
 }
 
+interface GroupedRecords {
+  dateLabel: string;
+  date: string;
+  records: Record[];
+}
+
 @Component({
   selector: 'app-records',
   standalone: true,
@@ -86,7 +92,36 @@ export class RecordsComponent implements OnInit {
     );
   });
 
+  // Computed grouped records by date
+  groupedRecords = computed(() => {
+    const records = this.filteredRecords();
+    const groups = new Map<string, Record[]>();
 
+    // Group records by date
+    records.forEach(record => {
+      const dateKey = record.date;
+      if (!groups.has(dateKey)) {
+        groups.set(dateKey, []);
+      }
+      groups.get(dateKey)?.push(record);
+    });
+
+    // Convert to array and sort by date (newest first)
+    const groupedArray: GroupedRecords[] = Array.from(groups.entries())
+      .map(([date, records]) => ({
+        dateLabel: this.getDateLabel(date),
+        date: date,
+        records: records.sort((a, b) => b.id.localeCompare(a.id)) // Sort by ID descending
+      }))
+      .sort((a, b) => {
+        // Sort groups by date (newest first)
+        const dateA = this.parseDate(a.date);
+        const dateB = this.parseDate(b.date);
+        return (dateB?.getTime() || 0) - (dateA?.getTime() || 0);
+      });
+
+    return groupedArray;
+  });
 
   // Computed record count
   recordCount = computed(() => this.filteredRecords().length);
@@ -140,7 +175,8 @@ export class RecordsComponent implements OnInit {
   }
 
   formatCurrency(amount: number): string {
-    const locale = this.languageService.isHindi() ? 'hi-IN' : 'en-IN';
+    const currentLang = this.languageService.getCurrentLanguage();
+    const locale = currentLang === 'hi' ? 'hi-IN' : 'en-IN';
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'INR',
@@ -180,6 +216,69 @@ Pending Amount : ${data.pendingAmount}
 
   callNumber(contactNumber: string): void {
     window.open(`tel:${contactNumber}`, '_system');
+  }
+
+  /**
+   * Parse date string (supports both YYYY-MM-DD and DD-MM-YYYY formats)
+   */
+  private parseDate(dateString: string): Date | null {
+    if (!dateString) return null;
+    
+    const parts = dateString.split('-');
+    if (parts.length !== 3) return null;
+
+    // Check if format is YYYY-MM-DD (ISO format)
+    if (parts[0].length === 4) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      return new Date(year, month, day);
+    }
+    
+    // Otherwise assume DD-MM-YYYY format
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+    return new Date(year, month, day);
+  }
+
+  /**
+   * Get date label (Today, Yesterday, or formatted date)
+   */
+  getDateLabel(dateString: string): string {
+    const recordDate = this.parseDate(dateString);
+    if (!recordDate) return dateString;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const recordDateOnly = new Date(recordDate);
+    recordDateOnly.setHours(0, 0, 0, 0);
+
+    // Check if today
+    if (recordDateOnly.getTime() === today.getTime()) {
+      return this.translationService.get('records.today') || 'Today';
+    }
+
+    // Check if yesterday
+    if (recordDateOnly.getTime() === yesterday.getTime()) {
+      return this.translationService.get('records.yesterday') || 'Yesterday';
+    }
+
+    // Format as date based on current language selection
+    const options: Intl.DateTimeFormatOptions = {
+      day: 'numeric',
+      month: 'short',
+      year: recordDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+    };
+
+    // Use the current language from service
+    const currentLang = this.languageService.getCurrentLanguage();
+    const locale = currentLang === 'hi' ? 'hi-IN' : 'en-IN';
+    return recordDate.toLocaleDateString(locale, options);
   }
 
 }

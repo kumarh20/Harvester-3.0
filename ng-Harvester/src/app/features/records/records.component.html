@@ -32,8 +32,15 @@
             </p>
         </div>
 
-        <!-- Record Cards -->
-        <div *ngFor="let record of filteredRecords()" class="record-card-wrapper">
+        <!-- Grouped Records by Date -->
+        <div *ngFor="let group of groupedRecords()" class="date-group">
+            <!-- Date Pill -->
+            <div class="date-pill">
+                <span>{{ group.dateLabel }}</span>
+            </div>
+
+            <!-- Record Cards in this group -->
+            <div *ngFor="let record of group.records" class="record-card-wrapper">
             <!-- Compact View -->
             <mat-card class="record-card" [class.expanded]="isExpanded(record.id)" (click)="toggleExpand(record.id)">
                 <div class="record-compact">
@@ -115,6 +122,7 @@
                         </div>
                     </div>
             </mat-card>
+            </div>
         </div>
     </div>
     }
