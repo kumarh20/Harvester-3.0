@@ -14,6 +14,7 @@ import { RecordsService } from '../../core/services/records.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { LoaderService } from '../../shared/services/loader.service';
 import { TranslationService } from '../../shared/services/translation.service';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-add-new',
@@ -77,7 +78,8 @@ export class AddNewComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     public translationService: TranslationService,
-    private loaderService: LoaderService
+    private loaderService: LoaderService,
+    private auth: Auth
   ) {
     this.initializeForm();
   }
@@ -321,9 +323,13 @@ export class AddNewComponent implements OnInit {
       : this.translationService.get('common.saving');
     this.toastService.info(loadingMessage);
 
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) throw new Error('Not authenticated');
+
     try {
       // Prepare data for API
       const recordData = {
+        uid: uid,
         farmerName: formValue.farmerName,
         contactNumber: formValue.contactNumber,
         date: this.convertDateToISO(formValue.date),
