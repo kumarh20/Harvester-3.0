@@ -87,7 +87,7 @@
 
                     <mat-form-field appearance="outline" class="form-field">
                         <mat-label>{{ translationService.get('form.paymentDate') }}</mat-label>
-                        <input matInput [matDatepicker]="paymentDatePicker" formControlName="fullPaymentDate" />
+                        <input matInput [matDatepicker]="paymentDatePicker" formControlName="fullPaymentDate" [min]="minPaymentDate()" />
                         <mat-datepicker-toggle matSuffix [for]="paymentDatePicker"></mat-datepicker-toggle>
                         <mat-datepicker #paymentDatePicker></mat-datepicker>
                         <mat-icon matPrefix>schedule</mat-icon>

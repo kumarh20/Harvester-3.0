@@ -71,6 +71,12 @@ export class AddNewComponent implements OnInit {
       : this.translationService.get('common.save')
   );
 
+  // Computed signal for minimum payment date
+  // Returns today's date when creating new record, null when editing (allows past dates)
+  minPaymentDate = computed(() => 
+    this.isEditMode() ? null : new Date()
+  );
+
   constructor(
     private fb: FormBuilder,
     private recordsService: RecordsService,
