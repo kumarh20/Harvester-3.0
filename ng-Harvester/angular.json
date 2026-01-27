@@ -13,8 +13,7 @@
                     "builder": "@angular/build:application",
                     "options": {
                         "outputPath": "dist/ng-harvester",
-                        "baseHref": "/",
-                        "deployUrl": "/",
+                        "baseHref": "/Harvester-3.0/", // for android - "baseHref": "/", "deployUrl": "/",
                         "browser": "src/main.ts",
                         "tsConfig": "tsconfig.app.json",
                         "inlineStyleLanguage": "scss",
