@@ -1,4 +1,4 @@
-import { Component, signal, ViewEncapsulation, OnInit } from '@angular/core';
+import { Component, signal, ViewEncapsulation, OnInit, NgZone } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -62,7 +62,8 @@ export class App implements OnInit {
     private recordsService: RecordsService,
     public translationService: TranslationService,
     private languageService: LanguageService,
-    private idleService: IdleService
+    private idleService: IdleService,
+    private ngZone: NgZone
   ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -80,14 +81,17 @@ export class App implements OnInit {
 
   ngOnInit(): void {
     onAuthStateChanged(this.auth, (user) => {
-      if (user) {
-        // ✅ Firebase ke paas valid session hai
-        this.idleService.startWatching(); // 👈 important
-        this.router.navigate(['/dashboard']);
-      } else {
-        // ❌ User login nahi hai
-        this.router.navigate(['/auth']);
-      }
+      // Run inside Angular zone for proper change detection on Safari/iOS
+      this.ngZone.run(() => {
+        if (user) {
+          // ✅ Firebase ke paas valid session hai
+          this.idleService.startWatching(); // 👈 important
+          this.router.navigate(['/dashboard']);
+        } else {
+          // ❌ User login nahi hai
+          this.router.navigate(['/auth']);
+        }
+      });
     });
   }
 

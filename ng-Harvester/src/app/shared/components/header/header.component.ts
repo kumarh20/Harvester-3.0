@@ -1,4 +1,4 @@
-import { Component, output, signal, OnInit } from '@angular/core';
+import { Component, output, signal, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
 import { LanguageService } from '../../services/language.service';
@@ -21,13 +21,22 @@ export class HeaderComponent implements OnInit {
   constructor(
     public translationService: TranslationService,
     private languageService: LanguageService,
-    private auth: Auth
-  ) {}
+    private auth: Auth,
+    private ngZone: NgZone
+  ) {
+    // Check initial auth state immediately
+    if (this.auth.currentUser) {
+      this.currentUser.set(this.auth.currentUser);
+    }
+  }
 
   ngOnInit(): void {
     // Listen to auth state changes and update signal
+    // Run inside Angular zone to ensure change detection works on Safari/iOS
     onAuthStateChanged(this.auth, (user) => {
-      this.currentUser.set(user);
+      this.ngZone.run(() => {
+        this.currentUser.set(user);
+      });
     });
   }
 
