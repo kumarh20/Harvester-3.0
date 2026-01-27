@@ -6,3 +6,7 @@ ng build --output-path ../docs
 
 --for ng-harvester repo--
 ng build --configuration production --base-href /ng-harvester/
+
+for android release 
+angular.json 
+ // for android - "baseHref": "/", "deployUrl": "/"
