@@ -1,4 +1,4 @@
-import { Component, signal, ViewEncapsulation } from '@angular/core';
+import { Component, signal, ViewEncapsulation, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,7 +8,9 @@ import { DialogService } from '../../shared/services/dialog.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { computed } from '@angular/core';
 import { AuthService } from '../../services/auth/auth-service';
+import { UserService } from '../../services/user/user-service';
 import { Router } from '@angular/router';
+import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 
 interface Option {
   id: string;
@@ -16,6 +18,14 @@ interface Option {
   description: string;
   icon: string;
   action?: () => void;
+}
+
+interface UserData {
+  uid: string;
+  name: string;
+  phone: string;
+  createdAt: any;
+  lastLoginAt: any;
 }
 
 @Component({
@@ -32,14 +42,46 @@ interface Option {
   styleUrl: './more.component.scss',
   encapsulation: ViewEncapsulation.None
 })
-export class MoreComponent {
-  email: string = 'user@example.com';
+export class MoreComponent implements OnInit {
+  // User data signals
+  currentUser = signal<User | null>(null);
+  userData = signal<UserData | null>(null);
+  userName = signal<string>('User Name');
+  userPhone = signal<string>('');
+  
   constructor(
     private dialogService: DialogService,
     public translationService: TranslationService,
     private authService: AuthService,
+    private userService: UserService,
+    private auth: Auth,
     private router: Router
   ) {}
+  
+  ngOnInit(): void {
+    // Listen to auth state changes
+    onAuthStateChanged(this.auth, async (user) => {
+      this.currentUser.set(user);
+      if (user) {
+        // Fetch user data from Firestore
+        await this.loadUserData(user.uid);
+      }
+    });
+  }
+  
+  private async loadUserData(uid: string): Promise<void> {
+    try {
+      const data = await this.userService.getUser(uid) as UserData;
+      if (data) {
+        this.userData.set(data);
+        this.userName.set(data.name || 'User Name');
+        this.userPhone.set(data.phone || '');
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  }
+  
   appVersion = '1.0.0';
 
   appName = computed(() => this.translationService.get('app.appTitle'));
@@ -65,6 +107,13 @@ export class MoreComponent {
       description: this.translationService.get('more.version') + ' ' + this.appVersion,
       icon: 'info',
       action: () => this.showAbout()
+    },
+    {
+      id: 'logout',
+      title: this.translationService.get('more.logout'),
+      description: this.translationService.get('more.logoutDescription'),
+      icon: 'logout',
+      action: () => this.logout()
     }
   ]);
 
@@ -246,5 +295,27 @@ export class MoreComponent {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  /**
+   * Logout user
+   */
+  async logout(): Promise<void> {
+    try {
+      await this.authService.logout();
+      this.router.navigate(['/auth']);
+      this.dialogService.alert(
+        this.translationService.get('messages.logoutSuccess'),
+        this.translationService.get('common.save'),
+        'success'
+      );
+    } catch (error) {
+      console.error('Logout error:', error);
+      this.dialogService.alert(
+        this.translationService.get('messages.logoutError'),
+        this.translationService.get('common.delete'),
+        'error'
+      );
+    }
   }
 }

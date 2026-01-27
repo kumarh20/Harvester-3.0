@@ -126,6 +126,8 @@ export interface Translations {
     dataCleared: string;
     settingsReset: string;
     copiedToClipboard: string;
+    logoutSuccess: string;
+    logoutError: string;
   };
 
     // Settings
@@ -183,6 +185,8 @@ export interface Translations {
       location: string;
       locationValue: string;
       sendFeedback: string;
+      logout: string;
+      logoutDescription: string;
     };
 }
 
@@ -296,7 +300,9 @@ const getEnglishTranslations = (): Translations => ({
     dataImported: 'Data imported successfully',
     dataCleared: 'All data cleared successfully',
     settingsReset: 'Settings reset to default',
-    copiedToClipboard: 'Copied to clipboard for sharing'
+    copiedToClipboard: 'Copied to clipboard for sharing',
+    logoutSuccess: 'Logged out successfully',
+    logoutError: 'Error logging out'
   },
   settings: {
     title: 'Settings',
@@ -349,7 +355,9 @@ const getEnglishTranslations = (): Translations => ({
     phone: 'Phone:',
     location: 'Location:',
     locationValue: 'India',
-    sendFeedback: 'Send Feedback'
+    sendFeedback: 'Send Feedback',
+    logout: 'Logout',
+    logoutDescription: 'Sign out of your account'
   }
 });
 
@@ -465,7 +473,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
       dataImported: 'Data imported successfully',
       dataCleared: 'All data cleared successfully',
       settingsReset: 'Settings reset to default',
-      copiedToClipboard: 'Copied to clipboard for sharing'
+      copiedToClipboard: 'Copied to clipboard for sharing',
+      logoutSuccess: 'Logged out successfully',
+      logoutError: 'Error logging out'
     },
     settings: {
       title: 'Settings',
@@ -518,7 +528,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
       phone: 'Phone:',
       location: 'Location:',
       locationValue: 'India',
-      sendFeedback: 'Send Feedback'
+      sendFeedback: 'Send Feedback',
+      logout: 'Logout',
+      logoutDescription: 'Sign out of your account'
     }
   }
 };
