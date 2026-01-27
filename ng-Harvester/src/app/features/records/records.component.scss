@@ -4,7 +4,7 @@
 // ==========================================
 .records-container {
     min-height: 100vh;
-    padding: 16px;
+    padding: 16px 16px 20px 16px; // Top, Right, Bottom, Left
     position: relative;
     overflow: hidden;
     // Page background: Full-height soft blue gradient (same as Add New page)
@@ -14,7 +14,7 @@
         background: linear-gradient(180deg, #165dae 0%, #0e467d 100%);
     }
     @media screen and (max-width: 600px) {
-        padding: 10px 16px 100px;
+        padding: 10px 16px 20px 16px;
     }
     // Create glass container wrapper effect
     &::before {

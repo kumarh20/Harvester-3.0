@@ -316,11 +316,18 @@
     overflow-y: auto;
     margin-top: 0;
     max-height: 100vh;
-    // margin-bottom: 70px;
-    // padding: var(--space-6);
     background: var(--bg-primary);
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    
+    // Add padding-bottom for bottom navigation (except on auth page)
+    &:not(:has(app-auth-page)) {
+        padding-bottom: 90px; // Space for bottom navigation + extra buffer
+        
+        @media (max-width: 600px) {
+            padding-bottom: 100px; // More space on mobile
+        }
+    }
 }
 
 .floating-navigation {

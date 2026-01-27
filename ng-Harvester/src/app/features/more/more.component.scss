@@ -4,7 +4,7 @@
 // ==========================================
 .more-container {
     min-height: 100vh;
-    padding: 16px;
+    padding: 16px 16px 20px 16px; // Top, Right, Bottom, Left
     position: relative;
     overflow-x: hidden;
     // Page background: Full-height soft blue gradient
@@ -14,7 +14,7 @@
         background: linear-gradient(180deg, #0D47A1 0%, #1565C0 35%, #1E293B 100%);
     }
     @media screen and (max-width: 600px) {
-        padding: 12px 12px 100px;
+        padding: 12px 12px 20px 12px;
     }
 }
 
