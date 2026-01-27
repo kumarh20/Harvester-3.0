@@ -1,7 +1,7 @@
 <header class="modern-header">
     <div class="header-top-row">
         <div class="user-name">{{ translationService.get('app.appTitle') }}</div>
-        @if (auth.currentUser) {
+        @if (currentUser()) {
         <div class="header-actions">
             <!-- Language Toggle -->
             <button class="language-toggle" (click)="onLanguageToggle()" [title]="getCurrentLanguage() === 'hi' ? translationService.get('settings.languageEnglish') : translationService.get('settings.languageHindi')">

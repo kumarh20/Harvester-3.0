@@ -1,8 +1,8 @@
-import { Component, output } from '@angular/core';
+import { Component, output, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
 import { LanguageService } from '../../services/language.service';
-import { Auth } from '@angular/fire/auth';
+import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-header',
@@ -11,15 +11,25 @@ import { Auth } from '@angular/fire/auth';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   themeToggle = output<void>();
   languageToggle = output<void>();
+  
+  // Use a signal to track auth state
+  currentUser = signal<User | null>(null);
 
   constructor(
     public translationService: TranslationService,
     private languageService: LanguageService,
-    public auth: Auth
+    private auth: Auth
   ) {}
+
+  ngOnInit(): void {
+    // Listen to auth state changes and update signal
+    onAuthStateChanged(this.auth, (user) => {
+      this.currentUser.set(user);
+    });
+  }
 
   onThemeToggle(): void {
     this.themeToggle.emit();
