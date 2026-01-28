@@ -10,3 +10,7 @@ ng build --configuration production --base-href /ng-harvester/
 for android release 
 angular.json 
  // for android - "baseHref": "/", "deployUrl": "/"
+
+
+ //functions deploy
+ firebase deploy --only functions
