@@ -138,7 +138,7 @@
             <h2 class="form-title">Get Started</h2>
 
             <form [formGroup]="signupForm" (ngSubmit)="onSignup()">
-                <!-- Full Name Field -->
+                <!-- Full Name Field (Always Visible) -->
                 <mat-form-field appearance="outline" class="auth-form-field">
                     <mat-label>Full Name</mat-label>
                     <input matInput type="text" formControlName="fullName" placeholder="Enter Full Name">
@@ -152,7 +152,7 @@
                     }
                 </mat-form-field>
 
-                <!-- Phone Number Field -->
+                <!-- Phone Number Field (Always Visible) -->
                 <mat-form-field appearance="outline" class="auth-form-field">
                     <mat-label>Phone Number</mat-label>
                     <input matInput type="tel" formControlName="phone" placeholder="Enter phone number">
@@ -164,18 +164,57 @@
                     }
                 </mat-form-field>
 
-                <!-- Password Field -->
+                <!-- OTP Field (Shown after Send OTP is clicked) -->
+                @if (otpSent && !otpVerified) {
+                <mat-form-field appearance="outline" class="auth-form-field">
+                    <mat-label>Enter OTP</mat-label>
+                    <input matInput type="text" [(ngModel)]="otp" [ngModelOptions]="{standalone: true}" placeholder="Enter 6-digit OTP" maxlength="6">
+                    <mat-icon matPrefix>lock_clock</mat-icon>
+                    <mat-hint>Check your SMS for the 6-digit code</mat-hint>
+                </mat-form-field>
+                
+                <!-- Resend OTP Link -->
+                <div class="resend-otp-container" style="margin-top: -12px; margin-bottom: 16px; text-align: right;">
+                    <button type="button" class="link" style="background: none; border: none; color: #1976d2; cursor: pointer; font-size: 14px; text-decoration: underline;" 
+                            (click)="resendOTP()" 
+                            [disabled]="resendingOTP || loadingOTP">
+                        {{ resendingOTP ? 'Resending...' : 'Resend OTP' }}
+                    </button>
+                </div>
+                }
+
+                <!-- Send OTP / Verify OTP Button -->
+                @if (!otpSent) {
+                <button type="button" class="submit-button" (click)="sendOTP()" 
+                        [disabled]="loadingOTP || signupForm.get('phone')?.invalid || signupForm.get('fullName')?.invalid" 
+                        mat-raised-button color="primary">
+                    {{ loadingOTP ? 'Sending OTP...' : 'Send OTP' }}
+                </button>
+                }
+                @if (otpSent && !otpVerified) {
+                <button type="button" class="submit-button" (click)="verifyOTPAndSignup()" 
+                        [disabled]="loadingOTP || !otp" 
+                        mat-raised-button color="primary">
+                    {{ loadingOTP ? 'Verifying OTP...' : 'Verify OTP' }}
+                </button>
+                }
+
+                <!-- Password Field (Shown after OTP is verified) -->
+                @if (otpVerified) {
                 <mat-form-field appearance="outline" class="auth-form-field">
                     <mat-label>Password</mat-label>
                     <input matInput [type]="hideSignupPassword() ? 'password' : 'text'" formControlName="password" placeholder="Create a password">
                     <mat-icon matPrefix>lock</mat-icon>
                     <button mat-icon-button matSuffix type="button" (click)="hideSignupPassword.set(!hideSignupPassword())" [attr.aria-label]="'Toggle password visibility'">
                         <mat-icon>{{hideSignupPassword() ? 'visibility_off' : 'visibility'}}</mat-icon>
-                    </button> @if (signupForm.get('password')?.hasError('required') && signupForm.get('password')?.touched) {
+                    </button> 
+                    @if (signupForm.get('password')?.hasError('required') && signupForm.get('password')?.touched) {
                     <mat-error>Password is required</mat-error>
-                    } @if (signupForm.get('password')?.hasError('minlength') && signupForm.get('password')?.touched) {
+                    } 
+                    @if (signupForm.get('password')?.hasError('minlength') && signupForm.get('password')?.touched) {
                     <mat-error>Password must be at least 8 characters</mat-error>
-                    } @if (signupForm.get('password')?.hasError('pattern') && signupForm.get('password')?.touched) {
+                    } 
+                    @if (signupForm.get('password')?.hasError('pattern') && signupForm.get('password')?.touched) {
                     <mat-error>Must include: uppercase, lowercase, number & special character (@$!%*?&)</mat-error>
                     }
                 </mat-form-field>
@@ -193,10 +232,13 @@
                     </label>
                 </div>
 
-                <!-- Sign Up Button -->
-                <button type="submit" class="submit-button" [disabled]="signupForm.invalid || !agreeToTerms()" mat-raised-button color="primary">
+                <!-- Sign Up Button (Shown after OTP is verified) -->
+                <button type="submit" class="submit-button" 
+                        [disabled]="signupForm.invalid || !agreeToTerms()" 
+                        mat-raised-button color="primary">
                     Sign up
                 </button>
+                }
             </form>
 
             <div class="divider">
