@@ -14,3 +14,6 @@ angular.json
 
  //functions deploy
  firebase deploy --only functions
+
+ //for functions debugging
+ firebase emulators:start --only functions --inspect-functions
