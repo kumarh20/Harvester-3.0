@@ -6,22 +6,33 @@ import {
   signOut,
   User
 } from '@angular/fire/auth';
-import {setPersistence, browserLocalPersistence } from 'firebase/auth';
-import { getFunctions, httpsCallable } from '@angular/fire/functions';
+import { setPersistence, browserLocalPersistence } from 'firebase/auth';
+import {
+  getFunctions,
+  httpsCallable,
+  connectFunctionsEmulator
+} from '@angular/fire/functions';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+
   private functions = getFunctions();
 
-
   constructor(private auth: Auth) {
+
+    // ✅ IMPORTANT: Connect to emulator ONLY in local
+    if (location.hostname === 'localhost') {
+      connectFunctionsEmulator(this.functions, 'localhost', 5001);
+      console.log('Connected to Firebase Functions Emulator');
+    }
+
     setPersistence(this.auth, browserLocalPersistence)
-    .then(() => {
-      console.log('Firebase session persistence set to LOCAL');
-    })
-    .catch((error) => {
-      console.error('Persistence error', error);
-    });
+      .then(() => {
+        console.log('Firebase session persistence set to LOCAL');
+      })
+      .catch((error) => {
+        console.error('Persistence error', error);
+      });
   }
 
   // Convert phone to email
@@ -29,36 +40,24 @@ export class AuthService {
     return `${phone}@harvester.app`;
   }
 
-  // SIGN UP
   async signup(phone: string, password: string): Promise<User> {
-    try {
-      const email = this.phoneToEmail(phone);
-      const result = await createUserWithEmailAndPassword(
-        this.auth,
-        email,
-        password
-      );
-      return result.user;
-    } catch (error: any) {
-      console.error('Signup service error:', error);
-      throw error;
-    }
+    const email = this.phoneToEmail(phone);
+    const result = await createUserWithEmailAndPassword(
+      this.auth,
+      email,
+      password
+    );
+    return result.user;
   }
 
-  // LOGIN
   async login(phone: string, password: string): Promise<User> {
-    try {
-      const email = this.phoneToEmail(phone);
-      const result = await signInWithEmailAndPassword(
-        this.auth,
-        email,
-        password
-      );
-      return result.user;
-    } catch (error: any) {
-      console.error('Login service error:', error);
-      throw error;
-    }
+    const email = this.phoneToEmail(phone);
+    const result = await signInWithEmailAndPassword(
+      this.auth,
+      email,
+      password
+    );
+    return result.user;
   }
 
   logout() {
@@ -69,28 +68,14 @@ export class AuthService {
     return this.auth.currentUser;
   }
 
-  // SEND OTP (Signup)
-  async sendSignupOTP(phone: string): Promise<any> {
-    try {
-      const fn = httpsCallable(this.functions, 'sendSignupOTP');
-      const result = await fn({ phone });
-      return result;
-    } catch (error: any) {
-      console.error('Send OTP service error:', error);
-      throw error;
-    }
+  // ✅ WhatsApp OTP
+  sendWhatsAppOTP(phone: string) {
+    const fn = httpsCallable(this.functions, 'sendWhatsAppOTP');
+    return fn({ phone });
   }
 
-  // VERIFY OTP (Signup)
-  async verifySignupOTP(phone: string, otp: string): Promise<any> {
-    try {
-      const fn = httpsCallable(this.functions, 'verifySignupOTP');
-      const result = await fn({ phone, otp });
-      return result;
-    } catch (error: any) {
-      console.error('Verify OTP service error:', error);
-      throw error;
-    }
+  verifyWhatsAppOTP(phone: string, otp: string) {
+    const fn = httpsCallable(this.functions, 'verifyWhatsAppOTP');
+    return fn({ phone, otp });
   }
-
 }

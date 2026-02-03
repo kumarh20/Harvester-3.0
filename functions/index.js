@@ -1,86 +1,78 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const axios = require("axios");
 const crypto = require("crypto");
-const { error } = require("console");
+const twilio = require("twilio");
+const { defineSecret } = require("firebase-functions/params");
 
 admin.initializeApp();
 
+const TWILIO_SID = defineSecret("TWILIO_SID");
+const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
+
 /**
- * SEND OTP
+ * SEND WHATSAPP OTP (TWILIO)
  */
-exports.sendSignupOTP = functions.https.onCall(async (data) => {
-  console.log('sendSignupOTP data', data);
+exports.sendWhatsAppOTP = functions.https.onCall(
+  { secrets: [TWILIO_SID, TWILIO_AUTH_TOKEN] },
+  async (data) => {
 
-  const rawPhone =
-  data?.data?.phone ??
-  data?.phone ??
-  null;
- // 1️⃣ Check presence FIRST
- if (!rawPhone) {
-  throw new functions.https.HttpsError(
-   error,
-   "Phone number is required"
-  );
-}
+    const rawPhone =
+      data?.phone ??
+      data?.data?.phone ??
+      null;
 
-// 2️⃣ Normalize
-let phone = String(data.phone).trim();
-
-// remove spaces, +, -, etc
-phone = phone.replace(/\D/g, '');
-
-// keep last 10 digits (India)
-if (phone.length > 10) {
-  phone = phone.slice(-10);
-}
-
-// 3️⃣ SINGLE final validation
-if (!rawPhone) {
-  throw new functions.https.HttpsError(
-    "invalid-argument",
-    "Invalid phone number"
-  );
-}
-
-
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
-
-  await admin.firestore().collection("signup_otps").doc(phone).set({
-    otpHash,
-    expiresAt: admin.firestore.Timestamp.fromDate(
-      new Date(Date.now() + 60 * 1000) // 60 sec
-    ),
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
-  });
-
-  await axios.post(
-    "https://www.fast2sms.com/dev/bulkV2",
-    {
-      route: "otp",
-      variables_values: otp,
-      numbers: phone
-    },
-    {
-      headers: {
-        authorization: functions.config().fast2sms.key
-      }
+    if (!rawPhone) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Phone number required"
+      );
     }
-  );
 
-  return { success: true };
-});
+    // normalize phone
+    let phone = String(rawPhone).replace(/\D/g, '');
+    if (phone.length > 10) phone = phone.slice(-10);
 
-/**
- * VERIFY OTP
- */
-exports.verifySignupOTP = functions.https.onCall(async (data) => {
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Invalid phone number"
+      );
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+    await admin.firestore().collection("whatsapp_otps").doc(phone).set({
+      otpHash,
+      expiresAt: Date.now() + 60 * 1000,
+      createdAt: Date.now()
+    });
+
+    const client = twilio(
+      TWILIO_SID.value(),
+      TWILIO_AUTH_TOKEN.value()
+    );
+
+    await client.messages.create({
+      from: "whatsapp:+14155238886",   // Twilio Sandbox number
+      to: "whatsapp:+91" + phone,
+      body: `Your OTP for Harvester signup is ${otp}. Valid for 1 minute.`
+    });
+
+    return { success: true };
+  }
+);
+
+
+
+//Verify OTP
+
+exports.verifyWhatsAppOTP = functions.https.onCall(async (data) => {
   const { phone, otp } = data;
 
   const snap = await admin
     .firestore()
-    .collection("signup_otps")
+    .collection("whatsapp_otps")
     .doc(phone)
     .get();
 
@@ -90,7 +82,7 @@ exports.verifySignupOTP = functions.https.onCall(async (data) => {
 
   const record = snap.data();
 
-  if (record.expiresAt.toDate() < new Date()) {
+  if (record.expiresAt < Date.now()) {
     throw new functions.https.HttpsError("deadline-exceeded", "OTP expired");
   }
 
@@ -100,7 +92,7 @@ exports.verifySignupOTP = functions.https.onCall(async (data) => {
     throw new functions.https.HttpsError("permission-denied", "Wrong OTP");
   }
 
-  await admin.firestore().collection("signup_otps").doc(phone).delete();
+  await admin.firestore().collection("whatsapp_otps").doc(phone).delete();
 
   return { verified: true };
 });
