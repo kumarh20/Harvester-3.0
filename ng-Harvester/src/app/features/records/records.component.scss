@@ -101,14 +101,14 @@
 .date-group {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 10px;
 }
 
 .date-pill {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: var(--space-2, 8px) 0;
+    // margin: var(--space-2, 8px) 0;
     
     span {
         background: #ffffff;
