@@ -12,6 +12,8 @@ export interface Record {
   fullPaymentDate: string;
   totalPayment: number;
   pendingAmount: number;
+  /** Optional harvester name (e.g. Harvester 1, Harvester 2) */
+  harvester?: string;
 }
 
 @Injectable({

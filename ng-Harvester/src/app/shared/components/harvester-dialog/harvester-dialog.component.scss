@@ -1,0 +1,60 @@
+.harvester-dialog {
+  min-width: 320px;
+  max-width: 420px;
+  background: white;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px 8px;
+  margin: 0;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary, #1e293b);
+  }
+
+  .dialog-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: #0d9488;
+  }
+}
+
+mat-dialog-content {
+  padding: 16px 24px 8px !important;
+
+  .full-width {
+    width: 100%;
+    margin: 0;
+  }
+}
+
+mat-dialog-actions {
+  padding: 16px 24px 20px !important;
+  gap: 12px;
+
+  button {
+    min-width: 90px;
+  }
+}
+
+[data-theme="dark"] {
+  .harvester-dialog {
+    color: var(--text-primary);
+  }
+
+  .dialog-header {
+    h2 {
+      color: var(--text-primary);
+    }
+    .dialog-icon {
+      color: #2dd4bf;
+    }
+  }
+}

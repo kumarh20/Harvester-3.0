@@ -27,6 +27,7 @@ interface Record {
   paidOnSight: number;
   pendingAmount: number;
   fullPaymentDate?: string;
+  harvester?: string;
 }
 
 interface GroupedRecords {

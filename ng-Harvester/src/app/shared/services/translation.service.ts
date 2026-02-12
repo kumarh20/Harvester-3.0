@@ -35,6 +35,7 @@ export interface Translations {
     contactNumber: string;
     contactNumberPlaceholder: string;
     date: string;
+    harvester: string;
     landInAcres: string;
     landInAcresPlaceholder: string;
     ratePerAcre: string;
@@ -72,6 +73,7 @@ export interface Translations {
     date: string;
     land: string;
     rate: string;
+    harvester: string;
     totalAmount: string;
     cashPaid: string;
     pendingAmount: string;
@@ -149,6 +151,16 @@ export interface Translations {
       currencyINR: string;
       currencyUSD: string;
       currencyGBP: string;
+      harvesterSetup: string;
+      harvesterSetupDescription: string;
+      harvesterCount: string;
+      harvesterCountOne: string;
+      addHarvester: string;
+      harvesterNamePlaceholder: string;
+      saveHarvester: string;
+      editHarvester: string;
+      removeHarvester: string;
+      harvesterRequired: string;
       dataManagement: string;
       exportData: string;
       clearAllData: string;
@@ -220,6 +232,7 @@ const getEnglishTranslations = (): Translations => ({
     contactNumber: 'Mobile Number',
     contactNumberPlaceholder: '10 digits',
     date: 'Date',
+    harvester: 'Harvester',
     landInAcres: 'Land (Acres)',
     landInAcresPlaceholder: '0.00',
     ratePerAcre: 'Rate (₹/Acre)',
@@ -253,6 +266,7 @@ const getEnglishTranslations = (): Translations => ({
     date: 'Date',
     land: 'Land (Acres)',
     rate: 'Rate per Acre',
+    harvester: 'Harvester',
     totalAmount: 'Total Amount',
     cashPaid: 'Cash Paid',
     pendingAmount: 'Pending Amount',
@@ -322,6 +336,16 @@ const getEnglishTranslations = (): Translations => ({
     currencyINR: 'Indian Rupee (₹)',
     currencyUSD: 'US Dollar ($)',
     currencyGBP: 'British Pound (£)',
+    harvesterSetup: 'Harvester Setup',
+    harvesterSetupDescription: 'Add or edit harvester names shown in the Add New form dropdown. At least one is required.',
+    harvesterCount: '{{count}} harvesters',
+    harvesterCountOne: '1 harvester',
+    addHarvester: 'Add Harvester',
+    harvesterNamePlaceholder: 'e.g. Harvester 2',
+    saveHarvester: 'Save',
+    editHarvester: 'Edit',
+    removeHarvester: 'Remove',
+    harvesterRequired: 'At least one harvester is required.',
     dataManagement: 'Data Management',
     exportData: 'Export Data',
     clearAllData: 'Clear All Data',
@@ -393,6 +417,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
       contactNumber: 'Mobile Number',
       contactNumberPlaceholder: '10 digits',
       date: 'Date',
+      harvester: 'Harvester',
       landInAcres: 'Land (Acres)',
       landInAcresPlaceholder: '0.00',
       ratePerAcre: 'Rate (₹/Acre)',
@@ -426,6 +451,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
       date: 'तारीख',
       land: 'जमीन (एकड़)',
       rate: 'प्रति एकड़ दर',
+      harvester: 'हार्वेस्टर',
       totalAmount: 'कुल राशि',
       cashPaid: 'नकद भुगतान',
       pendingAmount: 'बकाया राशि',
@@ -495,6 +521,16 @@ const TRANSLATIONS: Record<Language, Translations> = {
       currencyINR: 'Indian Rupee (₹)',
       currencyUSD: 'US Dollar ($)',
       currencyGBP: 'British Pound (£)',
+      harvesterSetup: 'Harvester Setup',
+      harvesterSetupDescription: 'Add or edit harvester names shown in the Add New form dropdown. At least one is required.',
+      harvesterCount: '{{count}} harvesters',
+      harvesterCountOne: '1 harvester',
+      addHarvester: 'Add Harvester',
+      harvesterNamePlaceholder: 'e.g. Harvester 2',
+      saveHarvester: 'Save',
+      editHarvester: 'Edit',
+      removeHarvester: 'Remove',
+      harvesterRequired: 'At least one harvester is required.',
       dataManagement: 'Data Management',
       exportData: 'Export Data',
       clearAllData: 'Clear All Data',

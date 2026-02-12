@@ -25,6 +25,60 @@
         </mat-card-content>
     </mat-card>
 
+    <!-- Harvester Setup Card -->
+    <mat-card class="settings-card harvester-setup-card">
+        <mat-card-header class="harvester-card-header">
+            <div class="harvester-header-row">
+                <mat-card-title>
+                    <mat-icon>agriculture</mat-icon>
+                    {{ translationService.get('settings.harvesterSetup') }}
+                </mat-card-title>
+                <button mat-raised-button color="primary" class="add-harvester-btn" (click)="openAddHarvesterDialog()" type="button" [disabled]="harvestersLoading()">
+                    <mat-icon>add</mat-icon>
+                    {{ translationService.get('settings.addHarvester') }}
+                </button>
+            </div>
+        </mat-card-header>
+        <mat-card-content>
+            <p class="harvester-description">{{ translationService.get('settings.harvesterSetupDescription') }}</p>
+            @if (harvestersLoading()) {
+                <p class="harvester-loading">Loading...</p>
+            } @else {
+                @if (harvesterService.harvesters().length === 0) {
+                    <div class="harvester-empty">
+                        <mat-icon>agriculture</mat-icon>
+                        <p>{{ translationService.get('settings.harvesterRequired') }}</p>
+                        <button mat-stroked-button color="primary" (click)="openAddHarvesterDialog()" type="button">
+                            <mat-icon>add</mat-icon>
+                            {{ translationService.get('settings.addHarvester') }}
+                        </button>
+                    </div>
+                } @else {
+                    <div class="harvester-list-wrap">
+                        <p class="harvester-count">{{ harvesterService.harvesters().length === 1 ? translationService.get('settings.harvesterCountOne') : translationService.getWithParams('settings.harvesterCount', { count: harvesterService.harvesters().length }) }}</p>
+                        <div class="harvester-list-scroll">
+                            <ul class="harvester-list">
+                                @for (name of harvesterService.harvesters(); track $index; let i = $index) {
+                                    <li class="harvester-row">
+                                        <span class="harvester-name">{{ name }}</span>
+                                        <div class="harvester-actions">
+                                            <button mat-icon-button (click)="openEditHarvesterDialog(i)" type="button" [title]="translationService.get('settings.editHarvester')">
+                                                <mat-icon>edit</mat-icon>
+                                            </button>
+                                            <button mat-icon-button color="warn" (click)="removeHarvester(i)" [disabled]="!canRemoveHarvester" type="button" [title]="translationService.get('settings.removeHarvester')">
+                                                <mat-icon>delete_outline</mat-icon>
+                                            </button>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
+            }
+        </mat-card-content>
+    </mat-card>
+
     <!-- Preferences Card -->
     <mat-card class="settings-card preferences-card">
         <mat-card-header>

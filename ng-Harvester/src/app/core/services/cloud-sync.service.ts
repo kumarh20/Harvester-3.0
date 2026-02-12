@@ -26,6 +26,7 @@
 //   paidOnSight: number;
 //   pendingAmount: number;
 //   fullPaymentDate: string;
+//   harvester?: string;
 // }
 
 // @Injectable({
@@ -108,7 +109,8 @@
 //       ratePerAcre: record.ratePerAcre.toString(),
 //       totalPayment: record.totalPayment.toString(),
 //       paidOnSight: record.paidOnSight.toString(),
-//       fullPaymentDate: record.fullPaymentDate || ''
+//       fullPaymentDate: record.fullPaymentDate || '',
+//       ...(record.harvester ? { harvester: record.harvester } : {})
 //     };
 
 //     // Log payload to verify it's using English column names
@@ -151,7 +153,8 @@
 //       ratePerAcre: record.ratePerAcre.toString(),
 //       totalPayment: record.totalPayment.toString(),
 //       paidOnSight: record.paidOnSight.toString(),
-//       fullPaymentDate: record.fullPaymentDate || ''
+//       fullPaymentDate: record.fullPaymentDate || '',
+//       ...(record.harvester ? { harvester: record.harvester } : {})
 //     };
 
 //     return this.http.post(this.API_URL, payload).pipe(
@@ -236,7 +239,8 @@
 //         totalPayment: totalPayment,
 //         paidOnSight: paidOnSight,
 //         pendingAmount: totalPayment - paidOnSight,
-//         fullPaymentDate: fullPaymentDate
+//         fullPaymentDate: fullPaymentDate,
+//         ...(item.harvester ? { harvester: item.harvester } : {})
 //       };
 //     });
 //   }

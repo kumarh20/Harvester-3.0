@@ -10,7 +10,9 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 import { RecordsService } from '../../core/services/records.service';
+import { HarvesterService } from '../../core/services/harvester.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { LoaderService } from '../../shared/services/loader.service';
 import { TranslationService } from '../../shared/services/translation.service';
@@ -29,7 +31,8 @@ import { Auth } from '@angular/fire/auth';
     MatDatepickerModule,
     MatNativeDateModule,
     MatIconModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatSelectModule
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './add-new.component.html',
@@ -80,6 +83,7 @@ export class AddNewComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private recordsService: RecordsService,
+    public harvesterService: HarvesterService,
     private toastService: ToastService,
     private route: ActivatedRoute,
     private router: Router,
@@ -101,7 +105,8 @@ export class AddNewComponent implements OnInit {
       landInAcres: [0, [Validators.required, Validators.min(0.01)]],
       ratePerAcre: [2500, [Validators.required, Validators.min(1)]],
       paidOnSight: [0, [Validators.min(0)]],
-      fullPaymentDate: ['']
+      fullPaymentDate: [''],
+      harvester: ['']
     });
 
     // Subscribe to value changes for automatic calculations
@@ -113,8 +118,10 @@ export class AddNewComponent implements OnInit {
     this.updateCalculations();
   }
 
-  ngOnInit(): void {
-    // Check if we're in edit mode (URL has :id parameter)
+  async ngOnInit(): Promise<void> {
+    await this.harvesterService.loadHarvesters();
+    const defaultHarvester = this.harvesterService.getDefaultHarvester();
+    this.recordForm.patchValue({ harvester: defaultHarvester });
     this.route.params.subscribe(params => {
       const recordId = params['id'];
       if (recordId) {
@@ -162,7 +169,8 @@ export class AddNewComponent implements OnInit {
         landInAcres: Number(record.landInAcres) || 0,
         ratePerAcre: Number(record.ratePerAcre) || 0,
         paidOnSight: Number(record.paidOnSight) || 0,
-        fullPaymentDate: paymentDateObj || ''
+        fullPaymentDate: paymentDateObj || '',
+        harvester: record.harvester || this.harvesterService.getDefaultHarvester()
       });
 
       console.log('✅ Form patched with values:', this.recordForm.value);
@@ -333,7 +341,8 @@ export class AddNewComponent implements OnInit {
     if (!uid) throw new Error('Not authenticated');
 
     try {
-      // Prepare data for API
+      // Prepare data for API and Firestore (harvester is optional)
+      const harvesterValue = formValue.harvester ? String(formValue.harvester).trim() : '';
       const recordData = {
         uid: uid,
         farmerName: formValue.farmerName,
@@ -344,7 +353,8 @@ export class AddNewComponent implements OnInit {
         paidOnSight: Number(formValue.paidOnSight),
         fullPaymentDate: formValue.fullPaymentDate ? this.convertDateToISO(formValue.fullPaymentDate) : '',
         totalPayment: this.totalPayment(),
-        pendingAmount: this.pendingPayment()
+        pendingAmount: this.pendingPayment(),
+        ...(harvesterValue ? { harvester: harvesterValue } : {})
       };
 
       if (this.isEditMode() && this.editingRecordId()) {
@@ -389,7 +399,8 @@ export class AddNewComponent implements OnInit {
       landInAcres: 0,
       ratePerAcre: 2500,
       paidOnSight: 0,
-      fullPaymentDate: ''
+      fullPaymentDate: '',
+      harvester: this.harvesterService.getDefaultHarvester()
     });
     this.isEditMode.set(false);
     this.editingRecordId.set(null);

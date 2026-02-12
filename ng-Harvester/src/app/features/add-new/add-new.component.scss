@@ -97,6 +97,9 @@
         grid-template-columns: 1fr;
         gap: 0.7rem;
     }
+    .form-field.full-width {
+        grid-column: 1 / -1;
+    }
 }
 
 // Common Input Container Styling

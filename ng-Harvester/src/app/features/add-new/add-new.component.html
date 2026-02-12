@@ -36,6 +36,19 @@
                     </mat-form-field>
                 </div>
 
+                <!-- Harvester (optional) -->
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="form-field full-width">
+                        <mat-label>{{ translationService.get('form.harvester') }}</mat-label>
+                        <mat-select formControlName="harvester">
+                            @for (name of harvesterService.harvesters(); track name) {
+                                <mat-option [value]="name">{{ name }}</mat-option>
+                            }
+                        </mat-select>
+                        <mat-icon matPrefix>agriculture</mat-icon>
+                    </mat-form-field>
+                </div>
+
                 <!-- Row 2: Date & Land -->
                 <div class="form-row">
                     <mat-form-field appearance="outline" class="form-field">
