@@ -21,10 +21,10 @@ export class AuthService {
   constructor(private auth: Auth) {
 
     // ✅ IMPORTANT: Connect to emulator ONLY in local
-    if (location.hostname === 'localhost') {
-      connectFunctionsEmulator(this.functions, 'localhost', 5001);
-      console.log('Connected to Firebase Functions Emulator');
-    }
+    // if (location.hostname === 'localhost') {
+    //   connectFunctionsEmulator(this.functions, 'localhost', 5001);
+    //   console.log('Connected to Firebase Functions Emulator');
+    // }
 
     setPersistence(this.auth, browserLocalPersistence)
       .then(() => {

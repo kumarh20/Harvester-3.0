@@ -30,7 +30,8 @@ export class IdleService {
     clearTimeout(this.timeoutId);
 
     this.timeoutId = setTimeout(() => {
-      this.authService.logout();
+      // --- Auto-logout on idle commented out (one-time login; restore when needed) ---
+      // this.authService.logout();
     }, this.IDLE_TIME);
   }
 }

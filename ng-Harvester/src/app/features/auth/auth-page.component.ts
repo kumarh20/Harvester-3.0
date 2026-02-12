@@ -63,12 +63,21 @@ export class AuthPageComponent {
   loginForm!: FormGroup;
   signupForm!: FormGroup;
 
-  // ---------- OTP STATE ----------
+  // ---------- OTP STATE (Signup) ----------
   otpSent = false;
   otpVerified = false;
   otp = '';
   loadingOTP = false;
   resendingOTP = false;
+
+  // ---------- OTP STATE (Login - required after logout from Settings) ----------
+  loginOtpSent = false;
+  loginOtpVerified = false;
+  loginOtp = '';
+  loadingLoginOTP = false;
+  resendingLoginOTP = false;
+  /** When true, user chose "Login with password" — show password field + submit, skip OTP */
+  loginWithPasswordOnly = false;
 
   constructor(
     private fb: FormBuilder,
@@ -111,9 +120,14 @@ export class AuthPageComponent {
   }
 
   // =============================
-  // LOGIN
+  // LOGIN (after logout: number + OTP required first)
   // =============================
   async onLogin(): Promise<void> {
+    const allowedWithoutOtp = this.loginOtpVerified || this.loginWithPasswordOnly;
+    if (!allowedWithoutOtp) {
+      this.toastService.warning('Please verify OTP first (Send OTP → Verify OTP) or use Login with password');
+      return;
+    }
     if (this.loginForm.invalid) {
       this.toastService.warning('Please enter valid login details');
       return;
@@ -131,6 +145,74 @@ export class AuthPageComponent {
       this.toastService.error(err?.message || 'Login failed');
     } finally {
       this.loaderService.hide();
+    }
+  }
+
+  // =============================
+  // SEND OTP FOR LOGIN (re-login after logout from Settings)
+  // =============================
+  async sendOTPForLogin(): Promise<void> {
+    if (this.loginForm.get('phone')?.invalid) {
+      this.toastService.warning('Enter valid 10-digit phone number');
+      return;
+    }
+    const phone = this.loginForm.get('phone')?.value;
+    this.loadingLoginOTP = true;
+    this.loginOtpSent = false;
+    this.loginOtpVerified = false;
+    this.loginOtp = '';
+    try {
+      await this.authService.sendWhatsAppOTP(phone);
+      this.loginOtpSent = true;
+      this.toastService.success('OTP sent on WhatsApp');
+    } catch (err: any) {
+      this.toastService.error(err?.message || 'Failed to send OTP');
+    } finally {
+      this.loadingLoginOTP = false;
+    }
+  }
+
+  // =============================
+  // VERIFY OTP FOR LOGIN
+  // =============================
+  async verifyOTPForLogin(): Promise<void> {
+    if (!this.loginOtp || this.loginOtp.length !== 6) {
+      this.toastService.warning('Enter valid 6-digit OTP');
+      return;
+    }
+    const phone = this.loginForm.get('phone')?.value;
+    this.loadingLoginOTP = true;
+    try {
+      await this.authService.verifyWhatsAppOTP(phone, this.loginOtp);
+      this.loginOtpVerified = true;
+      this.toastService.success('OTP verified. Enter password to sign in.');
+    } catch (err: any) {
+      this.loginOtpVerified = false;
+      this.toastService.error(err?.message || 'OTP verification failed');
+    } finally {
+      this.loadingLoginOTP = false;
+    }
+  }
+
+  /** Switch to password-only login (hide Send OTP, show password + submit) */
+  usePasswordOnlyLogin(): void {
+    this.loginWithPasswordOnly = true;
+  }
+
+  async resendOTPForLogin(): Promise<void> {
+    if (this.loginForm.get('phone')?.invalid) {
+      this.toastService.warning('Invalid phone number');
+      return;
+    }
+    const phone = this.loginForm.get('phone')?.value;
+    this.resendingLoginOTP = true;
+    try {
+      await this.authService.sendWhatsAppOTP(phone);
+      this.toastService.success('OTP resent on WhatsApp');
+    } catch (err: any) {
+      this.toastService.error(err?.message || 'Failed to resend OTP');
+    } finally {
+      this.resendingLoginOTP = false;
     }
   }
 
@@ -251,6 +333,10 @@ export class AuthPageComponent {
 
     if (state === 'LOGIN') {
       this.loginForm.reset();
+      this.loginOtpSent = false;
+      this.loginOtpVerified = false;
+      this.loginOtp = '';
+      this.loginWithPasswordOnly = false;
     }
 
     if (state === 'SIGNUP') {

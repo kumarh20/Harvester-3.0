@@ -108,13 +108,14 @@ export class MoreComponent implements OnInit {
       icon: 'info',
       action: () => this.showAbout()
     },
-    {
-      id: 'logout',
-      title: this.translationService.get('more.logout'),
-      description: this.translationService.get('more.logoutDescription'),
-      icon: 'logout',
-      action: () => this.logout()
-    }
+    // --- Logout from More: commented out (one-time login; logout only from Settings) - restore when needed ---
+    // {
+    //   id: 'logout',
+    //   title: this.translationService.get('more.logout'),
+    //   description: this.translationService.get('more.logoutDescription'),
+    //   icon: 'logout',
+    //   action: () => this.logout()
+    // }
   ]);
 
   expandedAbout = signal(false);
@@ -298,24 +299,24 @@ export class MoreComponent implements OnInit {
   }
 
   /**
-   * Logout user
+   * Logout user - COMMENTED OUT: logout only from Settings for now; restore when needed
    */
-  async logout(): Promise<void> {
-    try {
-      await this.authService.logout();
-      this.router.navigate(['/auth']);
-      this.dialogService.alert(
-        this.translationService.get('messages.logoutSuccess'),
-        this.translationService.get('common.save'),
-        'success'
-      );
-    } catch (error) {
-      console.error('Logout error:', error);
-      this.dialogService.alert(
-        this.translationService.get('messages.logoutError'),
-        this.translationService.get('common.delete'),
-        'error'
-      );
-    }
-  }
+  // async logout(): Promise<void> {
+  //   try {
+  //     await this.authService.logout();
+  //     this.router.navigate(['/auth']);
+  //     this.dialogService.alert(
+  //       this.translationService.get('messages.logoutSuccess'),
+  //       this.translationService.get('common.save'),
+  //       'success'
+  //     );
+  //   } catch (error) {
+  //     console.error('Logout error:', error);
+  //     this.dialogService.alert(
+  //       this.translationService.get('messages.logoutError'),
+  //       this.translationService.get('common.delete'),
+  //       'error'
+  //     );
+  //   }
+  // }
 }

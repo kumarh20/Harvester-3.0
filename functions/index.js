@@ -12,8 +12,12 @@ const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
 /**
  * SEND WHATSAPP OTP (TWILIO)
  */
-exports.sendWhatsAppOTP = functions.https.onCall(
-  { secrets: [TWILIO_SID, TWILIO_AUTH_TOKEN] },
+exports.sendWhatsAppOTP = functions.https
+  .onCall(
+    {
+      region: 'us-central1',
+      secrets: [TWILIO_SID, TWILIO_AUTH_TOKEN]
+    },
   async (data) => {
 
     const rawPhone =
