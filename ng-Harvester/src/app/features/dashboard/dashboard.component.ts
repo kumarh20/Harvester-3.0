@@ -71,53 +71,91 @@ export class DashboardComponent implements OnInit {
     try {
       await this.recordsService.loadRecords();
       this.updatePeriodCounts();
-      
-      setTimeout(() => {
-        this.isLoading.set(false);
-      }, 800);
     } catch (error) {
-      this.isLoading.set(false);
+      // ignore
+    } finally {
+      setTimeout(() => this.isLoading.set(false), 300);
     }
-
-    const intervalId = setInterval(() => {
-      this.updatePeriodCounts();
-    }, 1000);
   }
 
   selectPeriod(period: PeriodType): void {
     this.selectedPeriod.set(period);
   }
 
+  /**
+   * Parse record date string to Date (start of day local time).
+   * Supports: YYYY-MM-DD (ISO, from Firestore), DD-MM-YYYY, DD/MM/YYYY.
+   */
   private parseDate(dateString: string): Date | null {
-    const parts = typeof dateString === 'string' ? dateString?.split('-') : [];
-    if (parts.length === 3) {
-      const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; // JavaScript months are 0-indexed
-      const year = parseInt(parts[2], 10);
-      return new Date(year, month, day);
+    if (!dateString || typeof dateString !== 'string') return null;
+    const s = dateString.trim();
+
+    // YYYY-MM-DD (ISO) – e.g. "2025-02-12"
+    const isoMatch = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (isoMatch) {
+      const year = parseInt(isoMatch[1], 10);
+      const month = parseInt(isoMatch[2], 10) - 1;
+      const day = parseInt(isoMatch[3], 10);
+      const d = new Date(year, month, day);
+      return isNaN(d.getTime()) ? null : d;
     }
-    return null;
+
+    // DD-MM-YYYY
+    const dashMatch = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (dashMatch) {
+      const day = parseInt(dashMatch[1], 10);
+      const month = parseInt(dashMatch[2], 10) - 1;
+      const year = parseInt(dashMatch[3], 10);
+      const d = new Date(year, month, day);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    // DD/MM/YYYY
+    const slashParts = s.split('/');
+    if (slashParts.length === 3) {
+      const day = parseInt(slashParts[0], 10);
+      const month = parseInt(slashParts[1], 10) - 1;
+      const year = parseInt(slashParts[2], 10);
+      const d = new Date(year, month, day);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    // Fallback: native parse (e.g. ISO with time)
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  /** Start of today (local) for comparison */
+  private getTodayStart(): Date {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+
+  /** Start of N days ago (local) for inclusive range */
+  private getDaysAgoStart(days: number): Date {
+    const today = this.getTodayStart();
+    return new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
   }
 
   private getFilteredRecordsByPeriod(period: PeriodType, records: Record[]): Record[] {
     if (period === 'all') return records;
 
-    const now = new Date();
-    const today = now.toDateString();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const todayStart = this.getTodayStart();
+    const weekStart = this.getDaysAgoStart(7);   // 7 days ago 00:00
+    const monthStart = this.getDaysAgoStart(30); // 30 days ago 00:00
 
     return records.filter(record => {
       const recordDate = this.parseDate(record.date);
       if (!recordDate) return false;
+      const recordDayStart = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
 
       switch (period) {
         case 'today':
-          return recordDate.toDateString() === today;
+          return recordDayStart.getTime() === todayStart.getTime();
         case 'week':
-          return recordDate >= weekAgo;
+          return recordDayStart.getTime() >= weekStart.getTime() && recordDayStart.getTime() <= todayStart.getTime();
         case 'month':
-          return recordDate >= monthAgo;
+          return recordDayStart.getTime() >= monthStart.getTime() && recordDayStart.getTime() <= todayStart.getTime();
         default:
           return true;
       }
@@ -125,33 +163,32 @@ export class DashboardComponent implements OnInit {
   }
 
   private updatePeriodCounts(): void {
-    const now = new Date();
-    const today = now.toDateString();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const todayStart = this.getTodayStart();
+    const weekStart = this.getDaysAgoStart(7);
+    const monthStart = this.getDaysAgoStart(30);
 
     const records = this.recordsService.records();
 
-    const todayRecords = records
-      .filter(record => {
-        const recordDate = this.parseDate(record.date);
-        return recordDate && recordDate.toDateString() === today;
-      })
-      .length;
+    const todayRecords = records.filter(record => {
+      const recordDate = this.parseDate(record.date);
+      if (!recordDate) return false;
+      const recordDayStart = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
+      return recordDayStart.getTime() === todayStart.getTime();
+    }).length;
 
-    const weekRecords = records
-      .filter(record => {
-        const recordDate = this.parseDate(record.date);
-        return recordDate && recordDate >= weekAgo;
-      })
-      .length;
+    const weekRecords = records.filter(record => {
+      const recordDate = this.parseDate(record.date);
+      if (!recordDate) return false;
+      const recordDayStart = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
+      return recordDayStart.getTime() >= weekStart.getTime() && recordDayStart.getTime() <= todayStart.getTime();
+    }).length;
 
-    const monthRecords = records
-      .filter(record => {
-        const recordDate = this.parseDate(record.date);
-        return recordDate && recordDate >= monthAgo;
-      })
-      .length;
+    const monthRecords = records.filter(record => {
+      const recordDate = this.parseDate(record.date);
+      if (!recordDate) return false;
+      const recordDayStart = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
+      return recordDayStart.getTime() >= monthStart.getTime() && recordDayStart.getTime() <= todayStart.getTime();
+    }).length;
 
     this.todayCount.set(todayRecords);
     this.weekCount.set(weekRecords);
