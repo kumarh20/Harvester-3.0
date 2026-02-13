@@ -14,6 +14,8 @@ export interface Record {
   pendingAmount: number;
   /** Optional harvester name (e.g. Harvester 1, Harvester 2) */
   harvester?: string;
+  /** When true, record is soft-deleted: shown with strikethrough, pending = 0, status Paid. User can edit to revert. */
+  markedAsPaid?: boolean;
 }
 
 @Injectable({
@@ -44,6 +46,22 @@ export class RecordsService {
 
   updateRecord(id: string, data: any) {
     return this.firestoreService.updateRecord(id, data);
+  }
+
+  /**
+   * Mark record as paid (soft delete): set pendingAmount = 0, paidOnSight = totalPayment, markedAsPaid = true.
+   * Record stays in Firestore; user can edit later to revert.
+   */
+  async markRecordAsPaid(id: string): Promise<void> {
+    const record = this.getRecordById(id);
+    if (!record) throw new Error('Record not found');
+    const total = record.totalPayment ?? 0;
+    await this.firestoreService.updateRecord(id, {
+      paidOnSight: total,
+      pendingAmount: 0,
+      markedAsPaid: true
+    });
+    await this.loadRecords();
   }
 
   deleteRecord(id: string) {

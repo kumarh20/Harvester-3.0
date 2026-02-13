@@ -28,6 +28,7 @@ interface Record {
   pendingAmount: number;
   fullPaymentDate?: string;
   harvester?: string;
+  markedAsPaid?: boolean;
 }
 
 interface GroupedRecords {
@@ -127,26 +128,25 @@ export class RecordsComponent implements OnInit {
   // Computed record count
   recordCount = computed(() => this.filteredRecords().length);
 
-  async deleteRecord(id: string): Promise<void> {
+  /** Mark record as paid (soft delete): pending = 0, strikethrough in list. User can edit to revert. */
+  async markRecordAsPaid(id: string): Promise<void> {
     const record = this.recordsService.getAllRecords().find(r => r.id === id);
     if (!record) return;
 
-    const confirmMessage = this.translationService.getWithParams('messages.deleteConfirm', { farmerName: record.farmerName });
-
     this.dialogService.confirm(
-      confirmMessage,
-      this.translationService.get('messages.deleteConfirmMessage'),
-      this.translationService.get('common.delete'),
+      this.translationService.get('messages.markAsPaidMessage'),
+      this.translationService.get('messages.markAsPaidConfirm'),
+      this.translationService.get('common.save'),
       this.translationService.get('common.cancel'),
-      'warning'
+      'info'
     ).subscribe(async confirmed => {
       if (confirmed) {
         try {
-          await this.recordsService.deleteRecord(id);
-          this.toastService.success(this.translationService.get('messages.recordDeleted'));
+          await this.recordsService.markRecordAsPaid(id);
+          this.toastService.success(this.translationService.get('messages.recordMarkedAsPaid'));
         } catch (error) {
-          console.error('Error deleting record:', error);
-          this.toastService.error(this.translationService.get('messages.deleteError'));
+          console.error('Error marking record as paid:', error);
+          this.toastService.error(this.translationService.get('messages.updateError'));
         }
       }
     });

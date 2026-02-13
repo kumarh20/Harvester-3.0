@@ -206,6 +206,16 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
     }
+    &.marked-as-paid {
+        .farmer-name,
+        .farmer-contact span,
+        .detail-value {
+            text-decoration: line-through;
+        }
+        .farmer-name {
+            opacity: 0.85;
+        }
+    }
 }
 
 .record-compact {

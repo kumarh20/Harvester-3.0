@@ -114,6 +114,10 @@ export interface Translations {
     recordSaved: string;
     recordUpdated: string;
     recordDeleted: string;
+    recordMarkedAsPaid: string;
+    markAsPaidConfirm: string;
+    markAsPaidMessage: string;
+    markAsPaidButton: string;
     saveError: string;
     updateError: string;
     deleteError: string;
@@ -301,6 +305,10 @@ const getEnglishTranslations = (): Translations => ({
     recordSaved: 'Record saved successfully! 🎉',
     recordUpdated: 'Record updated successfully! ✅',
     recordDeleted: 'Record deleted successfully',
+    recordMarkedAsPaid: 'Record marked as paid',
+    markAsPaidConfirm: 'Mark as paid?',
+    markAsPaidMessage: 'This will mark the record as paid (pending amount will be 0). You can edit the record later to change it back.',
+    markAsPaidButton: 'Mark as paid',
     saveError: 'Error saving record',
     updateError: 'Error updating record',
     deleteError: 'Error deleting record',
@@ -486,6 +494,10 @@ const TRANSLATIONS: Record<Language, Translations> = {
       recordSaved: 'Record saved successfully! 🎉',
       recordUpdated: 'Record updated successfully! ✅',
       recordDeleted: 'Record deleted successfully',
+      recordMarkedAsPaid: 'Record marked as paid',
+      markAsPaidConfirm: 'Mark as paid?',
+      markAsPaidMessage: 'This will mark the record as paid (pending amount will be 0). You can edit the record later to change it back.',
+      markAsPaidButton: 'Mark as paid',
       saveError: 'Error saving record',
       updateError: 'Error updating record',
       deleteError: 'Error deleting record',

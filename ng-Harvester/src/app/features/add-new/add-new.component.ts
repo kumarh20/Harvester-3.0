@@ -343,7 +343,7 @@ export class AddNewComponent implements OnInit {
     try {
       // Prepare data for API and Firestore (harvester is optional)
       const harvesterValue = formValue.harvester ? String(formValue.harvester).trim() : '';
-      const recordData = {
+      const recordData: Record<string, unknown> = {
         uid: uid,
         farmerName: formValue.farmerName,
         contactNumber: formValue.contactNumber,
@@ -356,12 +356,15 @@ export class AddNewComponent implements OnInit {
         pendingAmount: this.pendingPayment(),
         ...(harvesterValue ? { harvester: harvesterValue } : {})
       };
+      if (this.isEditMode()) {
+        recordData.markedAsPaid = false;
+      }
 
       if (this.isEditMode() && this.editingRecordId()) {
         // Update existing record
         console.log('📤 Updating record with data:', recordData);
 
-        await this.recordsService.updateRecord(this.editingRecordId()!, recordData);
+        await this.recordsService.updateRecord(this.editingRecordId()!, recordData as any);
         this.toastService.success(this.translationService.get('messages.recordUpdated'));
 
         // Navigate back to records page

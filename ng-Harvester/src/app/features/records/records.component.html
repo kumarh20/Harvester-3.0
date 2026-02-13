@@ -42,7 +42,7 @@
             <!-- Record Cards in this group -->
             <div *ngFor="let record of group.records" class="record-card-wrapper">
             <!-- Compact View -->
-            <mat-card class="record-card" [class.expanded]="isExpanded(record.id)" (click)="toggleExpand(record.id)">
+            <mat-card class="record-card" [class.expanded]="isExpanded(record.id)" [class.marked-as-paid]="record.markedAsPaid" (click)="toggleExpand(record.id)">
                 <div class="record-compact">
                     <div class="record-left">
                         <div class="farmer-avatar">
@@ -58,15 +58,13 @@
                     </div>
 
                     <div class="record-right">
-                        <div class="pending-badge" [class.paid]="record.pendingAmount <= 0" [class.pending]="record.pendingAmount > 0">
-                            {{ record.pendingAmount <= 0 ? translationService.get('records.fullPayment') : formatCurrency(record.pendingAmount) }}
+                        <div class="pending-badge" [class.paid]="record.pendingAmount <= 0 || record.markedAsPaid" [class.pending]="record.pendingAmount > 0 && !record.markedAsPaid">
+                            {{ (record.pendingAmount <= 0 || record.markedAsPaid) ? translationService.get('records.fullPayment') : formatCurrency(record.pendingAmount) }}
                         </div>
                         <mat-icon color="primary" (click)="editRecord(record); $event.stopPropagation()">edit</mat-icon>
-                        <mat-icon color="warn" (click)="deleteRecord(record.id); $event.stopPropagation()">delete</mat-icon>
-                                <mat-icon class="expand-icon">
-                                    {{ isExpanded(record.id) ? 'expand_less' : 'expand_more' }}
-                                </mat-icon>
-                        </div>
+                        <mat-icon class="expand-icon">
+                            {{ isExpanded(record.id) ? 'expand_less' : 'expand_more' }}
+                        </mat-icon>
                     </div>
 
                     <!-- Expanded Details -->
@@ -119,9 +117,9 @@
                             </div>
                           </button>
 
-                            <button mat-stroked-button color="warn" (click)="deleteRecord(record.id); $event.stopPropagation()">
+                            <button mat-stroked-button color="warn" (click)="markRecordAsPaid(record.id); $event.stopPropagation()">
                             <mat-icon>delete</mat-icon>
-                            {{ translationService.get('records.deleteRecord') }}
+                            {{ record.markedAsPaid ? translationService.get('records.fullPayment') : translationService.get('messages.markAsPaidButton') }}
                           </button>
                         </div>
                     </div>
