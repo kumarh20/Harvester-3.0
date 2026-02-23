@@ -1,4 +1,4 @@
-import { Component, signal, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, signal, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -78,6 +78,9 @@ export class AuthPageComponent {
   resendingLoginOTP = false;
   /** When true, user chose "Login with password" — show password field + submit, skip OTP */
   loginWithPasswordOnly = false;
+  otpSessionId: string = '';
+  /** Session ID for login OTP verify (from sendOTPForLogin) */
+  loginOtpSessionId: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -85,7 +88,8 @@ export class AuthPageComponent {
     private userService: UserService,
     private router: Router,
     private loaderService: LoaderService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {
     this.initializeForms();
   }
@@ -161,36 +165,57 @@ export class AuthPageComponent {
     this.loginOtpSent = false;
     this.loginOtpVerified = false;
     this.loginOtp = '';
+    this.loginOtpSessionId = '';
     try {
-      await this.authService.sendWhatsAppOTP(phone);
+      const result = await this.authService.sendSignupOTP(phone, false); // false = login, always send OTP
+      if ('existingUser' in result && result.existingUser) {
+        this.loginOtpSent = false;
+        this.toastService.warning('Unexpected response. Please try again.');
+        return;
+      }
+      this.loginOtpSessionId = 'sessionId' in result ? result.sessionId : '';
       this.loginOtpSent = true;
-      this.toastService.success('OTP sent on WhatsApp');
+      this.toastService.success('OTP sent');
     } catch (err: any) {
       this.toastService.error(err?.message || 'Failed to send OTP');
     } finally {
       this.loadingLoginOTP = false;
+      this.cdr.detectChanges();
     }
   }
 
   // =============================
-  // VERIFY OTP FOR LOGIN
+  // VERIFY OTP FOR LOGIN (OTP-only: sign in and go to dashboard, no password)
   // =============================
   async verifyOTPForLogin(): Promise<void> {
     if (!this.loginOtp || this.loginOtp.length !== 6) {
       this.toastService.warning('Enter valid 6-digit OTP');
       return;
     }
+    if (!this.loginOtpSessionId) {
+      this.toastService.warning('Send OTP first');
+      return;
+    }
     const phone = this.loginForm.get('phone')?.value;
+    if (!phone) {
+      this.toastService.warning('Phone number required');
+      return;
+    }
     this.loadingLoginOTP = true;
     try {
-      await this.authService.verifyWhatsAppOTP(phone, this.loginOtp);
-      this.loginOtpVerified = true;
-      this.toastService.success('OTP verified. Enter password to sign in.');
+      const user = await this.authService.loginWithOTP(
+        this.loginOtpSessionId,
+        this.loginOtp,
+        phone
+      );
+      await this.userService.updateLastLogin(user.uid);
+      this.toastService.success('Login successful');
+      await this.router.navigate(['/dashboard']);
     } catch (err: any) {
-      this.loginOtpVerified = false;
       this.toastService.error(err?.message || 'OTP verification failed');
     } finally {
       this.loadingLoginOTP = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -207,69 +232,107 @@ export class AuthPageComponent {
     const phone = this.loginForm.get('phone')?.value;
     this.resendingLoginOTP = true;
     try {
-      await this.authService.sendWhatsAppOTP(phone);
-      this.toastService.success('OTP resent on WhatsApp');
+      const result = await this.authService.sendSignupOTP(phone, false);
+      this.loginOtpSessionId = 'sessionId' in result ? result.sessionId : '';
+      this.loginOtp = '';
+      this.toastService.success('OTP resent');
     } catch (err: any) {
       this.toastService.error(err?.message || 'Failed to resend OTP');
     } finally {
       this.resendingLoginOTP = false;
+      this.cdr.detectChanges();
     }
   }
 
   // =============================
-  // SEND WHATSAPP OTP (TWILIO)
+  // SEND OTP (2Factor / SMS)
   // =============================
   async sendOTP(): Promise<void> {
     if (this.signupForm.get('phone')?.invalid) {
-      this.toastService.warning('Enter valid 10-digit phone number');
+      this.toastService.warning('Enter valid phone number');
       return;
     }
 
     const phone = this.signupForm.get('phone')?.value;
-
     this.loadingOTP = true;
     this.otpSent = false;
     this.otpVerified = false;
     this.otp = '';
+    this.otpSessionId = '';
 
     try {
-      await this.authService.sendWhatsAppOTP(phone);
+      const result = await this.authService.sendSignupOTP(phone);
+      if ('existingUser' in result && result.existingUser) {
+        this.toastService.warning('You are already registered. Please login.');
+        this.setState('LOGIN');
+        this.loginForm.patchValue({ phone });
+        return;
+      }
+      this.otpSessionId = 'sessionId' in result ? result.sessionId : '';
       this.otpSent = true;
-      this.toastService.success('OTP sent on WhatsApp');
-    } catch (err: any) {
-      this.toastService.error(err?.message || 'Failed to send OTP');
+      this.toastService.success('OTP sent successfully');
+    } catch (error: any) {
+      this.toastService.error(error?.message || 'Failed to send OTP');
     } finally {
       this.loadingOTP = false;
+      this.cdr.detectChanges();
     }
   }
 
   // =============================
-  // VERIFY OTP
+  // VERIFY OTP (then check existing user or show password)
   // =============================
   async verifyOTPAndSignup(): Promise<void> {
+    if (!this.otpSessionId) {
+      this.toastService.warning('Send OTP first');
+      return;
+    }
     if (!this.otp || this.otp.length !== 6) {
-      this.toastService.warning('Enter valid 6-digit OTP');
+      this.toastService.warning('Enter valid 6 digit OTP');
       return;
     }
 
     const phone = this.signupForm.get('phone')?.value;
+    if (!phone) return;
 
     this.loadingOTP = true;
-
     try {
-      await this.authService.verifyWhatsAppOTP(phone, this.otp);
+      const result = await this.authService.verifySignupOTP(
+        this.otpSessionId,
+        this.otp,
+        phone
+      );
+      if (!result?.verified) {
+        this.otpVerified = false;
+        this.toastService.error('Invalid OTP');
+        return;
+      }
+
+      // Existing user? (checked server-side to avoid Firestore permission errors)
+      if (result.existingUser) {
+        this.toastService.warning('You are an existing user. Please login.');
+        this.setState('LOGIN');
+        this.loginForm.patchValue({ phone });
+        this.otpSent = false;
+        this.otpVerified = false;
+        this.otp = '';
+        this.cdr.detectChanges();
+        return;
+      }
+
+      // New user: show password field, then signup will route to dashboard
       this.otpVerified = true;
       this.toastService.success('OTP verified successfully');
-    } catch (err: any) {
+    } catch (error: any) {
+      this.toastService.error(error?.message || 'Invalid OTP');
       this.otpVerified = false;
-      this.toastService.error(err?.message || 'OTP verification failed');
     } finally {
       this.loadingOTP = false;
+      this.cdr.detectChanges();
     }
   }
-
   // =============================
-  // FINAL SIGNUP
+  // FINAL SIGNUP (create user and log in; user stays logged in)
   // =============================
   async onSignup(): Promise<void> {
     if (this.signupForm.invalid) {
@@ -295,6 +358,7 @@ export class AuthPageComponent {
       await this.userService.createUser(user.uid, fullName, phone);
       this.toastService.success('Account created successfully');
       await this.router.navigate(['/dashboard']);
+      // User is now logged in; persistence keeps them logged in until they manually logout
     } catch (err: any) {
       this.toastService.error(err?.message || 'Signup failed');
     } finally {
@@ -312,16 +376,18 @@ export class AuthPageComponent {
     }
 
     const phone = this.signupForm.get('phone')?.value;
-
     this.resendingOTP = true;
 
     try {
-      await this.authService.sendWhatsAppOTP(phone);
-      this.toastService.success('OTP resent on WhatsApp');
+      const result = await this.authService.sendSignupOTP(phone);
+      this.otpSessionId = 'sessionId' in result ? result.sessionId : '';
+      this.otp = '';
+      this.toastService.success('OTP resent');
     } catch (err: any) {
       this.toastService.error(err?.message || 'Failed to resend OTP');
     } finally {
       this.resendingOTP = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -336,6 +402,7 @@ export class AuthPageComponent {
       this.loginOtpSent = false;
       this.loginOtpVerified = false;
       this.loginOtp = '';
+      this.loginOtpSessionId = '';
       this.loginWithPasswordOnly = false;
     }
 

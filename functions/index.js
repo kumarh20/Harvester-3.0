@@ -1,102 +1,192 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const axios = require("axios");
 const crypto = require("crypto");
-const twilio = require("twilio");
-const { defineSecret } = require("firebase-functions/params");
 
 admin.initializeApp();
 
-const TWILIO_SID = defineSecret("TWILIO_SID");
-const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
+const db = admin.firestore();
 
-/**
- * SEND WHATSAPP OTP (TWILIO)
- */
-exports.sendWhatsAppOTP = functions.https
-  .onCall(
-    {
-      region: 'us-central1',
-      secrets: [TWILIO_SID, TWILIO_AUTH_TOKEN]
-    },
-  async (data) => {
+// Optional: set via Firebase config to force SMS via Transactional SMS (no voice).
+// firebase functions:config:set twofactor.sender_id="YOUR_SENDER_ID"
+const TSMS_SENDER_ID = process.env.TSMS_SENDER_ID
 
-    const rawPhone =
-      data?.phone ??
-      data?.data?.phone ??
-      null;
+/* =========================
+   SEND OTP (2FACTOR)
+========================= */
+exports.sendSignupOTP = functions.https.onCall(async (request) => {
 
-    if (!rawPhone) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "Phone number required"
-      );
-    }
+  const rawPhone = request.data?.phone;
+  const forSignup = request.data?.forSignup !== false; // default true for signup flow
 
-    // normalize phone
-    let phone = String(rawPhone).replace(/\D/g, '');
-    if (phone.length > 10) phone = phone.slice(-10);
-
-    if (!/^[6-9]\d{9}$/.test(phone)) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "Invalid phone number"
-      );
-    }
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
-
-    await admin.firestore().collection("whatsapp_otps").doc(phone).set({
-      otpHash,
-      expiresAt: Date.now() + 60 * 1000,
-      createdAt: Date.now()
-    });
-
-    const client = twilio(
-      TWILIO_SID.value(),
-      TWILIO_AUTH_TOKEN.value()
+  if (!rawPhone) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Phone number required"
     );
+  }
 
-    await client.messages.create({
-      from: "whatsapp:+14155238886",   // Twilio Sandbox number
-      to: "whatsapp:+91" + phone,
-      body: `Your OTP for Harvester signup is ${otp}. Valid for 1 minute.`
+  let phone = String(rawPhone).trim().replace(/\D/g, '');
+  phone = phone.length > 10 ? phone.slice(-10) : phone;
+
+  if (!/^[6-9]\d{9}$/.test(phone)) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Invalid phone number"
+    );
+  }
+
+  // For signup only: check Firebase first; send OTP only if new user
+  if (forSignup) {
+    const usersSnap = await db.collection("users").where("phone", "==", phone).limit(1).get();
+    if (!usersSnap.empty) {
+      return { success: false, existingUser: true };
+    }
+  }
+
+  const apiKey = "27ff82d4-0e0e-11f1-bcb0-0200cd936042";
+
+  // 2Factor can send VOICE instead of SMS: (1) Use POST not GET, (2) use 91 for India.
+  const phoneWithCountryCode = phone.length === 10 ? `91${phone}` : phone;
+
+  // If Sender ID is set, use Transactional SMS (TSMS) so delivery is always SMS, never voice.
+  if (TSMS_SENDER_ID) {
+    try {
+      const otp = String(Math.floor(100000 + Math.random() * 900000));
+      const sessionId = crypto.randomUUID();
+      const tsmsUrl = `https://2factor.in/API/V1/${apiKey}/ADDON_SERVICES/SEND/TSMS`;
+      await db.collection("otpSessions").doc(sessionId).set({
+        phone: phoneWithCountryCode,
+        otp,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      const response = await axios.post(tsmsUrl, {
+        From: TSMS_SENDER_ID,
+        To: phoneWithCountryCode,
+        Msg: `Your OTP is ${otp}. Valid for 10 minutes.`,
+        SendAt: ""
+      }, {
+        headers: { "Content-Type": "application/json" },
+        timeout: 15000
+      });
+
+      if (response.data.Status !== "Success" && response.data.status !== "Success") {
+        await db.collection("otpSessions").doc(sessionId).delete();
+        throw new Error("TSMS send failed");
+      }
+      return { success: true, sessionId };
+    } catch (err) {
+      console.error("2Factor TSMS Send Error:", err);
+      throw new functions.https.HttpsError("internal", "Failed to send OTP");
+    }
+  }
+
+  try {
+
+    const url = `https://2factor.in/API/V1/${apiKey}/SMS/${phoneWithCountryCode}/AUTOGEN`;
+
+    // SMS = POST with explicit headers. GET or wrong format can trigger voice call.
+    const response = await axios.post(url, {}, {
+      headers: { "Content-Type": "application/json" },
+      timeout: 15000
     });
 
-    return { success: true };
+    if (response.data.Status !== "Success") {
+      throw new Error("OTP send failed");
+    }
+
+    return {
+      success: true,
+      sessionId: response.data.Details
+    };
+
+  } catch (error) {
+    console.error("2Factor Send Error:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to send OTP"
+    );
   }
-);
+});
 
 
+/* =========================
+   VERIFY OTP (2FACTOR)
+========================= */
+exports.verifySignupOTP = functions.https.onCall(async (request) => {
 
-//Verify OTP
+  const sessionId = request.data?.sessionId;
+  const otp = String(request.data?.otp || "").trim();
+  const rawPhone = request.data?.phone;
+  const forLogin = request.data?.forLogin === true;
 
-exports.verifyWhatsAppOTP = functions.https.onCall(async (data) => {
-  const { phone, otp } = data;
-
-  const snap = await admin
-    .firestore()
-    .collection("whatsapp_otps")
-    .doc(phone)
-    .get();
-
-  if (!snap.exists) {
-    throw new functions.https.HttpsError("not-found", "OTP not found");
+  if (!sessionId || !otp) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "OTP verification data missing"
+    );
   }
 
-  const record = snap.data();
+  let verifiedResult = { verified: true };
+  let phoneNorm = null;
 
-  if (record.expiresAt < Date.now()) {
-    throw new functions.https.HttpsError("deadline-exceeded", "OTP expired");
+  // TSMS flow: session stored in Firestore
+  const tsmsDoc = await db.collection("otpSessions").doc(sessionId).get();
+  if (tsmsDoc.exists) {
+    const data = tsmsDoc.data();
+    const createdAt = data?.createdAt?.toMillis?.() || 0;
+    if (Date.now() - createdAt > 10 * 60 * 1000) {
+      await db.collection("otpSessions").doc(sessionId).delete();
+      throw new functions.https.HttpsError("permission-denied", "OTP expired");
+    }
+    if (data?.otp !== otp) {
+      throw new functions.https.HttpsError("permission-denied", "Invalid OTP");
+    }
+    await db.collection("otpSessions").doc(sessionId).delete();
+    phoneNorm = rawPhone ? String(rawPhone).trim().replace(/\D/g, '').slice(-10) : (data?.phone ? String(data.phone).replace(/\D/g, '').slice(-10) : null);
+    if (phoneNorm && phoneNorm.length === 10) {
+      const usersSnap = await db.collection("users").where("phone", "==", phoneNorm).limit(1).get();
+      verifiedResult.existingUser = !usersSnap.empty;
+      if (forLogin && !usersSnap.empty) {
+        const uid = usersSnap.docs[0].id || usersSnap.docs[0].data().uid;
+        if (uid) {
+          verifiedResult.customToken = await admin.auth().createCustomToken(uid);
+        }
+      }
+    }
+    return verifiedResult;
   }
 
-  const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+  // AUTOGEN flow: verify via 2Factor
+  try {
+    const apiKey = "27ff82d4-0e0e-11f1-bcb0-0200cd936042";
+    const url = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY/${sessionId}/${otp}`;
+    const response = await axios.get(url);
 
-  if (otpHash !== record.otpHash) {
-    throw new functions.https.HttpsError("permission-denied", "Wrong OTP");
+    if (response.data.Status !== "Success") {
+      throw new Error("OTP verification failed");
+    }
+
+    if (rawPhone) {
+      phoneNorm = String(rawPhone).trim().replace(/\D/g, '').slice(-10);
+      if (phoneNorm.length === 10) {
+        const usersSnap = await db.collection("users").where("phone", "==", phoneNorm).limit(1).get();
+        verifiedResult.existingUser = !usersSnap.empty;
+        if (forLogin && verifiedResult.existingUser) {
+          const uid = usersSnap.docs[0].id || usersSnap.docs[0].data().uid;
+          if (uid) {
+            verifiedResult.customToken = await admin.auth().createCustomToken(uid);
+          }
+        }
+      }
+    }
+    return verifiedResult;
+  } catch (error) {
+    console.error("2Factor Verify Error:", error);
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "Invalid OTP"
+    );
   }
-
-  await admin.firestore().collection("whatsapp_otps").doc(phone).delete();
-
-  return { verified: true };
 });

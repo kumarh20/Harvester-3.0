@@ -8,7 +8,7 @@ import { connectFunctionsEmulator, getFunctions } from '@angular/fire/functions'
 bootstrapApplication(App, appConfig).then(() => {
     if (environment.useEmulators) {
         const functions = getFunctions();
-        connectFunctionsEmulator(functions, 'localhost', 5001);
+        // connectFunctionsEmulator(functions, 'localhost', 5001);
         console.log('🔥 Firebase Functions Emulator Connected');
     }
 });

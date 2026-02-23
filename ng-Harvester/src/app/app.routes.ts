@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { AddNewComponent } from './features/add-new/add-new.component';
@@ -10,13 +11,14 @@ import { MoreComponent } from './features/more/more.component';
 export const routes: Routes = [
 
   // -----------------------------
-  // AUTH (PUBLIC ROUTE)
+  // AUTH (only when not logged in; redirect to dashboard if already logged in)
   // -----------------------------
   {
     path: 'auth',
     loadComponent: () =>
       import('./features/auth/auth-page.component')
-        .then(m => m.AuthPageComponent)
+        .then(m => m.AuthPageComponent),
+    canActivate: [guestGuard]
   },
 
   // -----------------------------

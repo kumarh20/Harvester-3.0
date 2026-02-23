@@ -357,7 +357,7 @@ export class AddNewComponent implements OnInit {
         ...(harvesterValue ? { harvester: harvesterValue } : {})
       };
       if (this.isEditMode()) {
-        recordData.markedAsPaid = false;
+        recordData['markedAsPaid'] = false;
       }
 
       if (this.isEditMode() && this.editingRecordId()) {
