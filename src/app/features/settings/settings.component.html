@@ -99,20 +99,38 @@
 
                     <div class="harvester-tiles-container">
                         @for (name of filteredHarvesters(); track $index; let i = $index) {
-                            <div class="harvester-list-tile" [id]="'harvester-item-' + i">
-                                <div class="tile-leading-avatar">
-                                    <mat-icon>agriculture</mat-icon>
+                            <div class="harvester-list-tile" [class.is-default-tile]="isDefaultHarvester(name)" [id]="'harvester-item-' + i">
+                                <div class="tile-leading-avatar" [class.is-default]="isDefaultHarvester(name)">
+                                    <mat-icon>{{ isDefaultHarvester(name) ? 'star' : 'agriculture' }}</mat-icon>
                                 </div>
                                 <div class="tile-content">
                                     <div class="tile-title-row">
                                         <span class="machine-name">{{ name }}</span>
-                                        @if (i === 0 && !harvesterSearch()) {
-                                            <span class="default-machine-chip">{{ translationService.get('settings.defaultMachine') }}</span>
+                                        @if (isDefaultHarvester(name)) {
+                                            <span class="default-machine-chip active" [title]="translationService.get('settings.defaultMachineDesc')">
+                                                <mat-icon class="mini-chip-icon">check_circle</mat-icon>
+                                                {{ translationService.get('settings.defaultMachine') }}
+                                            </span>
                                         }
                                     </div>
-                                    <span class="tile-subtitle">{{ translationService.get('settings.unitNumber') }} #{{ i + 1 }}</span>
+                                    <span class="tile-subtitle">
+                                        {{ translationService.get('settings.unitNumber') }} #{{ i + 1 }}
+                                        @if (isDefaultHarvester(name)) {
+                                            • <strong class="default-active-text">{{ translationService.get('settings.isDefaultBadge') }}</strong>
+                                        }
+                                    </span>
                                 </div>
                                 <div class="tile-actions">
+                                    @if (!isDefaultHarvester(name)) {
+                                        <button 
+                                            type="button" 
+                                            class="set-default-btn" 
+                                            (click)="setDefaultHarvester(name)" 
+                                            [title]="translationService.get('settings.setAsDefault')">
+                                            <mat-icon>star_border</mat-icon>
+                                            <span>{{ translationService.get('settings.setAsDefault') }}</span>
+                                        </button>
+                                    }
                                     <button type="button" class="tile-icon-btn edit" (click)="openEditHarvesterDialog(i)" [title]="translationService.get('settings.editHarvester')">
                                         <mat-icon>edit</mat-icon>
                                     </button>
@@ -326,6 +344,39 @@
                     (change)="onNavLabelsToggle($event.checked)"
                     id="settings-nav-labels-toggle">
                 </mat-slide-toggle>
+            </div>
+
+            <div class="android-divider"></div>
+
+            <!-- Default Record Filter Setting Tile -->
+            <div class="preference-row-block" id="settings-default-filter-row">
+                <div class="flex items-start gap-3.5">
+                    <div class="pref-leading-icon" style="background: #ECFDF5; color: #059669;">
+                        <mat-icon>calendar_month</mat-icon>
+                    </div>
+                    <div class="pref-label-group">
+                        <span class="pref-title">{{ translationService.get('settings.defaultRecordFilter') }}</span>
+                        <span class="pref-desc">{{ translationService.get('settings.defaultRecordFilterDesc') }}</span>
+                    </div>
+                </div>
+                <div class="filter-segment-switch" id="settings-default-filter-segments">
+                    <button type="button" class="filter-segment-btn" [class.active]="defaultRecordFilter() === 'today'" (click)="setDefaultRecordFilter('today')" id="filter-opt-today">
+                        <mat-icon>today</mat-icon>
+                        <span>{{ translationService.get('records.filterToday') }}</span>
+                    </button>
+                    <button type="button" class="filter-segment-btn" [class.active]="defaultRecordFilter() === 'week'" (click)="setDefaultRecordFilter('week')" id="filter-opt-week">
+                        <mat-icon>date_range</mat-icon>
+                        <span>{{ translationService.get('records.filterWeek') }}</span>
+                    </button>
+                    <button type="button" class="filter-segment-btn" [class.active]="defaultRecordFilter() === 'month'" (click)="setDefaultRecordFilter('month')" id="filter-opt-month">
+                        <mat-icon>calendar_view_month</mat-icon>
+                        <span>{{ translationService.get('records.filterMonth') }}</span>
+                    </button>
+                    <button type="button" class="filter-segment-btn" [class.active]="defaultRecordFilter() === 'all'" (click)="setDefaultRecordFilter('all')" id="filter-opt-all">
+                        <mat-icon>all_inclusive</mat-icon>
+                        <span>{{ translationService.get('records.filterAll') }}</span>
+                    </button>
+                </div>
             </div>
 
             <div class="android-divider"></div>

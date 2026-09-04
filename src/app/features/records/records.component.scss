@@ -42,11 +42,22 @@
   box-sizing: border-box;
 
   @media (min-width: 640px) {
+    padding: 16px 20px;
+    border-radius: 20px;
+    gap: 14px;
+  }
+}
+
+.records-header-top-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+
+  @media (min-width: 640px) {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 22px;
-    border-radius: 20px;
     gap: 16px;
   }
 }
@@ -181,6 +192,424 @@
   }
 }
 
+// 1.5 Date Period Filter Bar & Custom Pickers
+.records-date-filter-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+
+.date-filter-scroll-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 4px 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; // Firefox
+  &::-webkit-scrollbar {
+    display: none; // Chrome, Safari
+  }
+}
+
+.date-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 13px;
+  border-radius: 9999px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    opacity: 0.8;
+  }
+
+  &:hover {
+    background: rgba(68, 122, 68, 0.08);
+    color: var(--text-primary);
+    border-color: rgba(68, 122, 68, 0.3);
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #2E7D32, #1B5E20);
+    border-color: #1B5E20;
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.35);
+
+    mat-icon {
+      opacity: 1;
+      color: #FFFFFF;
+    }
+
+    .chip-count-badge {
+      background: rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
+    }
+  }
+
+  [data-theme="dark"] & {
+    background: #182C1E;
+    border-color: rgba(124, 179, 66, 0.2);
+    color: #A5D6A7;
+
+    &:hover {
+      background: rgba(124, 179, 66, 0.15);
+      border-color: #7CB342;
+      color: #FFFFFF;
+    }
+
+    &.active {
+      background: linear-gradient(135deg, #7CB342, #558B2F);
+      border-color: #7CB342;
+      color: #0E1A11;
+      box-shadow: 0 2px 8px rgba(124, 179, 66, 0.4);
+
+      mat-icon {
+        color: #0E1A11;
+      }
+
+      .chip-count-badge {
+        background: rgba(14, 26, 17, 0.25);
+        color: #0E1A11;
+      }
+    }
+  }
+}
+
+.chip-count-badge {
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.07);
+  color: var(--text-primary);
+  padding: 1px 6px;
+  border-radius: 9999px;
+  min-width: 16px;
+  text-align: center;
+  line-height: 1.3;
+}
+
+// Custom Date Filter Expandable Drawer
+.custom-date-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(68, 122, 68, 0.04);
+  border: 1px solid rgba(68, 122, 68, 0.15);
+  border-radius: 14px;
+  animation: fadeInDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  [data-theme="dark"] & {
+    background: rgba(124, 179, 66, 0.05);
+    border-color: rgba(124, 179, 66, 0.18);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.custom-mode-switcher {
+  display: flex;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 4px;
+  width: fit-content;
+
+  [data-theme="dark"] & {
+    background: rgba(255, 255, 255, 0.07);
+  }
+}
+
+.custom-mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+  }
+
+  &.active {
+    background: var(--bg-card);
+    color: #2E7D32;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    [data-theme="dark"] & {
+      background: #234126;
+      color: #A5D6A7;
+    }
+  }
+}
+
+.single-picker-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.range-picker-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.range-date-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 140px;
+
+  .date-col-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+}
+
+.date-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0 12px;
+  height: 38px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+
+  &:focus-within {
+    border-color: #2E7D32;
+    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.15);
+  }
+
+  .date-wrap-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .styled-date-input {
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    outline: none;
+    width: 100%;
+    cursor: pointer;
+  }
+
+  [data-theme="dark"] & {
+    background: #182C1E;
+    border-color: rgba(124, 179, 66, 0.2);
+
+    &:focus-within {
+      border-color: #7CB342;
+      box-shadow: 0 0 0 2px rgba(124, 179, 66, 0.2);
+    }
+  }
+}
+
+.single-quick-steppers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .stepper-arrow-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: all 0.15s;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      background: rgba(68, 122, 68, 0.1);
+      border-color: #2E7D32;
+    }
+
+    [data-theme="dark"] & {
+      background: #182C1E;
+      border-color: rgba(124, 179, 66, 0.2);
+
+      &:hover {
+        background: rgba(124, 179, 66, 0.15);
+        border-color: #7CB342;
+      }
+    }
+  }
+
+  .stepper-today-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    height: 38px;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #2E7D32;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:hover {
+      background: rgba(46, 125, 50, 0.1);
+      border-color: #2E7D32;
+    }
+
+    [data-theme="dark"] & {
+      background: #182C1E;
+      border-color: rgba(124, 179, 66, 0.2);
+      color: #A5D6A7;
+
+      &:hover {
+        background: rgba(124, 179, 66, 0.15);
+        border-color: #7CB342;
+      }
+    }
+  }
+}
+
+.range-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  border-radius: 10px;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    color: #EF4444;
+    border-color: #EF4444;
+    background: rgba(239, 68, 68, 0.05);
+  }
+}
+
+// Slice Summary Meta Strip
+.filter-slice-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  background: rgba(68, 122, 68, 0.06);
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--text-primary);
+
+  [data-theme="dark"] & {
+    background: rgba(124, 179, 66, 0.08);
+  }
+
+  .slice-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+
+    mat-icon {
+      font-size: 15px;
+      width: 15px;
+      height: 15px;
+      color: #2E7D32;
+
+      [data-theme="dark"] & {
+        color: #7CB342;
+      }
+    }
+
+    strong {
+      font-weight: 700;
+    }
+
+    &.pending-highlight {
+      color: #DC2626;
+      font-weight: 600;
+
+      mat-icon {
+        color: #DC2626;
+      }
+
+      [data-theme="dark"] & {
+        color: #F87171;
+        mat-icon {
+          color: #F87171;
+        }
+      }
+    }
+  }
+
+  .slice-divider {
+    color: var(--border-color);
+    opacity: 0.6;
+    user-select: none;
+  }
+}
+
 // 2. Feed Container & Date Groups
 .records-feed-container {
   display: flex;
@@ -234,9 +663,9 @@
 .farmer-record-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 18px;
-  padding: 14px 16px;
-  box-shadow: 0 2px 10px -1px rgba(35, 65, 38, 0.04);
+  border-radius: 14px;
+  padding: 10px 14px;
+  box-shadow: 0 2px 8px -1px rgba(35, 65, 38, 0.04);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
@@ -245,18 +674,18 @@
   box-sizing: border-box;
 
   @media (max-width: 640px) {
-    padding: 12px 14px;
-    border-radius: 16px;
+    padding: 8px 10px;
+    border-radius: 12px;
   }
 
   &:hover {
     border-color: rgba(68, 122, 68, 0.28);
-    box-shadow: 0 6px 16px -2px rgba(35, 65, 38, 0.08);
+    box-shadow: 0 4px 14px -2px rgba(35, 65, 38, 0.08);
   }
 
   &.is-expanded {
     border-color: #447A44;
-    box-shadow: 0 6px 20px -2px rgba(68, 122, 68, 0.16);
+    box-shadow: 0 6px 18px -2px rgba(68, 122, 68, 0.14);
   }
 
   &.marked-as-paid {
@@ -274,7 +703,7 @@
 
     &.is-expanded {
       border-color: #7CB342;
-      box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 6px 18px -2px rgba(0, 0, 0, 0.5);
     }
 
     &.marked-as-paid {
@@ -287,44 +716,65 @@
 .record-main-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
+
+  @media (max-width: 640px) {
+    gap: 8px;
+  }
 }
 
 .farmer-avatar-badge {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   background: linear-gradient(145deg, #447A44 0%, #356335 100%);
   color: #FFFFFF;
-  font-weight: 800;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 3px 8px rgba(68, 122, 68, 0.28);
+  box-shadow: 0 2px 6px rgba(68, 122, 68, 0.24);
+
+  @media (max-width: 640px) {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
 }
 
 .farmer-primary-details {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   overflow: hidden;
 
   .farmer-name-line {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    min-width: 0;
+    overflow: hidden;
 
     .farmer-name-text {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
       color: #0F172A;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      line-height: 1.25;
+
+      @media (max-width: 640px) {
+        font-size: 13.5px;
+      }
 
       &.line-through {
         text-decoration: line-through;
@@ -335,45 +785,99 @@
         color: #F8FAFC;
       }
     }
-
-    .harvester-badge {
-      font-size: 10px;
-      font-weight: 600;
-      background: #E2E8F0;
-      color: #475569;
-      padding: 1px 6px;
-      border-radius: 4px;
-
-      [data-theme="dark"] & {
-        background: #334155;
-        color: #94A3B8;
-      }
-    }
   }
 
   .farmer-sub-line {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
+    gap: 5px;
+    font-size: 11.5px;
     color: #64748B;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+
+    .acres-text {
+      font-weight: 600;
+      color: #334155;
+      flex-shrink: 0;
+
+      [data-theme="dark"] & {
+        color: #CBD5E1;
+      }
+    }
+
+    .meta-separator {
+      color: #CBD5E1;
+      flex-shrink: 0;
+      font-size: 9px;
+
+      [data-theme="dark"] & {
+        color: #475569;
+      }
+    }
+
+    .harvester-sub-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #F0FDF4;
+      color: #166534;
+      border: 1px solid #BBF7D0;
+      padding: 0.5px 5px;
+      border-radius: 5px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      line-height: 1.35;
+
+      .harvester-sub-icon {
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+        color: #16A34A;
+      }
+
+      .harvester-sub-name {
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      [data-theme="dark"] & {
+        background: rgba(22, 163, 74, 0.15);
+        border-color: rgba(34, 197, 94, 0.25);
+        color: #86EFAC;
+
+        .harvester-sub-icon {
+          color: #4ADE80;
+        }
+      }
+    }
 
     .farmer-phone-link {
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
       color: #059669;
       text-decoration: none;
-      font-weight: 600;
+      font-weight: 500;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
 
       &:hover {
         text-decoration: underline;
       }
 
       mat-icon {
-        font-size: 13px;
-        width: 13px;
-        height: 13px;
+        font-size: 11px;
+        width: 11px;
+        height: 11px;
+        flex-shrink: 0;
       }
 
       [data-theme="dark"] & {
@@ -381,12 +885,10 @@
       }
     }
 
-    .meta-separator {
-      color: #CBD5E1;
-    }
-
-    .acres-text {
-      font-weight: 500;
+    .meta-phone-item {
+      @media (max-width: 480px) {
+        display: none;
+      }
     }
   }
 }
@@ -394,16 +896,22 @@
 .record-status-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 
   .payment-badge {
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 8px;
-    letter-spacing: 0.3px;
+    padding: 2.5px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.2px;
     white-space: nowrap;
+    line-height: 1.3;
+
+    @media (max-width: 640px) {
+      font-size: 11px;
+      padding: 2px 7px;
+    }
 
     &.badge-paid {
       background: #ECFDF5;
@@ -434,14 +942,18 @@
     border: none;
     background: transparent;
     color: #64748B;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
+
+    @media (max-width: 540px) {
+      display: none;
+    }
 
     &:hover {
       background: #F1F5F9;
@@ -449,9 +961,9 @@
     }
 
     mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
     }
 
     [data-theme="dark"] & {
@@ -469,11 +981,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 
     mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
     }
   }
 }
@@ -551,6 +1064,53 @@
     }
   }
 
+  &.harvester-spec-cell {
+    background: #F0FDF4;
+    border-color: #BBF7D0;
+
+    .spec-label {
+      color: #166534;
+    }
+
+    .harvester-spec-value {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #15803D;
+      font-weight: 700;
+
+      .harvester-cell-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: #16A34A;
+      }
+
+      .harvester-name-txt {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    [data-theme="dark"] & {
+      background: rgba(22, 163, 74, 0.12);
+      border-color: rgba(34, 197, 94, 0.25);
+
+      .spec-label {
+        color: #86EFAC;
+      }
+
+      .harvester-spec-value {
+        color: #4ADE80;
+
+        .harvester-cell-icon {
+          color: #4ADE80;
+        }
+      }
+    }
+  }
+
   &.due-cell {
     background: #FEF3C7;
     border-color: #FDE68A;
@@ -602,6 +1162,27 @@
     font-size: 16px;
     width: 16px;
     height: 16px;
+  }
+
+  &.call-action {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border-color: #BFDBFE;
+    text-decoration: none;
+
+    &:hover {
+      background: #DBEAFE;
+    }
+
+    [data-theme="dark"] & {
+      background: rgba(29, 78, 216, 0.18);
+      border-color: rgba(59, 130, 246, 0.35);
+      color: #93C5FD;
+
+      &:hover {
+        background: rgba(29, 78, 216, 0.28);
+      }
+    }
   }
 
   &.primary-action {
@@ -717,6 +1298,75 @@
 
     [data-theme="dark"] & {
       color: #94A3B8;
+    }
+  }
+
+  .empty-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .empty-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    &.primary {
+      background: #2E7D32;
+      color: #FFFFFF;
+      border: 1px solid #1B5E20;
+      box-shadow: 0 2px 6px rgba(46, 125, 50, 0.3);
+
+      &:hover {
+        background: #1B5E20;
+      }
+
+      [data-theme="dark"] & {
+        background: #7CB342;
+        color: #0E1A11;
+        border-color: #7CB342;
+
+        &:hover {
+          background: #8BC34A;
+        }
+      }
+    }
+
+    &.secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+
+      &:hover {
+        background: rgba(68, 122, 68, 0.08);
+        border-color: rgba(68, 122, 68, 0.3);
+      }
+
+      [data-theme="dark"] & {
+        background: #182C1E;
+        border-color: rgba(124, 179, 66, 0.25);
+        color: #E2E8F0;
+
+        &:hover {
+          background: rgba(124, 179, 66, 0.15);
+        }
+      }
     }
   }
 }

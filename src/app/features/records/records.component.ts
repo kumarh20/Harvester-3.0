@@ -14,7 +14,10 @@ import { ToastService } from '../../shared/services/toast.service';
 import { DialogService } from '../../shared/services/dialog.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
+import { UiPreferencesService, DefaultRecordFilterSetting } from '../../core/services/ui-preferences.service';
 import { RecordSkeletonComponent } from '../../shared/components/skeleton/record-skeleton/record-skeleton.component';
+
+export type RecordDateFilterOption = 'today' | 'yesterday' | 'week' | 'month' | 'custom' | 'all';
 
 interface Record {
   id: string;
@@ -61,16 +64,28 @@ export class RecordsComponent implements OnInit {
   expandedId = signal<string | null>(null);
   isLoading = signal(true);
 
+  // Date Filtering State
+  selectedDateFilter = signal<RecordDateFilterOption>('today');
+  customMode = signal<'single' | 'range'>('single');
+  customSingleDate = signal<string>(this.formatDateForInput(new Date()));
+  customStartDate = signal<string>('');
+  customEndDate = signal<string>('');
+
   constructor(
     public recordsService: RecordsService,
     private toastService: ToastService,
     private dialogService: DialogService,
-    private router: Router,
+    public router: Router,
     public translationService: TranslationService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private uiPreferencesService: UiPreferencesService
   ) {}
 
   async ngOnInit(): Promise<void> {
+    // Initialize default filter from user preference setting (defaults to 'today')
+    const preferredDefault = this.uiPreferencesService.defaultRecordFilter();
+    this.selectedDateFilter.set(preferredDefault);
+
     this.isLoading.set(true);
 
     try {
@@ -80,18 +95,136 @@ export class RecordsComponent implements OnInit {
     }
   }
 
-  // Computed filtered records based on search
-  filteredRecords = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
-    if (!query) {
-      return this.recordsService.records();
+  formatDateForInput(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  setDateFilter(filter: RecordDateFilterOption): void {
+    this.selectedDateFilter.set(filter);
+  }
+
+  setCustomMode(mode: 'single' | 'range'): void {
+    this.customMode.set(mode);
+  }
+
+  shiftCustomSingleDate(days: number): void {
+    const current = this.parseDate(this.customSingleDate()) || new Date();
+    const shifted = new Date(current.getTime() + days * 24 * 60 * 60 * 1000);
+    this.customSingleDate.set(this.formatDateForInput(shifted));
+  }
+
+  setCustomSingleDateToday(): void {
+    this.customSingleDate.set(this.formatDateForInput(new Date()));
+  }
+
+  navigateToAddRecord(): void {
+    this.router.navigate(['/add-new']);
+  }
+
+  // Count of records for today (for chip badge)
+  todayRecordsCount = computed(() => {
+    const allRecords = this.recordsService.records();
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    return allRecords.filter(r => {
+      const p = this.parseDate(r.date);
+      return p && new Date(p.getFullYear(), p.getMonth(), p.getDate()).getTime() === todayStart;
+    }).length;
+  });
+
+  // Total count of all records ever
+  totalAllRecordsCount = computed(() => this.recordsService.records().length);
+
+  // Computed records filtered by date selection
+  recordsByDate = computed(() => {
+    const filter = this.selectedDateFilter();
+    const allRecords = this.recordsService.records();
+
+    if (filter === 'all') {
+      return allRecords;
     }
 
-    return this.recordsService.records().filter(record =>
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const yesterdayStart = todayStart - oneDayMs;
+    const weekStart = todayStart - (7 * oneDayMs);
+    const monthStart = todayStart - (30 * oneDayMs);
+    const todayEnd = todayStart + oneDayMs - 1;
+
+    return allRecords.filter(record => {
+      const parsed = this.parseDate(record.date);
+      if (!parsed) return false;
+      const recordDay = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()).getTime();
+
+      switch (filter) {
+        case 'today':
+          return recordDay === todayStart;
+        case 'yesterday':
+          return recordDay === yesterdayStart;
+        case 'week':
+          return recordDay >= weekStart && recordDay <= todayEnd;
+        case 'month':
+          return recordDay >= monthStart && recordDay <= todayEnd;
+        case 'custom': {
+          const mode = this.customMode();
+          if (mode === 'single') {
+            const single = this.customSingleDate();
+            if (!single) return true;
+            const target = this.parseDate(single);
+            if (!target) return true;
+            const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
+            return recordDay === targetDay;
+          } else {
+            const startStr = this.customStartDate();
+            const endStr = this.customEndDate();
+            if (!startStr && !endStr) return true;
+            const startParsed = startStr ? this.parseDate(startStr) : null;
+            const endParsed = endStr ? this.parseDate(endStr) : null;
+
+            const startDay = startParsed ? new Date(startParsed.getFullYear(), startParsed.getMonth(), startParsed.getDate()).getTime() : -Infinity;
+            const endDay = endParsed ? new Date(endParsed.getFullYear(), endParsed.getMonth(), endParsed.getDate()).getTime() + oneDayMs - 1 : Infinity;
+
+            return recordDay >= startDay && recordDay <= endDay;
+          }
+        }
+        default:
+          return true;
+      }
+    });
+  });
+
+  // Computed filtered records based on date and search query
+  filteredRecords = computed(() => {
+    const records = this.recordsByDate();
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) {
+      return records;
+    }
+
+    return records.filter(record =>
       record.farmerName.toLowerCase().includes(query) ||
       record.contactNumber.includes(query) ||
-      record.date.includes(query)
+      record.date.includes(query) ||
+      (record.harvester && record.harvester.toLowerCase().includes(query))
     );
+  });
+
+  // Summary of filtered dataset (count, acres, total volume, pending)
+  filterSummary = computed(() => {
+    const recs = this.filteredRecords();
+    const acres = recs.reduce((sum, r) => sum + (Number(r.landInAcres) || 0), 0);
+    const total = recs.reduce((sum, r) => sum + (Number(r.totalPayment) || 0), 0);
+    const pending = recs.reduce((sum, r) => sum + (r.markedAsPaid ? 0 : (Number(r.pendingAmount) || 0)), 0);
+    return {
+      count: recs.length,
+      acres: Math.round(acres * 100) / 100,
+      total: Math.round(total),
+      pending: Math.round(pending)
+    };
   });
 
   // Computed grouped records by date
@@ -208,10 +341,12 @@ export class RecordsComponent implements OnInit {
 
   buildShareText(data: Record): string {
     const isHi = this.translationService.getCurrentLanguage() === 'hi';
+    const harvesterName = data.harvester?.trim() || 'Harvester 1';
     if (isHi) {
       return `🌾 *किसान कटाई पर्ची* 🌾\n` +
         `किसान का नाम   : ${data.farmerName}\n` +
         `मोबाइल नंबर   : ${data.contactNumber || '-'}\n` +
+        `हार्वेस्टर      : ${harvesterName}\n` +
         `दिनांक         : ${data.date}\n` +
         `रकबा (एकड़)    : ${data.landInAcres} एकड़\n` +
         `कटाई दर        : ₹${data.ratePerAcre}/एकड़\n` +
@@ -225,6 +360,7 @@ export class RecordsComponent implements OnInit {
     return `🌾 *Farmer Cutting Receipt* 🌾\n` +
       `Farmer Name    : ${data.farmerName}\n` +
       `Contact Number : ${data.contactNumber || '-'}\n` +
+      `Harvester      : ${harvesterName}\n` +
       `Date           : ${data.date}\n` +
       `Land In Acres  : ${data.landInAcres} Acres\n` +
       `Rate Per Acre  : ₹${data.ratePerAcre}\n` +
@@ -241,13 +377,17 @@ export class RecordsComponent implements OnInit {
   }
 
   /**
-   * Parse date string (supports both YYYY-MM-DD and DD-MM-YYYY formats)
+   * Parse date string (supports YYYY-MM-DD, DD-MM-YYYY, and slash formats)
    */
-  private parseDate(dateString: string): Date | null {
-    if (!dateString) return null;
+  parseDate(dateString: string): Date | null {
+    if (!dateString || typeof dateString !== 'string') return null;
     
-    const parts = dateString.split('-');
-    if (parts.length !== 3) return null;
+    const clean = dateString.trim().replace(/\//g, '-');
+    const parts = clean.split('-');
+    if (parts.length !== 3) {
+      const fallback = new Date(dateString);
+      return isNaN(fallback.getTime()) ? null : fallback;
+    }
 
     // Check if format is YYYY-MM-DD (ISO format)
     if (parts[0].length === 4) {

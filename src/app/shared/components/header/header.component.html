@@ -1,3 +1,12 @@
+<!-- Full-screen Dismiss Backdrop for Profile Menu -->
+@if (isProfileMenuOpen()) {
+    <div 
+        class="profile-menu-backdrop" 
+        (click)="closeProfileMenu()" 
+        (pointerdown)="closeProfileMenu()"
+        aria-hidden="true"></div>
+}
+
 <header class="modern-header" id="app-main-header">
     <div class="header-inner-container">
         <!-- 3D Brand Logo & Title -->
@@ -118,7 +127,6 @@
 
                 <!-- Dropdown Modal / Popover -->
                 @if (isProfileMenuOpen()) {
-                    <div class="profile-menu-backdrop" (click)="closeProfileMenu()"></div>
                     <div class="profile-dropdown-card" id="header-profile-dropdown" role="menu">
                         <!-- Top Profile Info & Avatar -->
                         <div class="profile-card-top">

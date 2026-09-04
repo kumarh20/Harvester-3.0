@@ -33,6 +33,40 @@ mat-dialog-content {
     width: 100%;
     margin: 0;
   }
+
+  .default-harvester-option-row {
+    margin-top: 4px;
+    padding: 10px 14px;
+    background: rgba(5, 150, 105, 0.06);
+    border: 1px solid rgba(5, 150, 105, 0.2);
+    border-radius: 12px;
+
+    .default-checkbox-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #065F46;
+    }
+
+    .default-checkbox-hint {
+      margin: 4px 0 0 28px;
+      font-size: 11px;
+      color: #047857;
+      line-height: 1.4;
+    }
+
+    [data-theme="dark"] & {
+      background: rgba(5, 150, 105, 0.15);
+      border-color: rgba(52, 211, 153, 0.3);
+
+      .default-checkbox-label {
+        color: #A7F3D0;
+      }
+
+      .default-checkbox-hint {
+        color: #6EE7B7;
+      }
+    }
+  }
 }
 
 mat-dialog-actions {

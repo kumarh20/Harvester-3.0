@@ -10,29 +10,210 @@
             
             <!-- Header Section -->
             <div class="records-header-card" id="records-header-card">
-                <div class="header-text-group">
-                    <h1 class="records-title">{{ translationService.get('records.title') }}</h1>
-                    <p class="records-subtitle">{{ translationService.getWithParams('records.subtitle', { count: recordCount() }) }}</p>
+                <div class="records-header-top-row">
+                    <div class="header-text-group">
+                        <h1 class="records-title">{{ translationService.get('records.title') }}</h1>
+                        <p class="records-subtitle">{{ translationService.getWithParams('records.subtitle', { count: recordCount() }) }}</p>
+                    </div>
+                    
+                    <!-- Quick Search Field -->
+                    <div class="records-search-bar" id="records-search-bar">
+                        <mat-icon class="search-icon">search</mat-icon>
+                        <input 
+                            type="text" 
+                            id="records-search-input"
+                            [(ngModel)]="searchQuery" 
+                            (ngModelChange)="onSearch()" 
+                            [placeholder]="translationService.get('records.searchPlaceholder')" 
+                            aria-label="Search records" />
+                        @if (searchQuery()) {
+                            <button 
+                                type="button" 
+                                class="search-clear-btn" 
+                                (click)="searchQuery.set(''); onSearch()"
+                                title="Clear search">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                        }
+                    </div>
                 </div>
-                
-                <!-- Quick Search Field -->
-                <div class="records-search-bar" id="records-search-bar">
-                    <mat-icon class="search-icon">search</mat-icon>
-                    <input 
-                        type="text" 
-                        id="records-search-input"
-                        [(ngModel)]="searchQuery" 
-                        (ngModelChange)="onSearch()" 
-                        [placeholder]="translationService.get('records.searchPlaceholder')" 
-                        aria-label="Search records" />
-                    @if (searchQuery()) {
+
+                <!-- Date Period Filter Section -->
+                <div class="records-date-filter-box" id="records-date-filter-box">
+                    <div class="date-filter-scroll-track" id="records-filter-chips">
                         <button 
                             type="button" 
-                            class="search-clear-btn" 
-                            (click)="searchQuery.set(''); onSearch()"
-                            title="Clear search">
-                            <mat-icon>close</mat-icon>
+                            class="date-chip-btn" 
+                            [class.active]="selectedDateFilter() === 'today'"
+                            (click)="setDateFilter('today')"
+                            id="filter-chip-today">
+                            <mat-icon>today</mat-icon>
+                            <span>{{ translationService.get('records.filterToday') }}</span>
+                            @if (todayRecordsCount() > 0) {
+                                <span class="chip-count-badge">{{ todayRecordsCount() }}</span>
+                            }
                         </button>
+
+                        <button 
+                            type="button" 
+                            class="date-chip-btn" 
+                            [class.active]="selectedDateFilter() === 'yesterday'"
+                            (click)="setDateFilter('yesterday')"
+                            id="filter-chip-yesterday">
+                            <mat-icon>history</mat-icon>
+                            <span>{{ translationService.get('records.filterYesterday') }}</span>
+                        </button>
+
+                        <button 
+                            type="button" 
+                            class="date-chip-btn" 
+                            [class.active]="selectedDateFilter() === 'week'"
+                            (click)="setDateFilter('week')"
+                            id="filter-chip-week">
+                            <mat-icon>date_range</mat-icon>
+                            <span>{{ translationService.get('records.filterWeek') }}</span>
+                        </button>
+
+                        <button 
+                            type="button" 
+                            class="date-chip-btn" 
+                            [class.active]="selectedDateFilter() === 'month'"
+                            (click)="setDateFilter('month')"
+                            id="filter-chip-month">
+                            <mat-icon>calendar_view_month</mat-icon>
+                            <span>{{ translationService.get('records.filterMonth') }}</span>
+                        </button>
+
+                        <button 
+                            type="button" 
+                            class="date-chip-btn" 
+                            [class.active]="selectedDateFilter() === 'custom'"
+                            (click)="setDateFilter('custom')"
+                            id="filter-chip-custom">
+                            <mat-icon>edit_calendar</mat-icon>
+                            <span>{{ translationService.get('records.filterCustom') }}</span>
+                        </button>
+
+                        <button 
+                            type="button" 
+                            class="date-chip-btn" 
+                            [class.active]="selectedDateFilter() === 'all'"
+                            (click)="setDateFilter('all')"
+                            id="filter-chip-all">
+                            <mat-icon>all_inclusive</mat-icon>
+                            <span>{{ translationService.get('records.filterAll') }}</span>
+                            <span class="chip-count-badge">{{ totalAllRecordsCount() }}</span>
+                        </button>
+                    </div>
+
+                    <!-- Custom Date Drawer (Single Date or Range) -->
+                    @if (selectedDateFilter() === 'custom') {
+                        <div class="custom-date-container" id="custom-date-container">
+                            <div class="custom-mode-switcher">
+                                <button 
+                                    type="button" 
+                                    class="custom-mode-pill" 
+                                    [class.active]="customMode() === 'single'"
+                                    (click)="setCustomMode('single')">
+                                    <mat-icon>event</mat-icon>
+                                    <span>{{ translationService.get('records.customSingleDate') }}</span>
+                                </button>
+                                <button 
+                                    type="button" 
+                                    class="custom-mode-pill" 
+                                    [class.active]="customMode() === 'range'"
+                                    (click)="setCustomMode('range')">
+                                    <mat-icon>date_range</mat-icon>
+                                    <span>{{ translationService.get('records.customDateRange') }}</span>
+                                </button>
+                            </div>
+
+                            @if (customMode() === 'single') {
+                                <div class="single-picker-row">
+                                    <div class="date-input-wrap">
+                                        <mat-icon class="date-wrap-icon">calendar_today</mat-icon>
+                                        <input 
+                                            type="date" 
+                                            class="styled-date-input" 
+                                            [ngModel]="customSingleDate()"
+                                            (ngModelChange)="customSingleDate.set($event)"
+                                            id="custom-single-date-field" />
+                                    </div>
+                                    <div class="single-quick-steppers">
+                                        <button type="button" class="stepper-arrow-btn" (click)="shiftCustomSingleDate(-1)" title="Previous day">
+                                            <mat-icon>chevron_left</mat-icon>
+                                        </button>
+                                        <button type="button" class="stepper-today-btn" (click)="setCustomSingleDateToday()">
+                                            {{ translationService.get('records.today') }}
+                                        </button>
+                                        <button type="button" class="stepper-arrow-btn" (click)="shiftCustomSingleDate(1)" title="Next day">
+                                            <mat-icon>chevron_right</mat-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (customMode() === 'range') {
+                                <div class="range-picker-row">
+                                    <div class="range-date-col">
+                                        <label for="custom-start-date" class="date-col-label">{{ translationService.get('records.fromDate') }}</label>
+                                        <div class="date-input-wrap">
+                                            <mat-icon class="date-wrap-icon">event</mat-icon>
+                                            <input 
+                                                type="date" 
+                                                id="custom-start-date"
+                                                class="styled-date-input" 
+                                                [ngModel]="customStartDate()"
+                                                (ngModelChange)="customStartDate.set($event)" />
+                                        </div>
+                                    </div>
+                                    <div class="range-date-col">
+                                        <label for="custom-end-date" class="date-col-label">{{ translationService.get('records.toDate') }}</label>
+                                        <div class="date-input-wrap">
+                                            <mat-icon class="date-wrap-icon">event_available</mat-icon>
+                                            <input 
+                                                type="date" 
+                                                id="custom-end-date"
+                                                class="styled-date-input" 
+                                                [ngModel]="customEndDate()"
+                                                (ngModelChange)="customEndDate.set($event)" />
+                                        </div>
+                                    </div>
+                                    @if (customStartDate() || customEndDate()) {
+                                        <button type="button" class="range-reset-btn" (click)="customStartDate.set(''); customEndDate.set('')">
+                                            <mat-icon>restart_alt</mat-icon>
+                                            <span>{{ translationService.get('records.clearFilter') }}</span>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Summary Stats Capsule for filtered slice -->
+                    @if (filteredRecords().length > 0) {
+                        <div class="filter-slice-summary" id="records-filter-slice-summary">
+                            <span class="slice-stat">
+                                <mat-icon>receipt</mat-icon>
+                                <strong>{{ filterSummary().count }}</strong> {{ translationService.get('dashboard.totalRecords') }}
+                            </span>
+                            <span class="slice-divider">•</span>
+                            <span class="slice-stat">
+                                <mat-icon>landscape</mat-icon>
+                                <strong>{{ filterSummary().acres }}</strong> {{ translationService.get('records.acresUnit') }}
+                            </span>
+                            <span class="slice-divider">•</span>
+                            <span class="slice-stat">
+                                <mat-icon>payments</mat-icon>
+                                <strong>{{ formatCurrency(filterSummary().total) }}</strong>
+                            </span>
+                            @if (filterSummary().pending > 0) {
+                                <span class="slice-stat pending-highlight">
+                                    <mat-icon>schedule</mat-icon>
+                                    <span>{{ formatCurrency(filterSummary().pending) }}</span>
+                                </span>
+                            }
+                        </div>
                     }
                 </div>
             </div>
@@ -43,12 +224,26 @@
                 @if (recordCount() === 0) {
                     <div class="records-empty-state" id="records-empty-state">
                         <div class="empty-icon-box">
-                            <mat-icon>receipt_long</mat-icon>
+                            <mat-icon>event_busy</mat-icon>
                         </div>
-                        <h3 class="empty-title">{{ translationService.get('records.noRecords') }}</h3>
+                        <h3 class="empty-title">
+                            {{ selectedDateFilter() !== 'all' ? translationService.get('records.noRecordsForDate') : translationService.get('records.noRecords') }}
+                        </h3>
                         <p class="empty-subtitle">
                             {{ searchQuery() ? translationService.get('records.changeSearch') : translationService.get('records.addNewRecord') }}
                         </p>
+                        <div class="empty-actions-row">
+                            @if (selectedDateFilter() !== 'all' && totalAllRecordsCount() > 0) {
+                                <button type="button" class="empty-cta-btn secondary" (click)="setDateFilter('all')" id="btn-view-all-records">
+                                    <mat-icon>all_inclusive</mat-icon>
+                                    <span>{{ translationService.get('records.viewAllRecords') }} ({{ totalAllRecordsCount() }})</span>
+                                </button>
+                            }
+                            <button type="button" class="empty-cta-btn primary" (click)="navigateToAddRecord()" id="btn-add-record-from-empty">
+                                <mat-icon>add_circle</mat-icon>
+                                <span>{{ translationService.get('records.addNewRecord') }}</span>
+                            </button>
+                        </div>
                     </div>
                 }
 
@@ -82,21 +277,25 @@
                                         <div class="farmer-primary-details">
                                             <div class="farmer-name-line">
                                                 <span class="farmer-name-text" [class.line-through]="record.markedAsPaid">{{ record.farmerName }}</span>
-                                                @if (record.harvester) {
-                                                    <span class="harvester-badge">{{ record.harvester }}</span>
-                                                }
                                             </div>
                                             <div class="farmer-sub-line">
-                                                <a 
-                                                    class="farmer-phone-link" 
-                                                    [href]="'tel:' + record.contactNumber" 
-                                                    (click)="$event.stopPropagation()"
-                                                    title="Call farmer">
-                                                    <mat-icon>phone</mat-icon>
-                                                    <span>{{ record.contactNumber }}</span>
-                                                </a>
-                                                <span class="meta-separator">•</span>
                                                 <span class="acres-text">{{ record.landInAcres }} {{ translationService.get('records.acresUnit') }}</span>
+                                                <span class="meta-separator">•</span>
+                                                <span class="harvester-sub-pill" [title]="record.harvester || 'Harvester 1'">
+                                                    <mat-icon class="harvester-sub-icon">agriculture</mat-icon>
+                                                    <span class="harvester-sub-name">{{ record.harvester || 'Harvester 1' }}</span>
+                                                </span>
+                                                @if (record.contactNumber) {
+                                                    <span class="meta-separator meta-phone-item">•</span>
+                                                    <a 
+                                                        class="farmer-phone-link meta-phone-item" 
+                                                        [href]="'tel:' + record.contactNumber" 
+                                                        (click)="$event.stopPropagation()"
+                                                        title="Call farmer">
+                                                        <mat-icon>phone</mat-icon>
+                                                        <span>{{ record.contactNumber }}</span>
+                                                    </a>
+                                                }
                                             </div>
                                         </div>
 
@@ -129,6 +328,13 @@
                                                     <span class="spec-label">{{ translationService.get('records.date') }}</span>
                                                     <span class="spec-value">{{ record.date }}</span>
                                                 </div>
+                                                <div class="spec-cell harvester-spec-cell">
+                                                    <span class="spec-label">{{ translationService.get('records.harvester') }}</span>
+                                                    <span class="spec-value harvester-spec-value">
+                                                        <mat-icon class="harvester-cell-icon">agriculture</mat-icon>
+                                                        <span class="harvester-name-txt">{{ record.harvester || 'Harvester 1' }}</span>
+                                                    </span>
+                                                </div>
                                                 <div class="spec-cell">
                                                     <span class="spec-label">{{ translationService.get('records.land') }}</span>
                                                     <span class="spec-value">{{ record.landInAcres }} {{ translationService.get('records.acresUnit') }}</span>
@@ -159,6 +365,16 @@
 
                                             <!-- Expanded Action Buttons -->
                                             <div class="expanded-actions-row">
+                                                @if (record.contactNumber) {
+                                                    <a 
+                                                        [href]="'tel:' + record.contactNumber" 
+                                                        class="detail-action-btn call-action"
+                                                        title="Call farmer">
+                                                        <mat-icon>phone</mat-icon>
+                                                        <span>{{ translationService.get('records.callFarmer') }}</span>
+                                                    </a>
+                                                }
+
                                                 <button 
                                                     type="button" 
                                                     class="detail-action-btn primary-action" 

@@ -21,7 +21,7 @@ import { DataImportExportService } from '../../core/services/data-import-export.
 import { Router } from '@angular/router';
 import { ToastService } from '../../shared/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { UiPreferencesService } from '../../core/services/ui-preferences.service';
+import { UiPreferencesService, DefaultRecordFilterSetting } from '../../core/services/ui-preferences.service';
 import { HarvesterDialogComponent, HarvesterDialogData } from '../../shared/components/harvester-dialog/harvester-dialog.component';
 import { ProfileDialogComponent, ProfileDialogData } from '../../shared/components/profile-dialog/profile-dialog.component';
 
@@ -65,6 +65,9 @@ export class SettingsComponent implements OnInit {
 
   // Bottom navigation labels visibility signal (default: hidden/false)
   showNavLabels = computed(() => this.uiPreferencesService.showNavLabels());
+
+  // Default records filter preference (today | week | month | all)
+  defaultRecordFilter = computed(() => this.uiPreferencesService.defaultRecordFilter());
 
   // Preferred land measurement unit
   preferredUnit = signal<'acre' | 'bigha' | 'hectare'>('acre');
@@ -341,6 +344,23 @@ export class SettingsComponent implements OnInit {
   }
 
   /**
+   * Set default records date filter
+   */
+  setDefaultRecordFilter(filter: DefaultRecordFilterSetting): void {
+    this.uiPreferencesService.setDefaultRecordFilter(filter);
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    const names: Record<DefaultRecordFilterSetting, string> = {
+      today: isHi ? 'आज (Today)' : 'Today',
+      week: isHi ? 'इस सप्ताह (This Week)' : 'This Week',
+      month: isHi ? 'इस महीने (This Month)' : 'This Month',
+      all: isHi ? 'सभी रिकॉर्ड (All Time)' : 'All Records'
+    };
+    this.toastService.success(
+      isHi ? `डिफ़ॉल्ट फ़िल्टर "${names[filter]}" सेट किया गया` : `Default filter set to "${names[filter]}"`
+    );
+  }
+
+  /**
    * Send a test mobile system notification
    */
   async sendTestNotification(): Promise<void> {
@@ -515,18 +535,46 @@ export class SettingsComponent implements OnInit {
     return this.harvesterService.harvesters().length > 1;
   }
 
+  isDefaultHarvester(name: string): boolean {
+    return this.harvesterService.defaultHarvester() === name;
+  }
+
+  async setDefaultHarvester(name: string): Promise<void> {
+    if (!name || !name.trim()) return;
+    try {
+      await this.harvesterService.setDefaultHarvester(name.trim());
+      const isHi = this.languageService.getCurrentLanguage() === 'hi';
+      this.toastService.success(
+        isHi
+          ? `डिफ़ॉल्ट मशीन "${name}" सेट की गई! (फॉर्म में अपने आप आएगी)`
+          : `"${name}" set as default harvester in cutting forms!`
+      );
+    } catch {
+      this.toastService.error(this.translationService.get('messages.updateError'));
+    }
+  }
+
   openAddHarvesterDialog(): void {
-    const data: HarvesterDialogData = { mode: 'add' };
+    const data: HarvesterDialogData = { mode: 'add', isDefault: false };
     const dialogRef = this.matDialog.open(HarvesterDialogComponent, {
       width: '400px',
       data,
       panelClass: 'custom-dialog-container'
     });
-    dialogRef.afterClosed().subscribe(async (result: string | null) => {
+    dialogRef.afterClosed().subscribe(async (result: any) => {
       if (result) {
+        const name = typeof result === 'string' ? result : result.name;
+        const makeDefault = typeof result === 'object' ? !!result.makeDefault : false;
+        if (!name?.trim()) return;
         try {
-          await this.harvesterService.addHarvester(result);
+          await this.harvesterService.addHarvester(name, makeDefault);
           this.toastService.success(this.translationService.get('messages.recordSaved'));
+          if (makeDefault) {
+            const isHi = this.languageService.getCurrentLanguage() === 'hi';
+            this.toastService.info(
+              isHi ? `"${name}" को फॉर्म के लिए डिफ़ॉल्ट चुना गया` : `"${name}" set as default for form`
+            );
+          }
         } catch (e) {
           this.toastService.error(this.translationService.get('messages.saveError'));
         }
@@ -537,16 +585,20 @@ export class SettingsComponent implements OnInit {
   openEditHarvesterDialog(index: number): void {
     const list = this.harvesterService.harvesters();
     const currentName = list[index] ?? '';
-    const data: HarvesterDialogData = { mode: 'edit', currentName };
+    const isDefault = this.isDefaultHarvester(currentName);
+    const data: HarvesterDialogData = { mode: 'edit', currentName, isDefault };
     const dialogRef = this.matDialog.open(HarvesterDialogComponent, {
       width: '400px',
       data,
       panelClass: 'custom-dialog-container'
     });
-    dialogRef.afterClosed().subscribe(async (result: string | null) => {
+    dialogRef.afterClosed().subscribe(async (result: any) => {
       if (result) {
+        const name = typeof result === 'string' ? result : result.name;
+        const makeDefault = typeof result === 'object' ? !!result.makeDefault : isDefault;
+        if (!name?.trim()) return;
         try {
-          await this.harvesterService.updateHarvester(index, result);
+          await this.harvesterService.updateHarvester(index, name, makeDefault);
           this.toastService.success(this.translationService.get('messages.recordUpdated'));
         } catch (e) {
           this.toastService.error(this.translationService.get('messages.updateError'));

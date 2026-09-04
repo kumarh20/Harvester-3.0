@@ -9,6 +9,9 @@ export class HarvesterService {
   private harvestersSignal = signal<string[]>([]);
   harvesters = computed(() => this.harvestersSignal());
 
+  private defaultHarvesterSignal = signal<string>('');
+  defaultHarvester = computed(() => this.defaultHarvesterSignal());
+
   constructor(
     private firestore: Firestore,
     private auth: Auth
@@ -21,58 +24,159 @@ export class HarvesterService {
   }
 
   /**
-   * Load user's harvester list from Firestore. If none exists, initializes with default.
+   * Load user's harvester list and default selection from Firestore/local cache.
    */
   async loadHarvesters(): Promise<string[]> {
-    const uid = this.auth.currentUser?.uid;
-    if (!uid) {
-      this.harvestersSignal.set([...DEFAULT_HARVESTERS]);
-      return this.harvestersSignal();
+    let localDefault = '';
+    let localList: string[] = [];
+    try {
+      localDefault = localStorage.getItem('default_harvester') || '';
+      const cached = localStorage.getItem('harvester_list');
+      if (cached) {
+        localList = JSON.parse(cached);
+      }
+    } catch {
+      // Ignored
     }
 
-    const userRef = doc(this.firestore, 'users', uid);
-    const snap = await getDoc(userRef);
-    const data = snap.data();
-    const list = Array.isArray(data?.['harvesters']) && data!['harvesters'].length > 0
-      ? [...(data['harvesters'] as string[])]
-      : [...DEFAULT_HARVESTERS];
-    this.harvestersSignal.set(list);
-    return list;
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) {
+      const list = Array.isArray(localList) && localList.length > 0
+        ? [...localList]
+        : [...DEFAULT_HARVESTERS];
+      const activeDefault = (localDefault && list.includes(localDefault))
+        ? localDefault
+        : list[0];
+      this.harvestersSignal.set(list);
+      this.defaultHarvesterSignal.set(activeDefault);
+      return list;
+    }
+
+    try {
+      const userRef = doc(this.firestore, 'users', uid);
+      const snap = await getDoc(userRef);
+      const data = snap.data();
+      const list = Array.isArray(data?.['harvesters']) && data!['harvesters'].length > 0
+        ? [...(data['harvesters'] as string[])]
+        : (localList.length > 0 ? localList : [...DEFAULT_HARVESTERS]);
+
+      let activeDefault = (data?.['defaultHarvester'] as string) || localDefault || list[0];
+      if (!list.includes(activeDefault)) {
+        activeDefault = list[0] || DEFAULT_HARVESTERS[0];
+      }
+
+      this.harvestersSignal.set(list);
+      this.defaultHarvesterSignal.set(activeDefault);
+
+      try {
+        localStorage.setItem('harvester_list', JSON.stringify(list));
+        localStorage.setItem('default_harvester', activeDefault);
+      } catch {
+        // Ignored
+      }
+      return list;
+    } catch (e) {
+      console.warn('Could not load harvesters from Firestore, falling back to local cache', e);
+      const list = localList.length > 0 ? localList : [...DEFAULT_HARVESTERS];
+      const activeDefault = (localDefault && list.includes(localDefault)) ? localDefault : list[0];
+      this.harvestersSignal.set(list);
+      this.defaultHarvesterSignal.set(activeDefault);
+      return list;
+    }
   }
 
   /**
-   * Save full harvester list to Firestore. Ensures at least one option.
+   * Save full harvester list and default selection to Firestore & localStorage.
    */
-  async setHarvesters(harvesters: string[]): Promise<void> {
+  async setHarvesters(harvesters: string[], defaultHarvesterName?: string): Promise<void> {
     const list = harvesters.filter(s => typeof s === 'string' && s.trim().length > 0);
     if (list.length === 0) list.push(DEFAULT_HARVESTERS[0]);
-    const userRef = this.getUserDocRef();
-    await setDoc(userRef, { harvesters: list }, { merge: true });
+
+    let activeDefault = defaultHarvesterName || this.defaultHarvesterSignal();
+    if (!activeDefault || !list.includes(activeDefault)) {
+      activeDefault = list[0];
+    }
+
     this.harvestersSignal.set([...list]);
+    this.defaultHarvesterSignal.set(activeDefault);
+
+    try {
+      localStorage.setItem('harvester_list', JSON.stringify(list));
+      localStorage.setItem('default_harvester', activeDefault);
+    } catch {
+      // Ignored
+    }
+
+    const uid = this.auth.currentUser?.uid;
+    if (uid) {
+      try {
+        const userRef = this.getUserDocRef();
+        await setDoc(userRef, { harvesters: list, defaultHarvester: activeDefault }, { merge: true });
+      } catch (err) {
+        console.error('Error saving harvesters to Firestore:', err);
+      }
+    }
   }
 
   /**
-   * Add a new harvester name.
+   * Set a specific harvester as the default for new records.
    */
-  async addHarvester(name: string): Promise<void> {
+  async setDefaultHarvester(name: string): Promise<void> {
+    const trimmed = name.trim();
+    const list = this.harvestersSignal();
+    if (!trimmed || !list.includes(trimmed)) return;
+
+    this.defaultHarvesterSignal.set(trimmed);
+
+    try {
+      localStorage.setItem('default_harvester', trimmed);
+    } catch {
+      // Ignored
+    }
+
+    const uid = this.auth.currentUser?.uid;
+    if (uid) {
+      try {
+        const userRef = this.getUserDocRef();
+        await setDoc(userRef, { defaultHarvester: trimmed }, { merge: true });
+      } catch (err) {
+        console.error('Error updating default harvester in Firestore:', err);
+      }
+    }
+  }
+
+  /**
+   * Add a new harvester name with optional makeDefault flag.
+   */
+  async addHarvester(name: string, makeDefault: boolean = false): Promise<void> {
     const trimmed = name.trim();
     if (!trimmed) return;
     const current = this.harvestersSignal().slice();
-    if (current.includes(trimmed)) return;
-    current.push(trimmed);
-    await this.setHarvesters(current);
+    if (!current.includes(trimmed)) {
+      current.push(trimmed);
+    }
+    const shouldBeDefault = makeDefault || current.length === 1 || !this.defaultHarvesterSignal();
+    await this.setHarvesters(current, shouldBeDefault ? trimmed : this.defaultHarvesterSignal());
   }
 
   /**
    * Update harvester name at index.
    */
-  async updateHarvester(index: number, newName: string): Promise<void> {
+  async updateHarvester(index: number, newName: string, makeDefault?: boolean): Promise<void> {
     const trimmed = newName.trim();
     if (!trimmed) return;
     const current = this.harvestersSignal().slice();
     if (index < 0 || index >= current.length) return;
+
+    const oldName = current[index];
     current[index] = trimmed;
-    await this.setHarvesters(current);
+
+    let nextDefault = this.defaultHarvesterSignal();
+    if (makeDefault === true || oldName === nextDefault) {
+      nextDefault = trimmed;
+    }
+
+    await this.setHarvesters(current, nextDefault);
   }
 
   /**
@@ -82,15 +186,27 @@ export class HarvesterService {
     const current = this.harvestersSignal().slice();
     if (current.length <= 1) return;
     if (index < 0 || index >= current.length) return;
+
+    const removed = current[index];
     current.splice(index, 1);
-    await this.setHarvesters(current);
+
+    let nextDefault = this.defaultHarvesterSignal();
+    if (removed === nextDefault) {
+      nextDefault = current[0];
+    }
+
+    await this.setHarvesters(current, nextDefault);
   }
 
   /**
-   * Get default (first) harvester for new records.
+   * Get default harvester for new records.
    */
   getDefaultHarvester(): string {
+    const activeDefault = this.defaultHarvesterSignal();
     const list = this.harvestersSignal();
+    if (activeDefault && list.includes(activeDefault)) {
+      return activeDefault;
+    }
     return list.length > 0 ? list[0] : DEFAULT_HARVESTERS[0];
   }
 }

@@ -6,11 +6,18 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TranslationService } from '../../services/translation.service';
 
 export interface HarvesterDialogData {
   mode: 'add' | 'edit';
   currentName?: string;
+  isDefault?: boolean;
+}
+
+export interface HarvesterDialogResult {
+  name: string;
+  makeDefault: boolean;
 }
 
 @Component({
@@ -23,7 +30,8 @@ export interface HarvesterDialogData {
     MatButtonModule,
     MatIconModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatCheckboxModule
   ],
   templateUrl: './harvester-dialog.component.html',
   styleUrls: ['./harvester-dialog.component.scss'],
@@ -31,6 +39,7 @@ export interface HarvesterDialogData {
 })
 export class HarvesterDialogComponent {
   name = '';
+  makeDefault = false;
 
   get isEdit(): boolean {
     return this.data.mode === 'edit';
@@ -52,12 +61,17 @@ export class HarvesterDialogComponent {
     public translationService: TranslationService
   ) {
     this.name = data.currentName?.trim() ?? '';
+    this.makeDefault = !!data.isDefault;
   }
 
   onSave(): void {
     const trimmed = this.name.trim();
     if (!trimmed) return;
-    this.dialogRef.close(trimmed);
+    const result: HarvesterDialogResult = {
+      name: trimmed,
+      makeDefault: this.makeDefault
+    };
+    this.dialogRef.close(result);
   }
 
   onCancel(): void {

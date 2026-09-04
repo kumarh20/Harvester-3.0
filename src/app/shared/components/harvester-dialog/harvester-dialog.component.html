@@ -14,6 +14,13 @@
         (keydown.enter)="onSave()"
       />
     </mat-form-field>
+
+    <div class="default-harvester-option-row">
+      <mat-checkbox [(ngModel)]="makeDefault" color="primary">
+        <span class="default-checkbox-label">{{ translationService.get('settings.makeDefaultCheckbox') }}</span>
+      </mat-checkbox>
+      <p class="default-checkbox-hint">{{ translationService.get('settings.defaultMachineDesc') }}</p>
+    </div>
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">

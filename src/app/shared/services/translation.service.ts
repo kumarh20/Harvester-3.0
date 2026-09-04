@@ -102,6 +102,22 @@ export interface Translations {
     yesterday: string;
     acresUnit: string;
     callFarmer: string;
+    filterToday?: string;
+    filterYesterday?: string;
+    filterWeek?: string;
+    filterMonth?: string;
+    filterCustom?: string;
+    filterAll?: string;
+    customSingleDate?: string;
+    customDateRange?: string;
+    fromDate?: string;
+    toDate?: string;
+    clearFilter?: string;
+    noRecordsForDate?: string;
+    viewAllRecords?: string;
+    selectDate?: string;
+    filterSummary?: string;
+    [key: string]: any;
   };
 
   // Dashboard
@@ -265,6 +281,24 @@ export interface Translations {
     logout: string;
     logoutDesc: string;
     systemVersion: string;
+    defaultRecordFilter?: string;
+    defaultRecordFilterDesc?: string;
+    defaultFilterUpdated?: string;
+    filterOptionToday?: string;
+    filterOptionWeek?: string;
+    filterOptionMonth?: string;
+    filterOptionAll?: string;
+    filterTodayOption?: string;
+    filterWeekOption?: string;
+    filterMonthOption?: string;
+    filterAllOption?: string;
+    defaultMachineDesc?: string;
+    selectDefaultHarvester?: string;
+    setAsDefault?: string;
+    isDefaultBadge?: string;
+    defaultHarvesterUpdated?: string;
+    makeDefaultCheckbox?: string;
+    [key: string]: any;
   };
 
   // More
@@ -535,7 +569,22 @@ const HINDI_TRANSLATIONS: Translations = {
     today: 'आज',
     yesterday: 'कल',
     acresUnit: 'एकड़',
-    callFarmer: 'कॉल करें'
+    callFarmer: 'कॉल करें',
+    filterToday: 'आज',
+    filterYesterday: 'कल',
+    filterWeek: 'इस सप्ताह',
+    filterMonth: 'इस महीने',
+    filterCustom: 'कस्टम तारीख',
+    filterAll: 'सभी',
+    customSingleDate: 'एक तारीख',
+    customDateRange: 'तारीख अवधि',
+    fromDate: 'शुरू तारीख',
+    toDate: 'अंतिम तारीख',
+    selectDate: 'तारीख चुनें',
+    clearFilter: 'हटाएं',
+    noRecordsForDate: 'इस तारीख/अवधि में कोई रिकॉर्ड नहीं मिला',
+    viewAllRecords: 'सभी रिकॉर्ड देखें',
+    filterSummary: '{{count}} रिकॉर्ड • {{acres}} एकड़ • ₹{{total}} कुल'
   },
   dashboard: {
     title: 'डैशबोर्ड',
@@ -635,7 +684,13 @@ const HINDI_TRANSLATIONS: Translations = {
     harvesterCountOne: '1 मशीन',
     addHarvester: 'मशीन जोड़ें',
     searchHarvesterPlaceholder: 'मशीन का नाम खोजें...',
-    defaultMachine: 'मुख्य मशीन',
+    defaultMachine: 'डिफ़ॉल्ट मशीन',
+    defaultMachineDesc: 'नया रिकॉर्ड फॉर्म खोलते समय यह मशीन अपने-आप चुनी रहेगी',
+    selectDefaultHarvester: 'डिफ़ॉल्ट मशीन चुनें (Default Machine)',
+    setAsDefault: 'डिफ़ॉल्ट बनाएं',
+    isDefaultBadge: 'डिफ़ॉल्ट मशीन',
+    defaultHarvesterUpdated: 'डिफ़ॉल्ट मशीन सेट कर दी गई है',
+    makeDefaultCheckbox: 'इस मशीन को नए फॉर्म के लिए डिफ़ॉल्ट बनाएं',
     unitNumber: 'हार्वेस्टर कटिंग यूनिट',
     harvesterNamePlaceholder: 'उदा. जॉन डियर 1, प्रीत 987',
     saveHarvester: 'सहेजें',
@@ -661,6 +716,12 @@ const HINDI_TRANSLATIONS: Translations = {
     dark: 'डार्क',
     bottomNavLabels: 'बॉटम नेविगेशन लेबल',
     bottomNavLabelsDesc: 'नेविगेशन बार में आइकन्स के नीचे नाम दिखाएं (बंद करने पर नेविगेशन बार स्लिम और कॉम्पैक्ट रहेगा)',
+    defaultRecordFilter: 'डिफ़ॉल्ट रिकॉर्ड फ़िल्टर',
+    defaultRecordFilterDesc: 'रिकॉर्ड पेज खोलते समय पहले कौन सा फ़िल्टर दिखेगा',
+    filterTodayOption: 'आज (Today)',
+    filterWeekOption: 'इस सप्ताह (This Week)',
+    filterMonthOption: 'इस महीने (This Month)',
+    filterAllOption: 'सभी रिकॉर्ड (All Time)',
     language: 'भाषा (Language)',
     languageDescription: 'अपनी भाषा का चयन करें',
     languageHindi: 'हिन्दी',
@@ -953,7 +1014,22 @@ const ENGLISH_TRANSLATIONS: Translations = {
     today: 'Today',
     yesterday: 'Yesterday',
     acresUnit: 'Acres',
-    callFarmer: 'Call'
+    callFarmer: 'Call',
+    filterToday: 'Today',
+    filterYesterday: 'Yesterday',
+    filterWeek: 'This Week',
+    filterMonth: 'This Month',
+    filterCustom: 'Custom Date',
+    filterAll: 'All Time',
+    customSingleDate: 'Single Date',
+    customDateRange: 'Date Range',
+    fromDate: 'From Date',
+    toDate: 'To Date',
+    selectDate: 'Select Date',
+    clearFilter: 'Clear',
+    noRecordsForDate: 'No records found for this date or period',
+    viewAllRecords: 'View All Records',
+    filterSummary: '{{count}} records • {{acres}} acres • ₹{{total}} total'
   },
   dashboard: {
     title: 'Dashboard',
@@ -1053,7 +1129,13 @@ const ENGLISH_TRANSLATIONS: Translations = {
     harvesterCountOne: '1 machine',
     addHarvester: 'Add Machine',
     searchHarvesterPlaceholder: 'Search machine name...',
-    defaultMachine: 'Primary Machine',
+    defaultMachine: 'Default Machine',
+    defaultMachineDesc: 'This machine will be pre-selected automatically when creating a new cutting record',
+    selectDefaultHarvester: 'Select Default Machine',
+    setAsDefault: 'Set as Default',
+    isDefaultBadge: 'Default Machine',
+    defaultHarvesterUpdated: 'Default machine updated successfully',
+    makeDefaultCheckbox: 'Set as default machine for new records',
     unitNumber: 'Harvester Cutting Unit',
     harvesterNamePlaceholder: 'e.g. John Deere 1, Preet 987',
     saveHarvester: 'Save',
@@ -1079,6 +1161,12 @@ const ENGLISH_TRANSLATIONS: Translations = {
     dark: 'Dark',
     bottomNavLabels: 'Bottom Navigation Labels',
     bottomNavLabelsDesc: 'Show text labels below icons (turn off for a compact, ultra-slim dock)',
+    defaultRecordFilter: 'Default Record Filter',
+    defaultRecordFilterDesc: 'Choose which date period opens by default on Records page',
+    filterTodayOption: 'Today',
+    filterWeekOption: 'This Week',
+    filterMonthOption: 'This Month',
+    filterAllOption: 'All Records',
     language: 'Language',
     languageDescription: 'Select your preferred language',
     languageHindi: 'हिन्दी',

@@ -14,7 +14,11 @@ import { ProfileDialogComponent, ProfileDialogData } from '../profile-dialog/pro
   selector: 'app-header',
   imports: [CommonModule, MatIconModule, MatDialogModule],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrl: './header.component.scss',
+  host: {
+    '(document:pointerdown)': 'onDocumentPointerDown($event)',
+    '(document:keydown.escape)': 'closeProfileMenu()'
+  }
 })
 export class HeaderComponent implements OnInit {
   themeToggle = output<void>();
@@ -29,6 +33,7 @@ export class HeaderComponent implements OnInit {
   private toastService = inject(ToastService);
   private matDialog = inject(MatDialog);
   private router = inject(Router);
+  private elementRef = inject(ElementRef);
 
   // Auth and profile signals
   currentUser = signal<User | null>(null);
@@ -116,6 +121,24 @@ export class HeaderComponent implements OnInit {
 
   closeProfileMenu(): void {
     this.isProfileMenuOpen.set(false);
+  }
+
+  onDocumentPointerDown(event: Event): void {
+    if (!this.isProfileMenuOpen()) return;
+
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    const profileCard = this.elementRef.nativeElement.querySelector('#header-profile-dropdown');
+    const profileBtn = this.elementRef.nativeElement.querySelector('#header-user-profile-btn');
+
+    // If clicked inside the dropdown card or the toggle button, do not close here
+    if (profileCard?.contains(target) || profileBtn?.contains(target)) {
+      return;
+    }
+
+    // Otherwise, user clicked outside (on page content, bottom navigation, margins, etc.)
+    this.closeProfileMenu();
   }
 
   triggerPhotoUpload(event?: Event): void {
