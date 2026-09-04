@@ -1,4 +1,4 @@
-import { Component, signal, ViewEncapsulation, OnInit, NgZone } from '@angular/core';
+import { Component, signal, computed, ViewEncapsulation, OnInit, NgZone } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -188,11 +188,9 @@ export class App implements OnInit {
    * Maps English label to translation key
    */
   getNavLabel(label: string): string {
-    // Show "Home" for Dashboard when active
-    if (label === 'Dashboard') {
-      return 'Home';
-    }
     const labelMap: Record<string, string> = {
+      'Dashboard': 'nav.home',
+      'Home': 'nav.home',
       'Add New': 'nav.addNew',
       'Records': 'nav.records',
       'Settings': 'nav.settings',
@@ -207,12 +205,17 @@ export class App implements OnInit {
   }
 
   /**
-   * Get nav items with translated labels
+   * Get nav items with translated labels (reactive to language changes)
    */
-  getNavItemsWithTranslations() {
+  navItemsWithTranslations = computed(() => {
+    this.translationService.t();
     return this.navItems.map(item => ({
       ...item,
       label: this.getNavLabel(item.label)
     }));
+  });
+
+  getNavItemsWithTranslations() {
+    return this.navItemsWithTranslations();
   }
 }

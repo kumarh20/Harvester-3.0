@@ -1,0 +1,151 @@
+.skeleton-container {
+  padding: 20px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 0%,
+    #e0e0e0 20%,
+    #f0f0f0 40%,
+    #f0f0f0 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+.skeleton-search {
+  margin-bottom: 20px;
+}
+
+.skeleton-search-box {
+  @extend .skeleton-shimmer;
+  height: 56px;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.skeleton-records {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.skeleton-card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.skeleton-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.skeleton-avatar {
+  @extend .skeleton-shimmer;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.skeleton-name {
+  @extend .skeleton-shimmer;
+  height: 20px;
+  width: 150px;
+  border-radius: 4px;
+}
+
+.skeleton-contact {
+  @extend .skeleton-shimmer;
+  height: 16px;
+  width: 120px;
+  border-radius: 4px;
+}
+
+.skeleton-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.skeleton-badge {
+  @extend .skeleton-shimmer;
+  height: 28px;
+  width: 80px;
+  border-radius: 14px;
+}
+
+.skeleton-icon {
+  @extend .skeleton-shimmer;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+    background: #f0f0f0;
+  }
+}
+
+[data-theme="dark"] {
+  .skeleton-card {
+    background: #1f2937;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      #374151 0%,
+      #4b5563 20%,
+      #374151 40%,
+      #374151 100%
+    );
+    background-size: 1000px 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-shimmer {
+      background: #374151;
+    }
+  }
+}

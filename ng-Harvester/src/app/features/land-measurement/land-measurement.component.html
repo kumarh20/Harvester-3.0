@@ -1,0 +1,415 @@
+<div class="land-tracker-container" [class.is-dialog-view]="isDialogMode" id="land-tracker-root">
+
+  <!-- Top Navigation & Controls Header -->
+  <header class="tracker-header" id="tracker-header">
+    <div class="tracker-title-section">
+      @if (isDialogMode) {
+        <button mat-icon-button (click)="closeDialog()" class="header-icon-btn" [title]="translationService.get('common.close')">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+      }
+      <div class="title-wrap">
+        <h2 class="tracker-title">
+          <mat-icon class="title-icon">landscape</mat-icon>
+          <span>{{ translationService.get('land.title') }}</span>
+        </h2>
+        <span class="tracker-badge">
+          {{ measureMode() === 'map' ? translationService.get('land.mapMode') : translationService.get('land.walkMode') }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Mode Switcher Tabs -->
+    <div class="mode-switch-group">
+      <button 
+        type="button" 
+        class="mode-pill" 
+        [class.active]="measureMode() === 'map'"
+        (click)="setMode('map')"
+        id="mode-switch-map-btn">
+        <mat-icon>touch_app</mat-icon>
+        <span>{{ translationService.get('land.mapPill') }}</span>
+      </button>
+
+      <button 
+        type="button" 
+        class="mode-pill" 
+        [class.active]="measureMode() === 'walk'"
+        (click)="setMode('walk')"
+        id="mode-switch-walk-btn">
+        <mat-icon>directions_walk</mat-icon>
+        <span>{{ translationService.get('land.walkPill') }}</span>
+      </button>
+    </div>
+
+    <!-- Right Header Tools -->
+    <div class="header-actions">
+      <!-- Satellite / Street toggle -->
+      <button 
+        type="button" 
+        class="header-tool-btn" 
+        (click)="setMapLayer(mapLayerType() === 'satellite' ? 'street' : 'satellite')"
+        [title]="translationService.get('land.satellite')"
+        id="btn-toggle-map-layer">
+        <mat-icon>{{ mapLayerType() === 'satellite' ? 'satellite_alt' : 'map' }}</mat-icon>
+        <span class="btn-text">{{ mapLayerType() === 'satellite' ? translationService.get('land.satellite') : translationService.get('land.street') }}</span>
+      </button>
+
+      <!-- Center to GPS -->
+      <button 
+        type="button" 
+        class="header-tool-btn" 
+        (click)="locateUser(true)"
+        [title]="translationService.get('land.locate')"
+        id="btn-gps-locate">
+        <mat-icon>my_location</mat-icon>
+        <span class="btn-text">{{ translationService.get('land.locate') }}</span>
+      </button>
+
+      <!-- Saved Fields Drawer -->
+      <button 
+        type="button" 
+        class="header-tool-btn" 
+        (click)="showSavedFields.set(true)"
+        [title]="translationService.get('land.savedFields')"
+        id="btn-saved-fields">
+        <mat-icon>folder</mat-icon>
+        <span class="btn-text">{{ translationService.get('land.savedFields') }}</span>
+        @if (landService.savedFields().length > 0) {
+          <span class="saved-counter-badge">{{ landService.savedFields().length }}</span>
+        }
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Map Canvas & Overlays -->
+  <div class="map-viewport-wrapper">
+    <!-- Leaflet Map Container -->
+    <div #mapContainer class="leaflet-map-element" id="field-leaflet-map"></div>
+
+    <!-- TOP FLOATING INSTRUCTION / GPS BANNER -->
+    <div class="map-status-overlay">
+      @if (measureMode() === 'map') {
+        <div class="mode-guide-chip" id="map-mode-guide">
+          <mat-icon>pin_drop</mat-icon>
+          <span>
+            {{ translationService.get('land.mapGuide') }}
+          </span>
+          @if (points().length > 0) {
+            <span class="point-count-pill">{{ points().length }} {{ translationService.get('land.pointsLabel') }}</span>
+          }
+        </div>
+      } @else {
+        <!-- Walk Mode GPS Banner -->
+        <div class="walk-status-card" id="walk-status-panel">
+          <div class="gps-metric-row">
+            <div class="gps-indicator" [class]="gpsStatus()">
+              <span class="dot"></span>
+              <span class="status-label">
+                @if (gpsAccuracy() !== null) {
+                  GPS: ±{{ gpsAccuracy() }}m
+                } @else {
+                  {{ translationService.get('land.gpsWaiting') }}
+                }
+              </span>
+            </div>
+
+            @if (isWalking()) {
+              <div class="walk-stat-item">
+                <mat-icon>timer</mat-icon>
+                <span>{{ walkElapsedTime() }}</span>
+              </div>
+              <div class="walk-stat-item">
+                <mat-icon>straighten</mat-icon>
+                <span>{{ walkDistance() | number:'1.0-0' }} m</span>
+              </div>
+            }
+          </div>
+
+          <div class="walk-action-toolbar">
+            @if (!isWalking()) {
+              <button 
+                type="button" 
+                class="walk-btn start-walk-btn" 
+                (click)="startWalk()"
+                id="btn-start-walk">
+                <mat-icon>play_arrow</mat-icon>
+                <span>{{ translationService.get('land.walkStart') }}</span>
+              </button>
+            } @else {
+              <!-- Active Walk Controls -->
+              @if (!isWalkPaused()) {
+                <button type="button" class="walk-btn pause-walk-btn" (click)="pauseWalk()" id="btn-pause-walk">
+                  <mat-icon>pause</mat-icon>
+                  <span>{{ translationService.get('land.walkPause') }}</span>
+                </button>
+              } @else {
+                <button type="button" class="walk-btn resume-walk-btn" (click)="resumeWalk()" id="btn-resume-walk">
+                  <mat-icon>play_arrow</mat-icon>
+                  <span>{{ translationService.get('land.walkResume') }}</span>
+                </button>
+              }
+
+              <button type="button" class="walk-btn mark-corner-btn" (click)="addCurrentWalkCorner()" id="btn-mark-corner">
+                <mat-icon>add_location_alt</mat-icon>
+                <span>{{ translationService.get('land.markCorner') }}</span>
+              </button>
+
+              <button type="button" class="walk-btn finish-walk-btn" (click)="finishWalk()" id="btn-finish-walk">
+                <mat-icon>check_circle</mat-icon>
+                <span>{{ translationService.get('land.walkFinish') }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- FLOATING MAP TOOLS (Undo, Clear, Center) -->
+    <div class="floating-map-tools">
+      @if (points().length > 0) {
+        <button 
+          type="button" 
+          class="map-tool-fab" 
+          (click)="undoLastPoint()" 
+          [title]="translationService.get('land.undoPoint')"
+          id="btn-undo-point">
+          <mat-icon>undo</mat-icon>
+        </button>
+
+        <button 
+          type="button" 
+          class="map-tool-fab danger" 
+          (click)="clearAllPoints()" 
+          [title]="translationService.get('land.clearPoints')"
+          id="btn-clear-points">
+          <mat-icon>delete_sweep</mat-icon>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- BOTTOM MEASUREMENT RESULTS & ACTION CARD -->
+  <div class="measurement-results-dock" id="measurement-results-dock">
+    <!-- Main Big Metric Banner -->
+    <div class="results-main-row">
+      <div class="primary-acre-display">
+        <div class="acre-amount-wrap">
+          <span class="acre-number">{{ calculatedAcres() | number:'1.2-2' }}</span>
+          <span class="acre-unit">{{ translationService.get('land.acres') }}</span>
+        </div>
+        <div class="bigha-pill-wrap">
+          <span class="bigha-badge">
+            <mat-icon class="bigha-icon">agriculture</mat-icon>
+            <strong>{{ calculatedBigha() | number:'1.2-2' }}</strong> {{ translationService.get('land.bigha') }}
+          </span>
+          <span class="ratio-select-tag">
+            (@ {{ bighaRatio() }} {{ translationService.get('land.bigha') }}/{{ translationService.get('land.acres') }})
+          </span>
+        </div>
+      </div>
+
+      <!-- Quick Bigha Regional Ratio Switcher -->
+      <div class="regional-bigha-chips">
+        <button 
+          type="button" 
+          class="ratio-chip" 
+          [class.active]="bighaRatio() === 1.6" 
+          (click)="setRegionalBigha(1.6)">
+          1.6 (Standard)
+        </button>
+        <button 
+          type="button" 
+          class="ratio-chip" 
+          [class.active]="bighaRatio() === 2.5" 
+          (click)="setRegionalBigha(2.5)">
+          2.5 (East/West)
+        </button>
+        <button 
+          type="button" 
+          class="ratio-chip" 
+          [class.active]="bighaRatio() === 5.0" 
+          (click)="setRegionalBigha(5.0)">
+          5.0 (Kachha)
+        </button>
+      </div>
+    </div>
+
+    <!-- Secondary Metrics Chips Row -->
+    <div class="secondary-metrics-grid">
+      <div class="metric-cell">
+        <mat-icon>straighten</mat-icon>
+        <div class="metric-text">
+          <span class="metric-val">{{ calculatedPerimeterMeters() | number:'1.0-0' }} m / {{ calculatedPerimeterFeet() | number:'1.0-0' }} ft</span>
+          <span class="metric-lbl">{{ translationService.get('land.perimeter') }}</span>
+        </div>
+      </div>
+
+      <div class="metric-cell">
+        <mat-icon>grid_goldenratio</mat-icon>
+        <div class="metric-text">
+          <span class="metric-val">{{ calculatedSqMeters() | number:'1.0-0' }} m²</span>
+          <span class="metric-lbl">{{ translationService.get('land.sqMeters') }}</span>
+        </div>
+      </div>
+
+      <div class="metric-cell">
+        <mat-icon>crop_free</mat-icon>
+        <div class="metric-text">
+          <span class="metric-val">{{ calculatedHectares() | number:'1.3-3' }} Ha</span>
+          <span class="metric-lbl">{{ translationService.get('land.hectares') }}</span>
+        </div>
+      </div>
+
+      <div class="metric-cell">
+        <mat-icon>square_foot</mat-icon>
+        <div class="metric-text">
+          <span class="metric-val">{{ calculatedSqFeet() | number:'1.0-0' }} sq ft</span>
+          <span class="metric-lbl">{{ translationService.get('land.sqFeet') }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons Row -->
+    <div class="results-actions-bar">
+      @if (isDialogMode) {
+        <!-- Dialog Usage: Apply to form button -->
+        <button 
+          type="button" 
+          class="action-btn apply-to-form-btn" 
+          (click)="applyToForm()"
+          [disabled]="calculatedAcres() <= 0"
+          id="btn-apply-measured-area">
+          <mat-icon>check_circle</mat-icon>
+          <span>{{ translationService.get('land.applyArea') }} ({{ calculatedAcres() | number:'1.2-2' }} {{ translationService.get('land.acres') }})</span>
+        </button>
+      } @else {
+        <!-- Standalone Mode: Create Cutting Record, Save, Share -->
+        <button 
+          type="button" 
+          class="action-btn primary-create-record-btn" 
+          (click)="createCuttingRecord()"
+          [disabled]="calculatedAcres() <= 0"
+          id="btn-create-record-from-measure">
+          <mat-icon>add_circle</mat-icon>
+          <span>{{ translationService.get('land.createCuttingRecord') }} ({{ calculatedAcres() | number:'1.2-2' }} {{ translationService.get('land.acres') }})</span>
+        </button>
+
+        <button 
+          type="button" 
+          class="action-btn secondary-btn" 
+          (click)="promptSaveField()"
+          [disabled]="calculatedAcres() <= 0"
+          id="btn-save-field">
+          <mat-icon>bookmark_add</mat-icon>
+          <span>{{ translationService.get('land.saveField') }}</span>
+        </button>
+
+        <button 
+          type="button" 
+          class="action-btn secondary-btn" 
+          (click)="shareField()"
+          [disabled]="calculatedAcres() <= 0"
+          id="btn-share-field">
+          <mat-icon>share</mat-icon>
+          <span>{{ translationService.get('common.share') }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- SAVE FIELD MODAL DIALOG -->
+  @if (showSaveDialog()) {
+    <div class="modal-backdrop-overlay" (click)="showSaveDialog.set(false)">
+      <div class="modal-card-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <mat-icon>bookmark</mat-icon>
+          <h3>{{ translationService.get('land.saveFieldModalTitle') }}</h3>
+        </div>
+        <div class="modal-body">
+          <p class="modal-subtitle">
+            {{ calculatedAcres() | number:'1.2-2' }} {{ translationService.get('land.acres') }} ({{ calculatedBigha() | number:'1.2-2' }} {{ translationService.get('land.bigha') }}) • {{ calculatedPerimeterMeters() | number:'1.0-0' }}m {{ translationService.get('land.perimeter') }}
+          </p>
+          <div class="input-wrapper">
+            <label>{{ translationService.get('land.fieldPlotName') }}</label>
+            <input 
+              type="text" 
+              [(ngModel)]="newFieldName" 
+              [placeholder]="translationService.get('land.fieldNamePlaceholder')" 
+              class="custom-text-input" 
+              autofocus />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="dialog-cancel-btn" (click)="showSaveDialog.set(false)">{{ translationService.get('common.cancel') }}</button>
+          <button type="button" class="dialog-confirm-btn" (click)="confirmSaveField()">{{ translationService.get('land.saveField') }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- SAVED FIELDS DRAWER / MODAL -->
+  @if (showSavedFields()) {
+    <div class="modal-backdrop-overlay" (click)="showSavedFields.set(false)">
+      <div class="saved-fields-drawer" (click)="$event.stopPropagation()">
+        <div class="drawer-header">
+          <div class="drawer-title-row">
+            <mat-icon>folder_open</mat-icon>
+            <h3>{{ translationService.get('land.savedFieldsTitle') }}</h3>
+          </div>
+          <button mat-icon-button (click)="showSavedFields.set(false)" [title]="translationService.get('common.close')">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="drawer-body">
+          @if (landService.savedFields().length === 0) {
+            <div class="empty-drawer-state">
+              <mat-icon>layers_clear</mat-icon>
+              <p>{{ translationService.get('land.noSavedFields') }}</p>
+              <span>{{ translationService.get('land.noSavedFieldsHint') }}</span>
+            </div>
+          } @else {
+            <div class="saved-fields-list">
+              @for (field of landService.savedFields(); track field.id) {
+                <div class="saved-field-card" (click)="loadSavedField(field)">
+                  <div class="saved-field-card-top">
+                    <span class="field-name-title">{{ field.name }}</span>
+                    <span class="field-method-tag">{{ field.method === 'walk' ? translationService.get('land.walkMode') : translationService.get('land.mapMode') }}</span>
+                  </div>
+                  <div class="saved-field-meta-row">
+                    <div class="meta-item primary">
+                      <strong>{{ field.acres | number:'1.2-2' }}</strong>
+                      <span>{{ translationService.get('land.acres') }}</span>
+                    </div>
+                    <div class="meta-item">
+                      <strong>{{ field.bigha | number:'1.2-2' }}</strong>
+                      <span>{{ translationService.get('land.bigha') }}</span>
+                    </div>
+                    <div class="meta-item">
+                      <strong>{{ field.perimeterMeters | number:'1.0-0' }} m</strong>
+                      <span>{{ translationService.get('land.perimeter') }}</span>
+                    </div>
+                    <div class="meta-item date">
+                      <span>{{ field.date | date:'mediumDate' }}</span>
+                    </div>
+                  </div>
+                  <div class="saved-field-card-actions">
+                    <button type="button" class="card-action-btn load-btn" (click)="loadSavedField(field)">
+                      <mat-icon>visibility</mat-icon>
+                      <span>{{ translationService.get('land.viewOnMap') }}</span>
+                    </button>
+                    <button type="button" class="card-action-btn delete-btn" (click)="deleteSavedField(field.id, $event)" [title]="translationService.get('common.delete')">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

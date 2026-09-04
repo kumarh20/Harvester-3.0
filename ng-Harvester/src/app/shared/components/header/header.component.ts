@@ -1,5 +1,6 @@
 import { Component, output, signal, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 import { TranslationService } from '../../services/translation.service';
 import { LanguageService } from '../../services/language.service';
 import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
@@ -7,7 +8,7 @@ import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatIconModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })

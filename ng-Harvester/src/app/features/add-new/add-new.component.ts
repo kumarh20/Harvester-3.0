@@ -11,6 +11,8 @@ import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { LandMeasurementComponent } from '../land-measurement/land-measurement.component';
 import { RecordsService } from '../../core/services/records.service';
 import { HarvesterService } from '../../core/services/harvester.service';
 import { ToastService } from '../../shared/services/toast.service';
@@ -32,7 +34,8 @@ import { Auth } from '@angular/fire/auth';
     MatNativeDateModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSelectModule
+    MatSelectModule,
+    MatDialogModule
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './add-new.component.html',
@@ -56,23 +59,26 @@ export class AddNewComponent implements OnInit {
   currentDate = new Date();
 
   // Computed signals for form titles
-  formTitle = computed(() => 
-    this.isEditMode() 
+  formTitle = computed(() => {
+    this.translationService.t();
+    return this.isEditMode() 
       ? this.translationService.get('form.editRecord')
-      : this.translationService.get('form.addNewRecord')
-  );
+      : this.translationService.get('form.addNewRecord');
+  });
   
-  formSubtitle = computed(() => 
-    this.isEditMode()
+  formSubtitle = computed(() => {
+    this.translationService.t();
+    return this.isEditMode()
       ? this.translationService.get('form.editRecord')
-      : this.translationService.get('form.farmerInfo')
-  );
+      : this.translationService.get('form.farmerInfo');
+  });
   
-  submitButtonText = computed(() =>
-    this.isEditMode()
+  submitButtonText = computed(() => {
+    this.translationService.t();
+    return this.isEditMode()
       ? this.translationService.get('common.update')
-      : this.translationService.get('common.save')
-  );
+      : this.translationService.get('common.save');
+  });
 
   // Computed signal for minimum payment date
   // Returns today's date when creating new record, null when editing (allows past dates)
@@ -89,21 +95,52 @@ export class AddNewComponent implements OnInit {
     private router: Router,
     public translationService: TranslationService,
     private loaderService: LoaderService,
-    private auth: Auth
+    private auth: Auth,
+    private dialog: MatDialog
   ) {
     this.initializeForm();
+  }
+
+  openLandMeasurementDialog(): void {
+    const dialogRef = this.dialog.open(LandMeasurementComponent, {
+      width: '96vw',
+      maxWidth: '780px',
+      height: '88vh',
+      panelClass: 'land-measure-dialog-modal',
+      data: { isDialog: true, initialAcres: this.recordForm.get('landInAcres')?.value }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.acres > 0) {
+        this.recordForm.patchValue({ landInAcres: result.acres });
+        this.toastService.success(`Applied land measurement: ${result.acres} Acres (${result.bigha || ''} Bigha)`);
+      }
+    });
+  }
+
+  private getDefaultRate(): number {
+    try {
+      const saved = localStorage.getItem('defaultRatePerAcre');
+      if (saved && !isNaN(Number(saved)) && Number(saved) > 0) {
+        return Number(saved);
+      }
+    } catch {
+      // Ignored
+    }
+    return 2500;
   }
 
   /**
    * Initialize Reactive Form with FormControls and Validators
    */
   private initializeForm(): void {
+    const defaultRate = this.getDefaultRate();
     this.recordForm = this.fb.group({
       farmerName: ['', [Validators.required, Validators.minLength(2)]],
       contactNumber: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       date: [new Date(), Validators.required],
       landInAcres: [0, [Validators.required, Validators.min(0.01)]],
-      ratePerAcre: [2500, [Validators.required, Validators.min(1)]],
+      ratePerAcre: [defaultRate, [Validators.required, Validators.min(1)]],
       paidOnSight: [0, [Validators.min(0)]],
       fullPaymentDate: [''],
       harvester: ['']
@@ -122,10 +159,23 @@ export class AddNewComponent implements OnInit {
     await this.harvesterService.loadHarvesters();
     const defaultHarvester = this.harvesterService.getDefaultHarvester();
     this.recordForm.patchValue({ harvester: defaultHarvester });
+    if (!this.isEditMode()) {
+      this.recordForm.patchValue({ ratePerAcre: this.getDefaultRate() });
+    }
     this.route.params.subscribe(params => {
       const recordId = params['id'];
       if (recordId) {
         this.loadRecordForEdit(recordId);
+      }
+    });
+
+    this.route.queryParams.subscribe(queryParams => {
+      if (queryParams['acres']) {
+        const acresVal = parseFloat(queryParams['acres']);
+        if (!isNaN(acresVal) && acresVal > 0) {
+          this.recordForm.patchValue({ landInAcres: acresVal });
+          this.toastService.success(`Applied measured area: ${acresVal} Acres`);
+        }
       }
     });
   }
@@ -400,7 +450,7 @@ export class AddNewComponent implements OnInit {
       contactNumber: '',
       date: new Date(),
       landInAcres: 0,
-      ratePerAcre: 2500,
+      ratePerAcre: this.getDefaultRate(),
       paidOnSight: 0,
       fullPaymentDate: '',
       harvester: this.harvesterService.getDefaultHarvester()

@@ -50,4 +50,14 @@ export class UserService {
       lastLoginAt: serverTimestamp()
     }, { merge: true });
   }
+
+  async updateUserProfile(uid: string, name: string, phone: string, extra?: { businessName?: string }) {
+    const ref = doc(this.firestore, `users/${uid}`);
+    return setDoc(ref, {
+      name,
+      phone,
+      ...(extra?.businessName !== undefined ? { businessName: extra.businessName } : {}),
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  }
 }

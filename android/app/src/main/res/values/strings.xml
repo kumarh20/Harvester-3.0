@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Harvester</string>
+    <string name="title_activity_main">Harvester</string>
+    <string name="package_name">com.harvester.app</string>
+    <string name="custom_url_scheme">com.harvester.app</string>
+</resources>

@@ -1,0 +1,25 @@
+<div class="skeleton-container">
+  <div class="skeleton-search">
+    <div class="skeleton-search-box"></div>
+  </div>
+
+  <div class="skeleton-records">
+    <div *ngFor="let item of skeletonArray; let i = index" class="skeleton-card">
+      <div class="skeleton-card-content">
+        <div class="skeleton-left">
+          <div class="skeleton-avatar"></div>
+          <div class="skeleton-info">
+            <div class="skeleton-name"></div>
+            <div class="skeleton-contact"></div>
+          </div>
+        </div>
+        <div class="skeleton-right">
+          <div class="skeleton-badge"></div>
+          <div class="skeleton-icon"></div>
+          <div class="skeleton-icon"></div>
+          <div class="skeleton-icon"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

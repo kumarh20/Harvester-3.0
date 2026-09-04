@@ -1,0 +1,731 @@
+// ==========================================
+// 🌾 MODERN RECORDS & LEDGER STYLES
+// ==========================================
+.records-container {
+  min-height: 100%;
+  padding: 16px;
+  background-color: #F8FAFC;
+  color: #0F172A;
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  @media (min-width: 768px) {
+    padding: 24px 32px;
+  }
+
+  [data-theme="dark"] & {
+    background-color: #0B1120;
+    color: #F8FAFC;
+  }
+}
+
+.records-content-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// 1. Header Card & Search
+.records-header-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+  }
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+    border-color: #334155;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+  }
+}
+
+.header-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .records-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    margin: 0;
+    color: #0F172A;
+
+    @media (min-width: 640px) {
+      font-size: 22px;
+    }
+
+    [data-theme="dark"] & {
+      color: #F8FAFC;
+    }
+  }
+
+  .records-subtitle {
+    font-size: 13px;
+    color: #64748B;
+    margin: 0;
+
+    [data-theme="dark"] & {
+      color: #94A3B8;
+    }
+  }
+}
+
+.records-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 8px 14px;
+  width: 100%;
+  max-width: 320px;
+  transition: all 0.2s ease;
+
+  &:focus-within {
+    background: #FFFFFF;
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+  }
+
+  .search-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #64748B;
+  }
+
+  input {
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: #0F172A;
+    outline: none;
+    width: 100%;
+
+    &::placeholder {
+      color: #94A3B8;
+    }
+  }
+
+  .search-clear-btn {
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: #94A3B8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: #0F172A;
+    }
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  [data-theme="dark"] & {
+    background: #0F172A;
+    border-color: #334155;
+
+    input {
+      color: #F8FAFC;
+    }
+
+    &:focus-within {
+      background: #0F172A;
+      border-color: #10B981;
+    }
+  }
+}
+
+// 2. Feed Container & Date Groups
+.records-feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.date-group-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.date-header-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #E2E8F0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  width: fit-content;
+  margin-left: 4px;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: #059669;
+  }
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+    color: #94A3B8;
+
+    mat-icon {
+      color: #34D399;
+    }
+  }
+}
+
+.group-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// 3. Farmer Record Card
+.farmer-record-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.03);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    border-color: #CBD5E1;
+    box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.08);
+  }
+
+  &.is-expanded {
+    border-color: #059669;
+    box-shadow: 0 6px 20px -2px rgba(5, 150, 105, 0.12);
+  }
+
+  &.marked-as-paid {
+    opacity: 0.85;
+    background: #FAFAFA;
+  }
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+    border-color: #334155;
+
+    &:hover {
+      border-color: #475569;
+    }
+
+    &.is-expanded {
+      border-color: #10B981;
+      box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.5);
+    }
+
+    &.marked-as-paid {
+      background: #182234;
+    }
+  }
+}
+
+// Main Row
+.record-main-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.farmer-avatar-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.2);
+}
+
+.farmer-primary-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+
+  .farmer-name-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    .farmer-name-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0F172A;
+
+      &.line-through {
+        text-decoration: line-through;
+        color: #94A3B8;
+      }
+
+      [data-theme="dark"] & {
+        color: #F8FAFC;
+      }
+    }
+
+    .harvester-badge {
+      font-size: 10px;
+      font-weight: 600;
+      background: #E2E8F0;
+      color: #475569;
+      padding: 1px 6px;
+      border-radius: 4px;
+
+      [data-theme="dark"] & {
+        background: #334155;
+        color: #94A3B8;
+      }
+    }
+  }
+
+  .farmer-sub-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #64748B;
+
+    .farmer-phone-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      color: #059669;
+      text-decoration: none;
+      font-weight: 600;
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      mat-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+      }
+
+      [data-theme="dark"] & {
+        color: #34D399;
+      }
+    }
+
+    .meta-separator {
+      color: #CBD5E1;
+    }
+
+    .acres-text {
+      font-weight: 500;
+    }
+  }
+}
+
+.record-status-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+
+  .payment-badge {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+
+    &.badge-paid {
+      background: #ECFDF5;
+      color: #059669;
+      border: 1px solid #A7F3D0;
+
+      [data-theme="dark"] & {
+        background: rgba(5, 150, 105, 0.2);
+        color: #34D399;
+        border-color: rgba(5, 150, 105, 0.3);
+      }
+    }
+
+    &.badge-due {
+      background: #FEF3C7;
+      color: #D97706;
+      border: 1px solid #FDE68A;
+
+      [data-theme="dark"] & {
+        background: rgba(217, 119, 6, 0.2);
+        color: #FBBF24;
+        border-color: rgba(217, 119, 6, 0.3);
+      }
+    }
+  }
+
+  .edit-icon-btn {
+    border: none;
+    background: transparent;
+    color: #64748B;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #F1F5F9;
+      color: #059669;
+    }
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    [data-theme="dark"] & {
+      color: #94A3B8;
+
+      &:hover {
+        background: #334155;
+        color: #34D399;
+      }
+    }
+  }
+
+  .expand-chevron {
+    color: #94A3B8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// 4. Expanded Breakdown Details
+.record-details-expanded {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #F1F5F9;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  cursor: default;
+
+  [data-theme="dark"] & {
+    border-top-color: #334155;
+  }
+}
+
+.details-spec-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.spec-cell {
+  background: #F8FAFC;
+  border: 1px solid #F1F5F9;
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .spec-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+
+    [data-theme="dark"] & {
+      color: #94A3B8;
+    }
+  }
+
+  .spec-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0F172A;
+
+    [data-theme="dark"] & {
+      color: #F8FAFC;
+    }
+
+    &.text-emerald {
+      color: #059669;
+      [data-theme="dark"] & {
+        color: #34D399;
+      }
+    }
+  }
+
+  &.highlight-cell {
+    background: #ECFDF5;
+    border-color: #A7F3D0;
+
+    [data-theme="dark"] & {
+      background: rgba(5, 150, 105, 0.15);
+      border-color: rgba(5, 150, 105, 0.3);
+    }
+  }
+
+  &.due-cell {
+    background: #FEF3C7;
+    border-color: #FDE68A;
+
+    .spec-value {
+      color: #D97706;
+    }
+
+    [data-theme="dark"] & {
+      background: rgba(217, 119, 6, 0.15);
+      border-color: rgba(217, 119, 6, 0.3);
+      .spec-value {
+        color: #FBBF24;
+      }
+    }
+  }
+
+  &.full-width-cell {
+    grid-column: 1 / -1;
+  }
+
+  [data-theme="dark"] & {
+    background: #0F172A;
+    border-color: #1E293B;
+  }
+}
+
+// Action Buttons Row
+.expanded-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &.primary-action {
+    background: #059669;
+    color: #FFFFFF;
+
+    &:hover {
+      background: #047857;
+    }
+  }
+
+  &.share-action {
+    background: #F1F5F9;
+    color: #334155;
+    border-color: #CBD5E1;
+
+    &:hover {
+      background: #E2E8F0;
+      color: #0F172A;
+    }
+
+    [data-theme="dark"] & {
+      background: #334155;
+      border-color: #475569;
+      color: #E2E8F0;
+
+      &:hover {
+        background: #475569;
+        color: #FFFFFF;
+      }
+    }
+  }
+
+  &.paid-toggle-action {
+    background: #FEF2F2;
+    color: #DC2626;
+    border-color: #FECACA;
+
+    &:hover {
+      background: #FEE2E2;
+    }
+
+    &.is-paid-btn {
+      background: #ECFDF5;
+      color: #059669;
+      border-color: #A7F3D0;
+
+      &:hover {
+        background: #D1FAE5;
+      }
+    }
+
+    [data-theme="dark"] & {
+      background: rgba(220, 38, 38, 0.15);
+      border-color: rgba(220, 38, 38, 0.3);
+      color: #FCA5A5;
+
+      &.is-paid-btn {
+        background: rgba(5, 150, 105, 0.15);
+        border-color: rgba(5, 150, 105, 0.3);
+        color: #34D399;
+      }
+    }
+  }
+}
+
+// 5. Empty State
+.records-empty-state {
+  text-align: center;
+  padding: 48px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+
+  .empty-icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #F1F5F9;
+    color: #94A3B8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+
+    [data-theme="dark"] & {
+      background: #1E293B;
+      color: #64748B;
+    }
+  }
+
+  .empty-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+
+    [data-theme="dark"] & {
+      color: #F8FAFC;
+    }
+  }
+
+  .empty-subtitle {
+    font-size: 13px;
+    color: #64748B;
+    margin: 0;
+
+    [data-theme="dark"] & {
+      color: #94A3B8;
+    }
+  }
+}
+
+// Mobile Responsive Optimizations
+@media (max-width: 600px) {
+  .records-container {
+    padding: 12px;
+  }
+
+  .records-header-card {
+    padding: 14px 16px;
+    border-radius: 14px;
+  }
+
+  .farmer-record-card {
+    padding: 12px 14px;
+    border-radius: 14px;
+  }
+
+  .expanded-actions-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    width: 100%;
+
+    .detail-action-btn {
+      min-height: 44px;
+      justify-content: center;
+      padding: 8px 10px;
+      font-size: 12px;
+
+      &.paid-toggle-action {
+        grid-column: 1 / -1;
+      }
+    }
+  }
+
+  .record-specs-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px;
+
+    .spec-cell {
+      padding: 8px 10px;
+    }
+  }
+}
+

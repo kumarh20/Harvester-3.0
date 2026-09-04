@@ -3,9 +3,10 @@
     "version": "0.0.0",
     "scripts": {
         "ng": "ng",
-        "start": "ng serve",
+        "dev": "node dev.js",
         "build": "ng build",
         "watch": "ng build --watch --configuration development",
+        "lint": "echo 'No linter configured'",
         "test": "ng test"
     },
     "prettier": {
@@ -34,6 +35,7 @@
         "@capacitor/cli": "^8.0.1",
         "@capacitor/core": "^8.0.1",
         "firebase": "^10.12.2",
+        "leaflet": "^1.9.4",
         "rxjs": "~7.8.0",
         "tslib": "^2.3.0"
     },
@@ -42,6 +44,7 @@
         "@angular/cli": "^20.1.0",
         "@angular/compiler-cli": "^20.1.0",
         "@types/jasmine": "~5.1.0",
+        "@types/leaflet": "^1.9.22",
         "jasmine-core": "~5.8.0",
         "karma": "~6.4.0",
         "karma-chrome-launcher": "~3.2.0",

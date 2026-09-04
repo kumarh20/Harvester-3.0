@@ -1,18 +1,42 @@
-<header class="modern-header">
-    <div class="header-top-row">
-        <div class="user-name">{{ translationService.get('app.appTitle') }}</div>
+<header class="modern-header" id="app-main-header">
+    <div class="header-inner-container">
+        <!-- Brand Logo & Title -->
+        <div class="brand-group" id="header-brand-group">
+            <div class="brand-icon-wrapper" id="header-brand-icon">
+                <mat-icon class="brand-tractor-icon">agriculture</mat-icon>
+            </div>
+            <div class="brand-text-wrapper">
+                <span class="brand-title">{{ translationService.get('app.appTitle') }}</span>
+                <span class="brand-tagline">{{ translationService.get('app.tagline') }}</span>
+            </div>
+        </div>
+
+        <!-- Header Actions -->
         @if (currentUser()) {
-        <div class="header-actions">
-            <!-- Language Toggle -->
-            <button class="language-toggle" (click)="onLanguageToggle()" [title]="getCurrentLanguage() === 'hi' ? translationService.get('settings.languageEnglish') : translationService.get('settings.languageHindi')">
-                <span class="language-code">{{ getCurrentLanguage().toUpperCase() }}</span>
+        <div class="header-actions" id="header-actions-bar">
+            <!-- Language Toggle Pill -->
+            <button 
+                type="button"
+                id="header-language-toggle-btn"
+                class="language-toggle" 
+                (click)="onLanguageToggle()" 
+                [title]="getCurrentLanguage() === 'hi' ? translationService.get('settings.languageEnglish') : translationService.get('settings.languageHindi')"
+                aria-label="Toggle language">
+                <mat-icon class="language-globe-icon">translate</mat-icon>
+                <span class="language-code">{{ getCurrentLanguage() === 'hi' ? 'हिन्दी' : 'EN' }}</span>
             </button>
-            <!-- Theme Toggle -->
-            <button class="theme-toggle" (click)="onThemeToggle()" aria-label="Toggle theme">
+
+            <!-- Theme Toggle Button -->
+            <button 
+                type="button"
+                id="header-theme-toggle-btn"
+                class="theme-toggle" 
+                (click)="onThemeToggle()" 
+                aria-label="Toggle dark and light theme">
                 <div class="toggle-track">
                     <div class="toggle-thumb">
                         <!-- Sun Icon -->
-                        <svg class="theme-icon light-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg class="theme-icon light-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="5"></circle>
                             <line x1="12" y1="1" x2="12" y2="3"></line>
                             <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -24,7 +48,7 @@
                             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                         </svg>
                         <!-- Moon Icon -->
-                        <svg class="theme-icon dark-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                        <svg class="theme-icon dark-icon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
                             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                         </svg>
                     </div>

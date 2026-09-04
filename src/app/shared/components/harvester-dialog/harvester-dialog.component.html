@@ -1,0 +1,32 @@
+<div class="harvester-dialog">
+  <div class="dialog-header">
+    <mat-icon class="dialog-icon">agriculture</mat-icon>
+    <h2 mat-dialog-title>{{ title }}</h2>
+  </div>
+
+  <mat-dialog-content>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ translationService.get('form.harvester') }}</mat-label>
+      <input
+        matInput
+        [(ngModel)]="name"
+        [placeholder]="placeholder"
+        (keydown.enter)="onSave()"
+      />
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="onCancel()">
+      {{ translationService.get('common.cancel') }}
+    </button>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="onSave()"
+      [disabled]="!name.trim()"
+    >
+      {{ translationService.get('common.save') }}
+    </button>
+  </mat-dialog-actions>
+</div>

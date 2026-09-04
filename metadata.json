@@ -1,0 +1,6 @@
+{
+  "name": "Harvester Cutting Tracker",
+  "description": "A web application for tracking harvester cutting operations, farmer records, acreage, rates, and payments.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

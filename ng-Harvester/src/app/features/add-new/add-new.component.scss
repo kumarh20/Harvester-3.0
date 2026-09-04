@@ -1,461 +1,537 @@
 // ==========================================
-// 🎨 PAGE 1: ADD NEW / FARMER FORM
-// Glassmorphism Design with Soft Blue Gradient
+// 🌾 MODERN CUTTING RECORD FORM STYLES
 // ==========================================
 .add-new-container {
-    min-height: 100vh;
-    padding: 16px;
-    position: relative;
-    overflow: hidden;
-    // Page background: Full-height soft blue gradient
-    background: linear-gradient(180deg, #14417d 0%, #0b458a 35%, #EAF2FF 100%);
-    // Rounded outer edges
-    border-radius: 0;
-    // Dark theme variant
-    [data-theme="dark"] & {
-        background: linear-gradient(180deg, #0D47A1 0%, #1565C0 35%, #1E293B 100%);
-    }
-    // Animated floating spheres (subtle)
-    .sphere-1,
-    .sphere-2,
-    .sphere-3 {
-        position: absolute;
-        border-radius: 50%;
-        opacity: 0.08;
-        z-index: 0;
-        background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
-        pointer-events: none;
-    }
-    .sphere-1 {
-        width: 250px;
-        height: 250px;
-        top: 10%;
-        right: 5%;
-    }
-    .sphere-2 {
-        width: 180px;
-        height: 180px;
-        bottom: 20%;
-        left: 10%;
-    }
-    .sphere-3 {
-        width: 200px;
-        height: 200px;
-        top: 50%;
-        left: 3%;
-    }
-    @media screen and (max-width: 600px) {
-      padding: 0px 16px 20px 16px;
-    }
+  min-height: 100%;
+  padding: 16px;
+  background-color: #F8FAFC;
+  color: #0F172A;
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  @media (min-width: 768px) {
+    padding: 24px 32px;
+  }
+
+  [data-theme="dark"] & {
+    background-color: #0B1120;
+    color: #F8FAFC;
+  }
 }
 
-// Main Glass Form Container
-.form-card {
-    position: relative;
-    z-index: 1;
-    max-width: 900px;
-    margin: 16px auto 0;
-    border-radius: 20px;
-    overflow: hidden;
-    // Glassmorphism effect
-    background: rgba(255, 255, 255, 0.78);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    // Shadow
-    box-shadow: 0 20px 40px rgba(30, 111, 217, 0.25);
-    // Dark theme
-    [data-theme="dark"] & {
-        background: rgba(30, 41, 59, 0.85);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    }
-    mat-card-content {
-        padding: 24px;
-    }
+.form-card-container {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-// Form Header Area
-.form-section-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1E293B;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    // Divider below title
-    border-bottom: 1px solid #D6E4FF;
-    [data-theme="dark"] & {
-        color: #F1F5F9;
-        border-bottom-color: rgba(66, 165, 245, 0.3);
-    }
+// 1. Header Card
+.form-header-card {
+  background: linear-gradient(135deg, #064E3B 0%, #065F46 50%, #047857 100%);
+  color: #FFFFFF;
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 16px -2px rgba(6, 78, 59, 0.25);
+
+  [data-theme="dark"] & {
+    background: linear-gradient(135deg, #022c22 0%, #064e3b 60%, #1e293b 100%);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  }
 }
 
-.form-row {
-    display: grid;
+.form-header-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: #A7F3D0;
+  }
+}
+
+.form-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .form-main-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.3px;
+    color: #FFFFFF;
+
+    @media (min-width: 640px) {
+      font-size: 22px;
+    }
+  }
+
+  .form-main-subtitle {
+    font-size: 13px;
+    color: rgba(167, 243, 208, 0.9);
+    margin: 0;
+  }
+}
+
+// 2. Body Card
+.form-body-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+
+  @media (min-width: 640px) {
+    padding: 28px;
+  }
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+    border-color: #334155;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+  }
+}
+
+// Form Sections
+.form-section-block {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #F1F5F9;
+
+  [data-theme="dark"] & {
+    border-bottom-color: #334155;
+  }
+
+  .section-icon-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #059669;
+  }
+
+  .section-heading {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+
+    [data-theme="dark"] & {
+      color: #94A3B8;
+    }
+  }
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+
+  @media (min-width: 640px) {
     grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 10px;
-    @media (max-width: 600px) {
-        grid-template-columns: 1fr;
-        gap: 0.7rem;
-    }
-    .form-field.full-width {
-        grid-column: 1 / -1;
-    }
+    gap: 16px;
+  }
 }
 
-// Common Input Container Styling
-.form-field {
-    width: 100%;
-     ::ng-deep {
-        // Remove Material's default outline appearance
-        .mat-mdc-text-field-wrapper {
-            background: #FFFFFF;
-            border-radius: 14px;
-            border: 1px solid #E3ECFF;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-            padding: 0;
-            height: 52px;
-        }
-        .mdc-text-field {
-            height: 52px;
-            padding: 0;
-            background: transparent;
-            // Remove default Material outline
-            .mdc-notched-outline {
-                display: none !important;
-            }
-        }
-        // Text field input area
-        .mdc-text-field__input {
-            padding: 0 16px;
-            height: 52px;
-            font-size: 15px;
-            color: #1E293B;
-            &::placeholder {
-                color: #94A3B8;
-                opacity: 1;
-            }
-        }
-        .mat-mdc-form-field-focus-overlay {
-            display: none;
-        }
-        // Input element styling
-        .mat-mdc-input-element {
-            height: 52px;
-            padding: 0;
-            font-size: 15px;
-            color: #1E293B;
-            line-height: 52px;
-            &::placeholder {
-                color: #94A3B8;
-                opacity: 1;
-            }
-        }
-        // Ensure input has proper padding when icon is present
-        .mat-mdc-form-field-icon-prefix~.mdc-text-field__input {
-            padding-left: 48px;
-        }
-        // Icons - Angular Material icons (muted blue)
-        .mat-icon {
-            color: #6B86C8 !important;
-        }
-        // Prefix icon container
-        .mat-mdc-form-field-icon-prefix {
-            padding: 0 12px 0 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        // Suffix icon container (for date picker, etc.)
-        .mat-mdc-form-field-icon-suffix {
-            padding: 0 12px 0 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        // Hide floating label (no floating label per requirements)
-        .mat-mdc-floating-label,
-        .mdc-floating-label {
-            display: none !important;
-        }
-        // Focus state
-        &.mat-focused {
-            .mat-mdc-text-field-wrapper {
-                border-color: #1E6FD9;
-                box-shadow: 0 4px 12px rgba(30, 111, 217, 0.15);
-            }
-        }
-        // Error state
-        &.mat-form-field-invalid {
-            .mat-mdc-text-field-wrapper {
-                border-color: #EF4444;
-            }
-        }
-        // Dark theme
-        [data-theme="dark"] & {
-            .mat-mdc-text-field-wrapper {
-                background: rgba(30, 41, 59, 0.8);
-                border-color: rgba(107, 134, 200, 0.3);
-            }
-            .mat-mdc-input-element {
-                color: #F1F5F9;
-                &::placeholder {
-                    color: #64748B;
-                }
-            }
-            .mat-icon {
-                color: #6B86C8 !important;
-            }
-            &.mat-focused {
-                .mat-mdc-text-field-wrapper {
-                    border-color: #4A90E2;
-                }
-            }
-        }
-    }
+.form-single-col {
+  width: 100%;
 }
 
-// Calculated input (disabled, read-only)
-.calculated-input {
+// Custom Material Form Field
+.custom-mat-field {
+  width: 100%;
+
+  .field-icon {
+    color: #64748B;
+    margin-right: 8px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .mat-mdc-form-field-subscript-wrapper {
+    margin-top: 2px;
+  }
+
+  // Border and focus refinement
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: #CBD5E1 !important;
+  }
+
+  &.mat-focused {
+    .field-icon {
+      color: #059669;
+    }
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: #059669 !important;
+      border-width: 2px !important;
+    }
+  }
+
+  [data-theme="dark"] & {
+    .field-icon {
+      color: #94A3B8;
+    }
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: #475569 !important;
+    }
+    .mat-mdc-input-element,
+    .mat-mdc-select-value {
+      color: #F8FAFC !important;
+    }
+    .mat-mdc-floating-label {
+      color: #94A3B8 !important;
+    }
+  }
+}
+
+// Calculated Total Box
+.calculated-highlight-box {
+  background: #F8FAFC;
+  border: 1.5px dashed #CBD5E1;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 56px;
+
+  .calc-label-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748B;
+    font-size: 12px;
     font-weight: 600;
-    color: #1E6FD9;
-    background: #F8FAFC !important;
-    [data-theme="dark"] & {
-        color: #4A90E2;
-        background: rgba(30, 41, 59, 0.5) !important;
+
+    .calc-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: #059669;
     }
+  }
+
+  .calc-amount-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #059669;
+    letter-spacing: -0.3px;
+    margin-top: 2px;
+  }
+
+  [data-theme="dark"] & {
+    background: #0F172A;
+    border-color: #334155;
+
+    .calc-label-row {
+      color: #94A3B8;
+    }
+
+    .calc-amount-value {
+      color: #34D399;
+    }
+  }
 }
 
-// Payment Summary Section (Auto Calculated)
-.payment-summary {
-  background: transparent;
-  border-radius: 10px;
-  padding: 5px;
-  margin: 0px 0;
-  border: none;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-}
+// Payment Summary Card
+.payment-summary-card {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
 
-.summary-row {
+  [data-theme="dark"] & {
+    background: #0F172A;
+    border-color: #334155;
+  }
+
+  .summary-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+
+    .summary-shield-icon {
+      color: #059669;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    [data-theme="dark"] & {
+      color: #E2E8F0;
+    }
+  }
+
+  .summary-rows-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .summary-row-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 44px;
-    padding: 0 4px;
-    font-size: 15px;
-    // Left side: Circular check icon + Label
-    .summary-label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 500;
-        color: #475569;
-        // Circular check icon (using pseudo-element)
-        &::before {
-            content: '✓';
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #E3ECFF;
-            color: #1E6FD9;
-            font-size: 12px;
-            font-weight: 600;
-        }
+    font-size: 14px;
+    color: #475569;
+
+    .row-label {
+      font-weight: 500;
     }
-    // Right side: Amount + Green check icon
-    .summary-value {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        font-size: 16px;
-        color: #1E293B;
-        // Green check icon (using pseudo-element)
-        &::after {
-            content: '✓';
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #D1FAE5;
-            color: #10B981;
-            font-size: 12px;
-            font-weight: 600;
-        }
+
+    .row-val {
+      font-weight: 600;
+      color: #0F172A;
+
+      &.text-emerald {
+        color: #059669;
+      }
     }
-    // Balance Row (Pending) - Green emphasis
-    &.summary-pending {
-        .summary-label {
-            color: #059669;
-            font-weight: 600;
-            &::before {
-                background: #D1FAE5;
-                color: #059669;
-            }
-        }
-        .summary-value {
-            color: #059669;
-            font-weight: 700;
-            &::after {
-                background: #10B981;
-                color: #FFFFFF;
-            }
-            // When pending is zero
-            &.pending-zero {
-                color: #10B981;
-            }
-        }
-    }
-    // Dark theme
+
     [data-theme="dark"] & {
-        .summary-label {
-            color: #CBD5E1;
-            &::before {
-                background: rgba(30, 111, 217, 0.2);
-                color: #4A90E2;
-            }
-        }
-        .summary-value {
-            color: #F1F5F9;
-            &::after {
-                background: rgba(16, 185, 129, 0.2);
-                color: #34D399;
-            }
-        }
-        &.summary-pending {
-            .summary-label {
-                color: #34D399;
-                &::before {
-                    background: rgba(16, 185, 129, 0.2);
-                    color: #34D399;
-                }
-            }
-            .summary-value {
-                color: #34D399;
-                &::after {
-                    background: #10B981;
-                    color: #FFFFFF;
-                }
-            }
-        }
+      color: #94A3B8;
+      .row-val {
+        color: #F8FAFC;
+      }
     }
+  }
+
+  .summary-divider {
+    height: 1px;
+    background: #E2E8F0;
+    margin: 4px 0;
+
+    [data-theme="dark"] & {
+      background: #334155;
+    }
+  }
+
+  .summary-pending-highlight {
+    padding-top: 4px;
+
+    .pending-label-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .row-label-pending {
+        font-weight: 700;
+        color: #0F172A;
+
+        [data-theme="dark"] & {
+          color: #F8FAFC;
+        }
+      }
+    }
+
+    .row-val-pending {
+      font-size: 18px;
+      font-weight: 800;
+      color: #059669;
+    }
+
+    &.is-due {
+      .row-val-pending {
+        color: #D97706;
+      }
+
+      [data-theme="dark"] & {
+        .row-val-pending {
+          color: #FBBF24;
+        }
+      }
+    }
+  }
+
+  .pending-chip {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+
+    &.chip-paid {
+      background: #ECFDF5;
+      color: #059669;
+      border: 1px solid #A7F3D0;
+    }
+
+    &.chip-due {
+      background: #FEF3C7;
+      color: #D97706;
+      border: 1px solid #FDE68A;
+    }
+  }
 }
 
 // Action Buttons
-.form-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-    @media (max-width: 600px) {
-        flex-direction: row-reverse;
+.form-action-buttons-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
+  flex-wrap: wrap;
+
+  .submit-job-btn {
+    flex: 2;
+    min-width: 180px;
+    height: 48px;
+    background: #059669 !important;
+    color: #FFFFFF !important;
+    border-radius: 12px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3) !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+
+    &:hover:not([disabled]) {
+      background: #047857 !important;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(5, 150, 105, 0.4) !important;
     }
-    button {
-        flex: 1;
-        font-weight: 600;
-        height: 45px;
-        gap: 8px;
-        border-radius: 8px;
-        font-size: 16px;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-        mat-icon {
-            margin-right: 8px;
-        }
-        &:hover:not(:disabled) {
-            transform: translateY(-2px);
-        }
-        &:active:not(:disabled) {
-            transform: translateY(0);
-        }
-        &:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
     }
-    // Save Entry Button (Primary CTA)
-    .save-btn {
-        margin: 0;
-        background: linear-gradient(180deg, #165dae 0%, #0e467d 100%) !important;
-        color: white;
-        box-shadow: 0 12px 24px rgba(30, 111, 217, 0.35);
-        &:hover:not(:disabled) {
-            box-shadow: 0 16px 32px rgba(30, 111, 217, 0.45);
-        }
+  }
+
+  .secondary-form-btn {
+    flex: 1;
+    min-width: 120px;
+    height: 48px;
+    border-color: #CBD5E1 !important;
+    color: #475569 !important;
+    border-radius: 12px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+
+    &:hover:not([disabled]) {
+      background: #F1F5F9 !important;
+      color: #0F172A !important;
     }
-    // Clear/Cancel buttons
-    .clear-btn,
-    .cancel-btn {
-        background: rgba(255, 255, 255, 0.9);
-        color: #64748B;
-        border: 1px solid #E3ECFF;
-        &:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 1);
-            border-color: #CBD5E1;
-        }
-        [data-theme="dark"] & {
-            background: rgba(30, 41, 59, 0.8);
-            color: #CBD5E1;
-            border-color: rgba(107, 134, 200, 0.3);
-            &:hover:not(:disabled) {
-                background: rgba(30, 41, 59, 1);
-            }
-        }
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin-right: 4px;
     }
+
+    [data-theme="dark"] & {
+      border-color: #475569 !important;
+      color: #CBD5E1 !important;
+
+      &:hover:not([disabled]) {
+        background: #334155 !important;
+        color: #FFFFFF !important;
+      }
+    }
+  }
 }
 
-// Land & Rate Section Label
-// Add label before the row containing landInAcres field
-.form-row:has([formControlName="landInAcres"]) {
-    // margin-top: 32px;
-    &::before {
-        content: 'Land & Rate';
-        display: block;
-        font-weight: 500;
-        color: #475569;
-        margin-bottom: 0px;
-        font-size: 15px;
-        grid-column: 1 / -1;
-        [data-theme="dark"] & {
-            color: #CBD5E1;
-        }
-    }
+.btn-spinner {
+  display: inline-block;
+  margin-right: 6px;
 }
 
-// Responsive design
-@media (max-width: 768px) {
-    .add-new-container {
-        padding: 0 12px 20px 12px;
+// Land measurement trigger in form
+.land-acres-field-wrapper {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  .measure-suffix-icon-btn {
+    color: #059669;
+    &:hover {
+      background: rgba(5, 150, 105, 0.08);
     }
-    .form-card {
-        mat-card-content {
-            padding: 20px;
-        }
+  }
+
+  .measure-land-trigger-chip {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: -8px;
+    margin-bottom: 12px;
+    padding: 4px 12px;
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    border-radius: 999px;
+    color: #065F46;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: #059669;
     }
-    .form-row {
-        grid-template-columns: 1fr;
-        // gap: 16px;
+
+    &:hover {
+      background: #D1FAE5;
+      border-color: #34D399;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.15);
     }
+
+    [data-theme="dark"] & {
+      background: rgba(6, 78, 59, 0.3);
+      border-color: #065F46;
+      color: #34D399;
+
+      &:hover {
+        background: rgba(6, 78, 59, 0.5);
+      }
+    }
+  }
 }
 
-mat-form-field {
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-  max-height: 55px;
-  margin-bottom: 15px;
-  border-radius: 7px;
-}
-
-.mdc-notched-outline__leading{
-  border-left: none !important;
-}
-.mat-mdc-notch-piece{
-  border: none !important;
-}
-.mdc-notched-outline__trailing{
-  border-right: none !important;
-}
