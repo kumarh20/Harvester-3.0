@@ -65,48 +65,6 @@ export class AuthService {
     return this.auth.currentUser;
   }
 
-  /** Sends OTP. For signup (forSignup=true): only if user is new. For login (forSignup=false): always. Returns { sessionId } or { existingUser: true }. */
-  async sendSignupOTP(phone: string, forSignup = true): Promise<{ sessionId: string } | { existingUser: true }> {
-    const fn = httpsCallable<
-      { phone: string; forSignup?: boolean },
-      { success: boolean; sessionId?: string; existingUser?: boolean }
-    >(this.functions, 'sendSignupOTP');
-    const res = await fn({ phone, forSignup });
-    const data = res.data;
-    if (data?.existingUser) {
-      return { existingUser: true };
-    }
-    if (!data?.sessionId) {
-      throw new Error('Invalid response: missing sessionId');
-    }
-    return { sessionId: data.sessionId };
-  }
-
-  /** Verifies OTP. Returns { verified, existingUser?, customToken? } on success. customToken when forLogin=true for OTP-only login. */
-  async verifySignupOTP(
-    sessionId: string,
-    otp: string,
-    phone?: string,
-    forLogin = false
-  ): Promise<{ verified: boolean; existingUser?: boolean; customToken?: string }> {
-    const fn = httpsCallable<
-      { sessionId: string; otp: string; phone?: string; forLogin?: boolean },
-      { verified: boolean; existingUser?: boolean; customToken?: string }
-    >(this.functions, 'verifySignupOTP');
-    const res = await fn({ sessionId, otp, phone, forLogin });
-    return res.data ?? { verified: false };
-  }
-
-  /** Login with OTP only: verify OTP and sign in with custom token, no password. */
-  async loginWithOTP(sessionId: string, otp: string, phone: string): Promise<User> {
-    const result = await this.verifySignupOTP(sessionId, otp, phone, true);
-    if (!result?.verified || !result?.customToken) {
-      throw new Error(result?.verified === false ? 'Invalid OTP' : 'Login with OTP failed');
-    }
-    const userCred = await signInWithCustomToken(this.auth, result.customToken);
-    return userCred.user;
-  }
-
   /** Sends WhatsApp OTP via Cloud Function (MSG91). Returns { sessionId, expiresInSeconds } */
   async sendWhatsAppOtp(phone: string): Promise<{ sessionId: string; expiresInSeconds: number }> {
     const fn = httpsCallable<

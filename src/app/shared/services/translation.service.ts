@@ -171,6 +171,8 @@ export interface Translations {
     recoveryRate: string;
     fleetDistribution: string;
     topHarvesters: string;
+    acresUnit: string;
+    quickStats: string;
   };
 
   // App
@@ -635,7 +637,9 @@ const HINDI_TRANSLATIONS: Translations = {
     pending: 'शेष बकाया',
     recoveryRate: 'वसूली प्रतिशत',
     fleetDistribution: 'मशीन अनुसार कार्य विभाजन',
-    topHarvesters: 'सक्रिय हार्वेस्टर मशीनें'
+    topHarvesters: 'सक्रिय हार्वेस्टर मशीनें',
+    acresUnit: 'एकड़',
+    quickStats: 'त्वरित आँकड़े'
   },
   app: {
     appTitle: 'हार्वेस्टर कटिंग ट्रैकर',
@@ -1080,7 +1084,9 @@ const ENGLISH_TRANSLATIONS: Translations = {
     pending: 'Pending Due',
     recoveryRate: 'Recovery Rate',
     fleetDistribution: 'Machine Utilization',
-    topHarvesters: 'Active Fleet Machines'
+    topHarvesters: 'Active Fleet Machines',
+    acresUnit: 'Acres',
+    quickStats: 'Quick Stats'
   },
   app: {
     appTitle: 'Harvester Cutting Tracker',
