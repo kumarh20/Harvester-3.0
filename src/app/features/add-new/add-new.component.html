@@ -258,11 +258,15 @@
                         class="submit-job-btn save-btn" 
                         [disabled]="isSubmitting()">
                         @if (isSubmitting()) {
-                            <mat-spinner diameter="20" class="btn-spinner"></mat-spinner>
-                            <span>{{ isEditMode() ? translationService.get('common.updating') : translationService.get('common.saving') }}</span>
+                            <span class="inline-flex items-center gap-2">
+                                <mat-spinner diameter="20" class="btn-spinner"></mat-spinner>
+                                <span>{{ isEditMode() ? translationService.get('common.updating') : translationService.get('common.saving') }}</span>
+                            </span>
                         } @else {
-                            <mat-icon>{{ isEditMode() ? 'check_circle' : 'save' }}</mat-icon>
-                            <span>{{ submitButtonText() }}</span>
+                            <span class="inline-flex items-center gap-2">
+                                <mat-icon>{{ isEditMode() ? 'check_circle' : 'save' }}</mat-icon>
+                                <span>{{ submitButtonText() }}</span>
+                            </span>
                         }
                     </button>
                 </div>

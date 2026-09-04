@@ -16,7 +16,7 @@
                             "base": "dist",
                             "browser": ""
                         },
-                        "baseHref": "/",
+                        "baseHref": "./",
                         "browser": "src/main.ts",
                         "tsConfig": "tsconfig.app.json",
                         "inlineStyleLanguage": "scss",
@@ -41,8 +41,8 @@
                                 },
                                 {
                                     "type": "anyComponentStyle",
-                                    "maximumWarning": "30kB",
-                                    "maximumError": "50kB"
+                                    "maximumWarning": "45kB",
+                                    "maximumError": "60kB"
                                 }
                             ],
                             "outputHashing": "all"

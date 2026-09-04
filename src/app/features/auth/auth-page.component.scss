@@ -642,7 +642,7 @@ form {
         background: white;
     }
     &:hover {
-        border-color: darken($border-color, 5%);
+        border-color: #D1D5DB;
     }
 }
 
@@ -790,8 +790,8 @@ form {
         color: #000000;
     }
     &:hover {
-        background: darken($bg-input, 3%);
-        border-color: darken($border-color, 10%);
+        background: #F3F4F6;
+        border-color: #D1D5DB;
     }
     &:active {
         opacity: 0.8;
