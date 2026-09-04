@@ -21,6 +21,7 @@ import { DataImportExportService } from '../../core/services/data-import-export.
 import { Router } from '@angular/router';
 import { ToastService } from '../../shared/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { UiPreferencesService } from '../../core/services/ui-preferences.service';
 import { HarvesterDialogComponent, HarvesterDialogData } from '../../shared/components/harvester-dialog/harvester-dialog.component';
 import { ProfileDialogComponent, ProfileDialogData } from '../../shared/components/profile-dialog/profile-dialog.component';
 
@@ -61,6 +62,9 @@ export class SettingsComponent implements OnInit {
 
   // Notifications preference signal
   notificationsEnabled = signal(true);
+
+  // Bottom navigation labels visibility signal (default: hidden/false)
+  showNavLabels = computed(() => this.uiPreferencesService.showNavLabels());
 
   // Preferred land measurement unit
   preferredUnit = signal<'acre' | 'bigha' | 'hectare'>('acre');
@@ -104,7 +108,8 @@ export class SettingsComponent implements OnInit {
     private recordsService: RecordsService,
     private dataImportExportService: DataImportExportService,
     private toastService: ToastService,
-    public notificationService: NotificationService
+    public notificationService: NotificationService,
+    private uiPreferencesService: UiPreferencesService
   ) {
     this.loadSettings();
   }
@@ -319,6 +324,19 @@ export class SettingsComponent implements OnInit {
     } else {
       const isHi = this.languageService.getCurrentLanguage() === 'hi';
       this.toastService.info(isHi ? 'सूचनाएं बंद कर दी गई हैं' : 'Notifications disabled');
+    }
+  }
+
+  /**
+   * Toggle bottom navigation text labels visibility
+   */
+  onNavLabelsToggle(value: boolean): void {
+    this.uiPreferencesService.setShowNavLabels(value);
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    if (value) {
+      this.toastService.success(isHi ? 'नेविगेशन टेक्स्ट लेबल चालू हैं' : 'Bottom navigation labels shown');
+    } else {
+      this.toastService.info(isHi ? 'नेविगेशन लेबल छिपा दिए गए हैं (कॉम्पैक्ट डॉक)' : 'Bottom navigation labels hidden (compact dock)');
     }
   }
 
@@ -555,6 +573,10 @@ export class SettingsComponent implements OnInit {
         }
       }
     });
+  }
+
+  navigateToLandMeasurement(): void {
+    this.router.navigate(['/measure']);
   }
 
   logout(): void {

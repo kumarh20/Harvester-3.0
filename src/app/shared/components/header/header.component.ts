@@ -12,7 +12,6 @@ import { ProfileDialogComponent, ProfileDialogData } from '../profile-dialog/pro
 
 @Component({
   selector: 'app-header',
-  standalone: true,
   imports: [CommonModule, MatIconModule, MatDialogModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'

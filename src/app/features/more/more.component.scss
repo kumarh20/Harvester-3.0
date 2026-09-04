@@ -50,7 +50,7 @@
         left: 0;
         right: 0;
         height: 5px;
-        background: linear-gradient(90deg, #10B981, #059669, #0284C7);
+        background: linear-gradient(90deg, #7CB342, #447A44, #F28B27);
     }
 
     .profile-card-bg-layer {
@@ -90,11 +90,11 @@
             width: 76px;
             height: 76px;
             border-radius: 22px;
-            background: linear-gradient(135deg, #10B981 0%, #047857 100%);
+            background: linear-gradient(145deg, #447A44 0%, #356335 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 8px 20px rgba(68, 122, 68, 0.3);
             border: 3px solid #FFFFFF;
 
             [data-theme="dark"] & {

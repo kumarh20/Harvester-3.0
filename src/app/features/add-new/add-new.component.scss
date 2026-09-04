@@ -4,17 +4,12 @@
 .add-new-container {
   min-height: 100%;
   padding: 16px;
-  background-color: #F8FAFC;
-  color: #0F172A;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
 
   @media (min-width: 768px) {
     padding: 24px 32px;
-  }
-
-  [data-theme="dark"] & {
-    background-color: #0B1120;
-    color: #F8FAFC;
   }
 }
 
@@ -28,18 +23,18 @@
 
 // 1. Header Card
 .form-header-card {
-  background: linear-gradient(135deg, #064E3B 0%, #065F46 50%, #047857 100%);
+  background: linear-gradient(145deg, #447A44 0%, #356335 100%);
   color: #FFFFFF;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 20px 24px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 4px 16px -2px rgba(6, 78, 59, 0.25);
+  box-shadow: 0 6px 20px -2px rgba(68, 122, 68, 0.3);
 
   [data-theme="dark"] & {
-    background: linear-gradient(135deg, #022c22 0%, #064e3b 60%, #1e293b 100%);
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(145deg, #2E562F 0%, #1A351C 100%);
+    box-shadow: 0 6px 22px -2px rgba(0, 0, 0, 0.6);
   }
 }
 
@@ -47,8 +42,8 @@
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,7 +53,7 @@
     font-size: 28px;
     width: 28px;
     height: 28px;
-    color: #A7F3D0;
+    color: #FFFFFF;
   }
 }
 
@@ -81,27 +76,21 @@
 
   .form-main-subtitle {
     font-size: 13px;
-    color: rgba(167, 243, 208, 0.9);
+    color: rgba(255, 255, 255, 0.88);
     margin: 0;
   }
 }
 
 // 2. Body Card
 .form-body-card {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 4px 16px -2px rgba(35, 65, 38, 0.05);
 
   @media (min-width: 640px) {
     padding: 28px;
-  }
-
-  [data-theme="dark"] & {
-    background: #1E293B;
-    border-color: #334155;
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
   }
 }
 

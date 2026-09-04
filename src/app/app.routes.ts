@@ -54,11 +54,16 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'more',
+    path: 'profile',
     loadComponent: () =>
-      import('./features/more/more.component')
-        .then(m => m.MoreComponent),
+      import('./features/profile/profile.component')
+        .then(m => m.ProfileComponent),
     canActivate: [authGuard]
+  },
+  {
+    path: 'more',
+    redirectTo: 'settings',
+    pathMatch: 'full'
   },
   {
     path: 'measure',

@@ -1,19 +1,52 @@
-<nav class="floating-navigation" id="app-bottom-nav">
-    <div class="nav-container" #navContainer id="bottom-nav-container">
+<nav class="floating-navigation" [class.compact-dock]="!showLabels()" id="app-bottom-nav">
+    <div class="nav-container" [class.compact-dock]="!showLabels()" id="bottom-nav-container">
         @for (item of navItems(); track item.route; let i = $index) {
-        <div 
+        <button 
+            type="button"
             class="nav-item" 
             [id]="'nav-tab-' + item.route.replace('/', '')"
             [class.active]="isActive(item.route)" 
+            [class.is-center-action]="item.route === '/add-new'"
+            [class.is-profile-tab]="item.route === '/profile'"
+            [class.compact-item]="!showLabels()"
             (click)="onNavChange(item.route)" 
-            #navItem>
+            [attr.aria-label]="item.label"
+            [attr.title]="item.label">
+            
             <div class="nav-content">
-                <div class="nav-icon-pill">
-                    <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
-                </div>
-                <span class="nav-label">{{ item.label }}</span>
+                @if (item.route === '/profile') {
+                    <!-- Instagram-style Profile Avatar with Story Ring -->
+                    <div class="instagram-avatar-wrapper" [class.compact-avatar]="!showLabels()" [class.active-ring]="isActive(item.route)">
+                        @if (userPhotoURL()) {
+                            <img [src]="userPhotoURL()" [alt]="item.label" class="instagram-avatar-img" referrerpolicy="no-referrer" />
+                        } @else {
+                            <div class="instagram-avatar-initials">
+                                <span>{{ userInitials() }}</span>
+                            </div>
+                        }
+                    </div>
+                } @else if (item.route === '/add-new') {
+                    <!-- Instagram / Modern 3D Floating Action Button -->
+                    <div class="center-action-3d-btn" [class.compact-center-btn]="!showLabels()" [class.active]="isActive(item.route)">
+                        <mat-icon class="center-plus-icon">add</mat-icon>
+                    </div>
+                } @else {
+                    <!-- Instagram-style Tab Icon & Active Pill -->
+                    <div class="nav-icon-pill" [class.compact-pill]="!showLabels()" [class.active-pill]="isActive(item.route)">
+                        <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+                    </div>
+                }
+
+                @if (showLabels()) {
+                    <span class="nav-label">{{ item.label }}</span>
+                }
+                
+                <!-- Instagram micro-dot active indicator -->
+                @if (isActive(item.route) && item.route !== '/add-new') {
+                    <span class="instagram-active-dot" [class.compact-dot]="!showLabels()"></span>
+                }
             </div>
-        </div>
+        </button>
         }
     </div>
 </nav>

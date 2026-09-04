@@ -32,6 +32,7 @@ export interface Translations {
     records: string;
     settings: string;
     more: string;
+    profile: string;
   };
 
   // Form Labels
@@ -232,6 +233,8 @@ export interface Translations {
     themeDescription: string;
     light: string;
     dark: string;
+    bottomNavLabels: string;
+    bottomNavLabelsDesc: string;
     language: string;
     languageDescription: string;
     languageHindi: string;
@@ -468,7 +471,8 @@ const HINDI_TRANSLATIONS: Translations = {
     addNew: 'नया जोड़ें',
     records: 'रिकॉर्ड्स',
     settings: 'सेटिंग्स',
-    more: 'अधिक'
+    more: 'अधिक',
+    profile: 'प्रोफाइल'
   },
   form: {
     farmerInfo: 'किसान का विवरण',
@@ -655,6 +659,8 @@ const HINDI_TRANSLATIONS: Translations = {
     themeDescription: 'अपनी पसंदीदा स्क्रीन थीम चुनें',
     light: 'लाइट',
     dark: 'डार्क',
+    bottomNavLabels: 'बॉटम नेविगेशन लेबल',
+    bottomNavLabelsDesc: 'नेविगेशन बार में आइकन्स के नीचे नाम दिखाएं (बंद करने पर नेविगेशन बार स्लिम और कॉम्पैक्ट रहेगा)',
     language: 'भाषा (Language)',
     languageDescription: 'अपनी भाषा का चयन करें',
     languageHindi: 'हिन्दी',
@@ -883,7 +889,8 @@ const ENGLISH_TRANSLATIONS: Translations = {
     addNew: 'Add New',
     records: 'Records',
     settings: 'Settings',
-    more: 'More'
+    more: 'More',
+    profile: 'Profile'
   },
   form: {
     farmerInfo: 'Farmer Information',
@@ -1070,6 +1077,8 @@ const ENGLISH_TRANSLATIONS: Translations = {
     themeDescription: 'Choose your visual theme preference',
     light: 'Light',
     dark: 'Dark',
+    bottomNavLabels: 'Bottom Navigation Labels',
+    bottomNavLabelsDesc: 'Show text labels below icons (turn off for a compact, ultra-slim dock)',
     language: 'Language',
     languageDescription: 'Select your preferred language',
     languageHindi: 'हिन्दी',

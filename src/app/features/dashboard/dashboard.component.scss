@@ -4,9 +4,13 @@
 .dashboard-container {
   min-height: 100%;
   padding: 14px;
-  background-color: #F8FAFC;
-  color: #0F172A;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   transition: background-color 0.25s ease, color 0.25s ease;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 
   @media (min-width: 640px) {
     padding: 20px 24px;
@@ -15,19 +19,16 @@
   @media (min-width: 1024px) {
     padding: 24px 32px;
   }
-
-  [data-theme="dark"] & {
-    background-color: #0B1120;
-    color: #F8FAFC;
-  }
 }
 
 .dashboard-content-wrapper {
   max-width: 1080px;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 18px;
+  box-sizing: border-box;
 
   @media (min-width: 768px) {
     gap: 22px;
@@ -465,11 +466,13 @@
 // ==========================================
 .financial-hero-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
 
   @media (min-width: 640px) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
   }
 }
@@ -477,28 +480,103 @@
 .financial-card {
   position: relative;
   overflow: hidden;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 20px;
-  padding: 18px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 20px 22px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
+  gap: 14px;
+  box-shadow: 0 4px 16px -2px rgba(35, 65, 38, 0.06);
   transition: all 0.25s ease;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  @media (max-width: 640px) {
+    padding: 16px 18px;
+    border-radius: 20px;
+    gap: 12px;
+  }
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px -4px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 8px 24px -4px rgba(35, 65, 38, 0.1);
   }
 
-  [data-theme="dark"] & {
-    background: #1E293B;
-    border-color: #334155;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  // 🥑 Avocado Green Card (Matching big card in image.png)
+  &.revenue-card {
+    background: linear-gradient(145deg, #447A44 0%, #356335 100%) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 24px -2px rgba(68, 122, 68, 0.35);
 
-    &:hover {
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    .card-metric-label {
+      color: rgba(255, 255, 255, 0.88) !important;
+    }
+
+    .financial-main-amount {
+      color: #FFFFFF !important;
+    }
+
+    .financial-sub-badge {
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: #FFFFFF !important;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      width: fit-content;
+    }
+
+    .financial-icon-badge {
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: #FFFFFF !important;
+    }
+
+    [data-theme="dark"] & {
+      background: linear-gradient(145deg, #2E562F 0%, #1E3B20 100%) !important;
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  // 🍊 Crisp White / Harvest Amber Card (Matching price tag & sales in image.png)
+  &.pending-card {
+    background: #FFFFFF;
+
+    .financial-main-amount {
+      color: #F28B27 !important;
+    }
+
+    .financial-sub-badge {
+      background: #FEF3C7;
+      color: #B45309;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      width: fit-content;
+
+      &.alert-badge {
+        background: #FEF3C7;
+        color: #B45309;
+      }
+    }
+
+    .financial-icon-badge {
+      background: #FEF3C7;
+      color: #D97706;
+    }
+
+    [data-theme="dark"] & {
+      background: #182C1E;
+      border-color: rgba(124, 179, 66, 0.2);
+
+      .financial-sub-badge {
+        background: rgba(242, 139, 39, 0.18);
+        color: #FBBF24;
+      }
+
+      .financial-icon-badge {
+        background: rgba(242, 139, 39, 0.18);
+        color: #FBBF24;
+      }
     }
   }
 }
@@ -512,14 +590,14 @@
   border-radius: 50%;
   pointer-events: none;
   filter: blur(35px);
-  opacity: 0.5;
+  opacity: 0.35;
 
   &.revenue-glow {
-    background: #10B981;
+    background: #A5D6A7;
   }
 
   &.pending-glow {
-    background: #F59E0B;
+    background: #F28B27;
   }
 }
 
@@ -529,9 +607,9 @@
   gap: 10px;
 
   .financial-icon-badge {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -541,59 +619,31 @@
       width: 20px;
       height: 20px;
     }
-
-    &.revenue-badge {
-      background: #ECFDF5;
-      color: #059669;
-
-      [data-theme="dark"] & {
-        background: rgba(16, 185, 129, 0.2);
-        color: #34D399;
-      }
-    }
-
-    &.pending-badge {
-      background: #FEF3C7;
-      color: #D97706;
-
-      [data-theme="dark"] & {
-        background: rgba(245, 158, 11, 0.2);
-        color: #FBBF24;
-      }
-    }
   }
 
   .card-metric-label {
     font-size: 13px;
-    font-weight: 600;
-    color: #64748B;
+    font-weight: 700;
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.4px;
-
-    [data-theme="dark"] & {
-      color: #94A3B8;
-    }
   }
 }
 
 .financial-card-body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 
   .financial-main-amount {
     font-size: 28px;
     font-weight: 800;
     letter-spacing: -0.5px;
-    color: #0F172A;
+    color: var(--text-primary);
     line-height: 1.1;
 
     @media (min-width: 640px) {
       font-size: 32px;
-    }
-
-    [data-theme="dark"] & {
-      color: #F8FAFC;
     }
   }
 
@@ -603,30 +653,17 @@
     gap: 4px;
     font-size: 12px;
     font-weight: 600;
-    color: #059669;
 
     mat-icon {
       font-size: 16px;
       width: 16px;
       height: 16px;
     }
-
-    &.alert-badge {
-      color: #D97706;
-
-      [data-theme="dark"] & {
-        color: #FBBF24;
-      }
-    }
-
-    [data-theme="dark"] & {
-      color: #34D399;
-    }
   }
 }
 
 // ==========================================
-// 3. PERIOD SELECTOR (MATERIAL 3 SEGMENTED)
+// 3. PERIOD SELECTOR (ORGANIC CATEGORY PILLS LIKE IMAGE)
 // ==========================================
 .period-selector-container {
   display: flex;
@@ -636,16 +673,17 @@
 
 .period-segmented-control {
   display: flex;
-  background: #E2E8F0;
+  background: #E3EDE4;
   padding: 4px;
   border-radius: 9999px;
   width: 100%;
   max-width: 540px;
   gap: 3px;
+  border: 1px solid rgba(68, 122, 68, 0.1);
 
   [data-theme="dark"] & {
-    background: #1E293B;
-    border: 1px solid #334155;
+    background: #16271A;
+    border-color: rgba(124, 179, 66, 0.2);
   }
 }
 
@@ -655,50 +693,50 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 7px 10px;
+  padding: 8px 12px;
   border-radius: 9999px;
   border: none;
   background: transparent;
-  color: #64748B;
-  font-size: 12px;
+  color: #4A634E;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
   white-space: nowrap;
 
   .segment-count-chip {
     font-size: 10px;
     font-weight: 700;
-    padding: 1px 6px;
+    padding: 1px 7px;
     border-radius: 9999px;
-    background: rgba(100, 116, 139, 0.15);
+    background: rgba(68, 122, 68, 0.12);
     color: inherit;
   }
 
   &.active {
-    background: #FFFFFF;
-    color: #0F172A;
+    background: #447A44;
+    color: #FFFFFF;
     font-weight: 700;
-    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
+    box-shadow: 0 3px 10px rgba(68, 122, 68, 0.35);
 
     .segment-count-chip {
-      background: #ECFDF5;
-      color: #059669;
+      background: rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
     }
 
     [data-theme="dark"] & {
-      background: #334155;
-      color: #F8FAFC;
+      background: #599E59;
+      color: #FFFFFF;
 
       .segment-count-chip {
-        background: rgba(16, 185, 129, 0.25);
-        color: #6EE7B7;
+        background: rgba(255, 255, 255, 0.25);
+        color: #FFFFFF;
       }
     }
   }
 
   [data-theme="dark"] & {
-    color: #94A3B8;
+    color: #ADC5B1;
   }
 }
 
@@ -1492,11 +1530,17 @@
 // ==========================================
 .stats-metric-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (min-width: 640px) {
+    gap: 12px;
+  }
 
   @media (min-width: 768px) {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
   }
 }
@@ -1505,12 +1549,20 @@
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 18px;
-  padding: 14px;
+  padding: 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (min-width: 640px) {
+    padding: 14px;
+    gap: 12px;
+  }
 
   &:hover {
     transform: translateY(-2px);

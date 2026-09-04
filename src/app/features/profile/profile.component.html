@@ -1,0 +1,208 @@
+<div class="profile-screen-container" id="profile-main-view">
+    <!-- Top Bar -->
+    <div class="profile-top-bar" id="profile-top-bar">
+        <button type="button" class="profile-back-btn" (click)="goBack()" id="profile-back-btn" aria-label="Go back">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="top-bar-titles">
+            <h1 class="top-bar-title">{{ translationService.get('nav.profile') }}</h1>
+            <span class="top-bar-subtitle">{{ userBusinessName() }}</span>
+        </div>
+        <div class="top-bar-badge" id="profile-cloud-badge">
+            <span class="pulse-dot"></span>
+            <span class="badge-text">{{ translationService.get('settings.cloudSynced') }}</span>
+        </div>
+    </div>
+
+    <!-- Scrollable Content Flow -->
+    <div class="profile-content-flow">
+        
+        <!-- 1. Executive Operator Profile Hero Card -->
+        <section class="profile-hero-card" id="profile-hero-card">
+            <div class="hero-top-accent"></div>
+            
+            <div class="profile-identity-block">
+                <!-- Avatar with Camera Photo Upload -->
+                <div class="profile-avatar-wrapper" [class.has-photo]="!!userPhoto()" (click)="photoInput.click()" title="Change photo">
+                    @if (userPhoto()) {
+                        <img [src]="userPhoto()" [alt]="userName()" class="profile-avatar-img" referrerpolicy="no-referrer" />
+                    } @else {
+                        <div class="profile-avatar-fallback">
+                            <span>{{ userInitials() }}</span>
+                        </div>
+                    }
+                    <button type="button" class="photo-upload-trigger" (click)="$event.stopPropagation(); photoInput.click()" title="Upload photo">
+                        <mat-icon>{{ userPhoto() ? 'photo_camera' : 'add_a_photo' }}</mat-icon>
+                    </button>
+                    <input #photoInput type="file" accept="image/*" (change)="onPhotoSelected($event)" style="display: none;" />
+                </div>
+
+                <!-- Info Block -->
+                <div class="profile-details-block">
+                    <div class="name-status-row">
+                        <h2 class="profile-operator-name">{{ userName() }}</h2>
+                        <span class="verified-operator-tag">
+                            <mat-icon>verified</mat-icon>
+                            <span>{{ translationService.get('settings.activeStatus') }}</span>
+                        </span>
+                    </div>
+
+                    <div class="business-info-row">
+                        <mat-icon class="sub-icon">storefront</mat-icon>
+                        <span class="business-text">{{ userBusinessName() }}</span>
+                    </div>
+
+                    <div class="phone-info-row">
+                        <mat-icon class="sub-icon">call</mat-icon>
+                        <span class="phone-text">{{ userPhone() }}</span>
+                    </div>
+
+                    <!-- Unique UID Pill -->
+                    <button type="button" class="uid-copy-pill" (click)="copyUid()" title="Click to copy Operator ID">
+                        <mat-icon class="uid-icon">fingerprint</mat-icon>
+                        <span class="uid-text">{{ translationService.get('more.idLabel') }} {{ (currentUser()?.uid || 'HARV-OPERATOR-1').substring(0, 10) }}...</span>
+                        <mat-icon class="copy-action-icon">content_copy</mat-icon>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="hero-action-bar">
+                <button type="button" class="edit-profile-action-btn" (click)="openEditProfileDialog()" id="profile-edit-btn">
+                    <mat-icon>edit</mat-icon>
+                    <span>{{ translationService.get('settings.profileEdit') }}</span>
+                </button>
+                <div class="sync-indicator-info">
+                    <mat-icon>cloud_done</mat-icon>
+                    <span>{{ translationService.get('settings.syncSuccess') }}</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Operator Harvest Performance Summary -->
+        <section class="performance-section" id="profile-performance-section">
+            <h3 class="section-label">{{ translationService.get('dashboard.quickStats') }}</h3>
+            
+            <div class="performance-grid">
+                <!-- Records Metric -->
+                <div class="stat-box green" id="profile-stat-records">
+                    <div class="stat-icon-circle green">
+                        <mat-icon>receipt_long</mat-icon>
+                    </div>
+                    <div class="stat-text-meta">
+                        <span class="stat-value">{{ totalRecords() }}</span>
+                        <span class="stat-caption">{{ translationService.get('dashboard.totalRecords') }}</span>
+                    </div>
+                </div>
+
+                <!-- Acres Metric -->
+                <div class="stat-box amber" id="profile-stat-acres">
+                    <div class="stat-icon-circle amber">
+                        <mat-icon>crop</mat-icon>
+                    </div>
+                    <div class="stat-text-meta">
+                        <span class="stat-value">{{ totalAcres() }}</span>
+                        <span class="stat-caption">{{ translationService.get('dashboard.totalLand') }}</span>
+                    </div>
+                </div>
+
+                <!-- Harvesters Metric -->
+                <div class="stat-box blue" id="profile-stat-fleet">
+                    <div class="stat-icon-circle blue">
+                        <mat-icon>agriculture</mat-icon>
+                    </div>
+                    <div class="stat-text-meta">
+                        <span class="stat-value">{{ totalHarvesters() }}</span>
+                        <span class="stat-caption">{{ translationService.get('settings.harvesterCount') }}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Account & Security Card -->
+        <section class="profile-card info-card" id="profile-account-card">
+            <div class="info-card-header">
+                <div class="header-icon-pill green">
+                    <mat-icon>shield</mat-icon>
+                </div>
+                <div>
+                    <h3 class="info-heading">{{ translationService.get('auth.cloudSecure') }}</h3>
+                    <p class="info-subheading">{{ translationService.get('settings.subtitle') }}</p>
+                </div>
+            </div>
+
+            <div class="account-details-list">
+                <div class="account-item">
+                    <div class="item-left">
+                        <mat-icon class="item-icon">account_circle</mat-icon>
+                        <span class="item-label">{{ translationService.get('dialogs.fullNameLabel') }}</span>
+                    </div>
+                    <span class="item-value">{{ userName() }}</span>
+                </div>
+
+                <div class="account-item">
+                    <div class="item-left">
+                        <mat-icon class="item-icon">phone_android</mat-icon>
+                        <span class="item-label">{{ translationService.get('auth.phoneLabel') }}</span>
+                    </div>
+                    <span class="item-value">{{ userPhone() }}</span>
+                </div>
+
+                <div class="account-item">
+                    <div class="item-left">
+                        <mat-icon class="item-icon">verified_user</mat-icon>
+                        <span class="item-label">{{ translationService.get('more.version') }}</span>
+                    </div>
+                    <span class="item-value">{{ appVersion }}</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Support & Contact Help Card -->
+        <section class="profile-card info-card" id="profile-support-card">
+            <div class="info-card-header">
+                <div class="header-icon-pill amber">
+                    <mat-icon>support_agent</mat-icon>
+                </div>
+                <div>
+                    <h3 class="info-heading">{{ translationService.get('more.help') }}</h3>
+                    <p class="info-subheading">{{ translationService.get('more.helpSubtitle') }}</p>
+                </div>
+            </div>
+
+            <div class="support-channels">
+                <a href="tel:+918800000000" class="support-action-tile">
+                    <div class="support-tile-icon green">
+                        <mat-icon>call</mat-icon>
+                    </div>
+                    <div class="support-tile-text">
+                        <span class="support-title">{{ translationService.get('more.phone') }}</span>
+                        <span class="support-desc">+91 (Toll-Free Helpline)</span>
+                    </div>
+                    <mat-icon class="support-arrow">chevron_right</mat-icon>
+                </a>
+
+                <a href="mailto:support@harvesterops.in" class="support-action-tile">
+                    <div class="support-tile-icon blue">
+                        <mat-icon>email</mat-icon>
+                    </div>
+                    <div class="support-tile-text">
+                        <span class="support-title">{{ translationService.get('more.email') }}</span>
+                        <span class="support-desc">support&#64;harvesterops.in</span>
+                    </div>
+                    <mat-icon class="support-arrow">chevron_right</mat-icon>
+                </a>
+            </div>
+        </section>
+
+        <!-- 5. Sign Out / Logout Section -->
+        <section class="logout-section-card" id="profile-logout-section">
+            <button type="button" class="profile-logout-button" (click)="logout()" id="profile-logout-btn">
+                <mat-icon>logout</mat-icon>
+                <span>{{ translationService.get('more.logout') }}</span>
+            </button>
+            <p class="logout-hint-text">{{ translationService.get('more.logoutDescription') }}</p>
+        </section>
+
+    </div>
+</div>

@@ -17,45 +17,31 @@
     <!-- Scrollable Content View -->
     <div class="settings-content-flow">
         
-        <!-- 1. Operator Profile & Account Card -->
-        <section class="android-card profile-hero-card" id="settings-profile-card">
-            <div class="profile-main-row">
-                <div class="profile-avatar-box" [class.has-img]="!!userPhoto()" (click)="settingsPhotoInput.click()" title="Click to upload or change photo">
-                    @if (userPhoto()) {
-                        <img [src]="userPhoto()" [alt]="userName()" class="profile-avatar-photo" referrerpolicy="no-referrer" />
-                    } @else {
-                        <span class="avatar-initials">{{ operatorInitials }}</span>
-                    }
-                    <button type="button" class="avatar-role-icon" (click)="$event.stopPropagation(); settingsPhotoInput.click()" title="Upload photo">
-                        <mat-icon>{{ userPhoto() ? 'photo_camera' : 'add_a_photo' }}</mat-icon>
-                    </button>
-                    <input #settingsPhotoInput type="file" accept="image/*" (change)="onPhotoSelected($event)" style="display: none;" />
-                </div>
-                <div class="profile-meta">
-                    <div class="name-status-row">
-                        <h2 class="operator-name">{{ userName() }}</h2>
-                        <span class="sync-status-pill">
-                            <mat-icon class="verified-icon">verified</mat-icon>
-                            <span>{{ isSyncing() ? translationService.get('settings.syncingStatus') : translationService.get('settings.activeStatus') }}</span>
-                        </span>
+        <!-- 1. Quick Utility & Land Area Tracker -->
+        <section class="android-card section-card" id="settings-land-tool-card">
+            <div class="section-card-header">
+                <div class="header-icon-title">
+                    <div class="header-icon-pill amber">
+                        <mat-icon>straighten</mat-icon>
                     </div>
-                    <p class="business-name">{{ userBusinessName() }}</p>
-                    <p class="phone-number">
-                        <mat-icon class="mini-icon">call</mat-icon>
-                        <span>{{ userPhone() }}</span>
-                    </p>
+                    <div>
+                        <h3 class="section-heading">{{ translationService.get('more.landTracker') }}</h3>
+                        <p class="section-subheading">{{ translationService.get('more.landTrackerDesc') }}</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="profile-card-footer">
-                <button type="button" class="android-tonal-button" (click)="openEditProfileDialog()" id="settings-edit-profile-btn">
-                    <mat-icon>edit</mat-icon>
-                    <span>{{ translationService.get('settings.profileEdit') }}</span>
-                </button>
-                <div class="profile-storage-info">
-                    <mat-icon>cloud_done</mat-icon>
-                    <span>{{ translationService.get('settings.syncSuccess') }}</span>
+            <div class="tool-launch-banner" (click)="navigateToLandMeasurement()" id="settings-launch-land-tracker">
+                <div class="tool-banner-icon-circle">
+                    <mat-icon>pin_drop</mat-icon>
                 </div>
+                <div class="tool-banner-text">
+                    <span class="tool-banner-title">{{ translationService.get('form.measureLandBtn') }}</span>
+                    <span class="tool-banner-desc">GPS Walk & Map Boundary Area Calculator</span>
+                </div>
+                <button type="button" class="tool-open-action-btn" aria-label="Open Land Area Tracker">
+                    <mat-icon>arrow_forward</mat-icon>
+                </button>
             </div>
         </section>
 
@@ -322,6 +308,24 @@
                         <span>English</span>
                     </button>
                 </div>
+            </div>
+
+            <div class="android-divider"></div>
+
+            <!-- Bottom Navigation Labels Toggle Tile -->
+            <div class="preference-tile-switch" id="settings-nav-labels-row">
+                <div class="pref-leading-icon">
+                    <mat-icon>dock</mat-icon>
+                </div>
+                <div class="pref-label-group flex-1">
+                    <span class="pref-title">{{ translationService.get('settings.bottomNavLabels') }}</span>
+                    <span class="pref-desc">{{ translationService.get('settings.bottomNavLabelsDesc') }}</span>
+                </div>
+                <mat-slide-toggle 
+                    [checked]="showNavLabels()" 
+                    (change)="onNavLabelsToggle($event.checked)"
+                    id="settings-nav-labels-toggle">
+                </mat-slide-toggle>
             </div>
 
             <div class="android-divider"></div>

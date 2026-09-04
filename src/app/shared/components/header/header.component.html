@@ -1,42 +1,51 @@
 <header class="modern-header" id="app-main-header">
     <div class="header-inner-container">
-        <!-- Brand Logo & Title -->
+        <!-- 3D Brand Logo & Title -->
         <div class="brand-group" id="header-brand-group">
             <div class="brand-icon-wrapper" id="header-brand-icon">
                 <mat-icon class="brand-tractor-icon">agriculture</mat-icon>
+                <div class="brand-gloss-sheen"></div>
             </div>
             <div class="brand-text-wrapper">
-                <span class="brand-title">{{ translationService.get('app.appTitle') }}</span>
-                <span class="brand-tagline">{{ translationService.get('app.tagline') }}</span>
+                <div class="brand-title-row">
+                    <span class="brand-title">HARVESTER</span>
+                    <span class="brand-pro-badge">PRO</span>
+                </div>
+                <div class="brand-tagline-row">
+                    <span class="live-status-dot">
+                        <span class="pulse-ring"></span>
+                        <span class="core-dot"></span>
+                    </span>
+                    <span class="brand-tagline">{{ translationService.get('app.appTitle') }}</span>
+                </div>
             </div>
         </div>
 
-        <!-- Header Actions -->
-        @if (currentUser()) {
+        <!-- Header Actions (Always available on both mobile & desktop) -->
         <div class="header-actions" id="header-actions-bar">
-            <!-- Language Toggle Pill -->
+            <!-- 3D Frosted Glass Language Toggle -->
             <button 
                 type="button"
                 id="header-language-toggle-btn"
-                class="language-toggle" 
+                class="language-toggle-3d" 
                 (click)="onLanguageToggle()" 
                 [title]="getCurrentLanguage() === 'hi' ? translationService.get('settings.languageEnglish') : translationService.get('settings.languageHindi')"
                 aria-label="Toggle language">
                 <mat-icon class="language-globe-icon">translate</mat-icon>
-                <span class="language-code">{{ getCurrentLanguage() === 'hi' ? 'हिन्दी' : 'EN' }}</span>
+                <span class="language-code">{{ getCurrentLanguage() === 'hi' ? 'हि' : 'EN' }}</span>
             </button>
 
-            <!-- Theme Toggle Button -->
+            <!-- 3D Neomorphic Theme Toggle -->
             <button 
                 type="button"
                 id="header-theme-toggle-btn"
-                class="theme-toggle" 
+                class="theme-toggle-3d" 
                 (click)="onThemeToggle()" 
                 aria-label="Toggle dark and light theme">
                 <div class="toggle-track">
                     <div class="toggle-thumb">
                         <!-- Sun Icon -->
-                        <svg class="theme-icon light-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="theme-icon light-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="5"></circle>
                             <line x1="12" y1="1" x2="12" y2="3"></line>
                             <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -48,26 +57,26 @@
                             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                         </svg>
                         <!-- Moon Icon -->
-                        <svg class="theme-icon dark-icon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                        <svg class="theme-icon dark-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
                             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                         </svg>
                     </div>
                 </div>
             </button>
 
-            <!-- Professional User Profile Pill & Dropdown -->
+            <!-- 3D Instagram Story Ring Profile Pill & Dropdown -->
             <div class="profile-pill-wrapper" id="header-profile-menu-container">
                 <button 
                     type="button" 
                     id="header-user-profile-btn"
-                    class="user-profile-pill" 
+                    class="user-profile-pill-3d" 
                     (click)="toggleProfileMenu()"
                     [attr.aria-expanded]="isProfileMenuOpen()"
                     aria-haspopup="menu"
                     aria-label="User profile and photo menu">
                     
-                    <!-- Avatar: Photo or Initials -->
-                    <div class="user-avatar-container" [class.has-photo]="!!userPhotoURL()">
+                    <!-- Avatar with Instagram Story Ring -->
+                    <div class="user-avatar-container-3d" [class.has-photo]="!!userPhotoURL()">
                         @if (userPhotoURL()) {
                             <img 
                                 [src]="userPhotoURL()" 
@@ -87,7 +96,7 @@
                         }
                     </div>
 
-                    <!-- User Display Name -->
+                    <!-- User Display Name (visible on tablet and desktop) -->
                     <div class="user-info-text">
                         <span class="user-name-display">{{ displayName() }}</span>
                         @if (userBusinessName()) {
@@ -202,6 +211,5 @@
                 }
             </div>
         </div>
-        }
     </div>
 </header>

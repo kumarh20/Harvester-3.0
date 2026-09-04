@@ -38,14 +38,14 @@ export class App implements OnInit {
   protected currentTab = signal('dashboard');
   protected isDarkTheme = signal(false);
 
-  // Navigation items - labels kept as English for icon matching logic
+  // Navigation items - arranged: Home, Records, Center Add (+), Settings, Profile
   // Display will use translations via getNavLabel()
   protected readonly navItems: NavItem[] = [
+    { label: 'Dashboard', icon: 'home', route: '/dashboard' },
+    { label: 'Records', icon: 'receipt_long', route: '/records' },
     { label: 'Add New', icon: 'add_circle', route: '/add-new' },
-    { label: 'Records', icon: 'list', route: '/records' },
-    { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
     { label: 'Settings', icon: 'settings', route: '/settings' },
-    { label: 'More', icon: 'more_horiz', route: '/more' }
+    { label: 'Profile', icon: 'person', route: '/profile' }
   ];
 
   constructor(
@@ -117,8 +117,11 @@ export class App implements OnInit {
       case 'settings':
         route = '/settings';
         break;
+      case 'profile':
+        route = '/profile';
+        break;
       case 'more':
-        route = '/more';
+        route = '/settings';
         break;
     }
 
@@ -192,15 +195,16 @@ export class App implements OnInit {
       'Add New': 'nav.addNew',
       'Records': 'nav.records',
       'Settings': 'nav.settings',
+      'Profile': 'nav.profile',
       'More': 'nav.more'
     };
     const key = labelMap[label] || label;
     return this.translationService.get(key);
   }
 
-  showNavigation() {
-    return !(this.router.url.includes('auth'));
-  }
+  showNavigation = computed(() => {
+    return !(this.activeRoute().includes('auth'));
+  });
 
   /**
    * Get nav items with translated labels (reactive to language changes)
