@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -17,7 +17,7 @@ import { LanguageService } from '../../shared/services/language.service';
 import { UiPreferencesService, DefaultRecordFilterSetting } from '../../core/services/ui-preferences.service';
 import { RecordSkeletonComponent } from '../../shared/components/skeleton/record-skeleton/record-skeleton.component';
 
-export type RecordDateFilterOption = 'today' | 'yesterday' | 'week' | 'month' | 'custom' | 'all';
+export type RecordDateFilterOption = 'today' | 'yesterday' | 'week' | 'month' | 'custom' | 'all' | 'dueToday';
 
 interface Record {
   id: string;
@@ -76,6 +76,7 @@ export class RecordsComponent implements OnInit {
     private toastService: ToastService,
     private dialogService: DialogService,
     public router: Router,
+    private route: ActivatedRoute,
     public translationService: TranslationService,
     private languageService: LanguageService,
     private uiPreferencesService: UiPreferencesService
@@ -90,6 +91,23 @@ export class RecordsComponent implements OnInit {
 
     try {
       await this.recordsService.loadRecords();
+      
+      // Check query params for notification deep links
+      this.route.queryParams.subscribe(params => {
+        if (params['filter'] === 'dueToday' || params['filter'] === 'promisedDateToday' || params['filter'] === 'settlementDue') {
+          this.selectedDateFilter.set('dueToday');
+        }
+        if (params['recordId']) {
+          const targetId = params['recordId'];
+          this.expandedId.set(targetId);
+          setTimeout(() => {
+            const el = document.getElementById('record-card-' + targetId);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 350);
+        }
+      });
     } finally {
       this.isLoading.set(false);
     }
@@ -100,6 +118,43 @@ export class RecordsComponent implements OnInit {
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
+  }
+
+  normalizeDateToKey(dateVal: any): string | null {
+    if (!dateVal) return null;
+    if (typeof dateVal === 'string') {
+      const trimmed = dateVal.trim();
+      if (!trimmed) return null;
+      if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(trimmed)) {
+        const parts = trimmed.split(/[\/\-]/);
+        const day = parts[0].padStart(2, '0');
+        const month = parts[1].padStart(2, '0');
+        const year = parts[2];
+        return `${year}-${month}-${day}`;
+      }
+      const dateObj = new Date(trimmed);
+      if (!isNaN(dateObj.getTime())) {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+    } else if (dateVal instanceof Date && !isNaN(dateVal.getTime())) {
+      const year = dateVal.getFullYear();
+      const month = String(dateVal.getMonth() + 1).padStart(2, '0');
+      const day = String(dateVal.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    return null;
+  }
+
+  isSettlementDueToday(record: Record): boolean {
+    if (record.markedAsPaid || (Number(record.pendingAmount) || 0) <= 0 || !record.fullPaymentDate) {
+      return false;
+    }
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return this.normalizeDateToKey(record.fullPaymentDate) === todayKey;
   }
 
   setDateFilter(filter: RecordDateFilterOption): void {
@@ -135,6 +190,17 @@ export class RecordsComponent implements OnInit {
     }).length;
   });
 
+  // Count of promised settlement records due today
+  dueTodaySettlementCount = computed(() => {
+    const allRecords = this.recordsService.records();
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return allRecords.filter(r => {
+      if (r.markedAsPaid || (Number(r.pendingAmount) || 0) <= 0 || !r.fullPaymentDate) return false;
+      return this.normalizeDateToKey(r.fullPaymentDate) === todayKey;
+    }).length;
+  });
+
   // Total count of all records ever
   totalAllRecordsCount = computed(() => this.recordsService.records().length);
 
@@ -154,6 +220,14 @@ export class RecordsComponent implements OnInit {
     const weekStart = todayStart - (7 * oneDayMs);
     const monthStart = todayStart - (30 * oneDayMs);
     const todayEnd = todayStart + oneDayMs - 1;
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    if (filter === 'dueToday') {
+      return allRecords.filter(r => {
+        if (r.markedAsPaid || (Number(r.pendingAmount) || 0) <= 0 || !r.fullPaymentDate) return false;
+        return this.normalizeDateToKey(r.fullPaymentDate) === todayKey;
+      });
+    }
 
     return allRecords.filter(record => {
       const parsed = this.parseDate(record.date);

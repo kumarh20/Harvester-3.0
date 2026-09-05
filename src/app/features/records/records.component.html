@@ -96,6 +96,19 @@
 
                         <button 
                             type="button" 
+                            class="date-chip-btn due-chip-btn" 
+                            [class.active]="selectedDateFilter() === 'dueToday'"
+                            (click)="setDateFilter('dueToday')"
+                            id="filter-chip-due-today">
+                            <mat-icon>notifications_active</mat-icon>
+                            <span>{{ translationService.get('records.filterDueToday') }}</span>
+                            @if (dueTodaySettlementCount() > 0) {
+                                <span class="chip-count-badge due-badge">{{ dueTodaySettlementCount() }}</span>
+                            }
+                        </button>
+
+                        <button 
+                            type="button" 
                             class="date-chip-btn" 
                             [class.active]="selectedDateFilter() === 'all'"
                             (click)="setDateFilter('all')"
@@ -264,12 +277,13 @@
                                     [id]="'record-card-' + record.id"
                                     [class.is-expanded]="isExpanded(record.id)"
                                     [class.marked-as-paid]="record.markedAsPaid"
+                                    [class.settlement-due-today]="isSettlementDueToday(record)"
                                     (click)="toggleExpand(record.id)">
                                     
                                     <!-- Main Header Row (Always Visible) -->
                                     <div class="record-main-row">
                                         <!-- Avatar with Initial -->
-                                        <div class="farmer-avatar-badge">
+                                        <div class="farmer-avatar-badge" [class.avatar-due-alert]="isSettlementDueToday(record)">
                                             {{ getInitial(record.farmerName) }}
                                         </div>
 
@@ -277,6 +291,12 @@
                                         <div class="farmer-primary-details">
                                             <div class="farmer-name-line">
                                                 <span class="farmer-name-text" [class.line-through]="record.markedAsPaid">{{ record.farmerName }}</span>
+                                                @if (isSettlementDueToday(record)) {
+                                                    <span class="today-due-inline-pill">
+                                                        <mat-icon>alarm</mat-icon>
+                                                        <span>{{ translationService.get('records.filterDueToday') }}</span>
+                                                    </span>
+                                                }
                                             </div>
                                             <div class="farmer-sub-line">
                                                 <span class="acres-text">{{ record.landInAcres }} {{ translationService.get('records.acresUnit') }}</span>

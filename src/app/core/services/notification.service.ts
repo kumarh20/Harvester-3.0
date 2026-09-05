@@ -1,4 +1,5 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, NgZone } from '@angular/core';
+import { Router } from '@angular/router';
 import { RecordsService, Record } from './records.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { ToastService } from '../../shared/services/toast.service';
@@ -19,6 +20,8 @@ export class NotificationService {
   private recordsService = inject(RecordsService);
   private translationService = inject(TranslationService);
   private toastService = inject(ToastService);
+  private router = inject(Router);
+  private ngZone = inject(NgZone);
 
   public permissionGranted = signal<boolean>(false);
   public dueTodayCount = signal<number>(0);
@@ -26,6 +29,34 @@ export class NotificationService {
 
   constructor() {
     this.checkPermissionStatus();
+    this.initNotificationListeners();
+  }
+
+  /**
+   * Listen to notification actions (taps/clicks) on Android / Native platforms
+   */
+  private initNotificationListeners(): void {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        LocalNotifications.addListener('localNotificationActionPerformed', (notificationAction) => {
+          console.log('🔔 Notification action performed:', notificationAction);
+          this.ngZone.run(() => {
+            const extra = notificationAction.notification.extra;
+            const filter = extra?.filter || 'dueToday';
+            const recordId = extra?.recordId;
+            
+            this.router.navigate(['/records'], {
+              queryParams: {
+                filter,
+                ...(recordId ? { recordId } : {})
+              }
+            });
+          });
+        });
+      } catch (err) {
+        console.warn('Could not register local notification action listener:', err);
+      }
+    }
   }
 
   /**
@@ -89,15 +120,15 @@ export class NotificationService {
   /**
    * Parse any date representation into normalized YYYY-MM-DD
    */
-  private normalizeDateToKey(dateVal: any): string | null {
+  public normalizeDateToKey(dateVal: any): string | null {
     if (!dateVal) return null;
     if (typeof dateVal === 'string') {
       const trimmed = dateVal.trim();
       if (!trimmed) return null;
 
-      // Check DD/MM/YYYY
-      if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed)) {
-        const parts = trimmed.split('/');
+      // Check DD/MM/YYYY or DD-MM-YYYY
+      if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(trimmed)) {
+        const parts = trimmed.split(/[\/\-]/);
         const day = parts[0].padStart(2, '0');
         const month = parts[1].padStart(2, '0');
         const year = parts[2];
@@ -147,7 +178,7 @@ export class NotificationService {
       }
     }
 
-    const farmerNames = dueTodayRecords.map(r => r.farmerName.trim()).filter(Boolean);
+    const farmerNames = dueTodayRecords.map(r => r.farmerName?.trim()).filter(Boolean);
     let farmersListText = '';
     if (farmerNames.length === 1) {
       farmersListText = farmerNames[0];
@@ -172,7 +203,7 @@ export class NotificationService {
 
   /**
    * Dispatch system notification for today's due settlement
-   * @param force - If true, bypasses once-per-day cooldown check (e.g. for test or immediate user trigger)
+   * @param force - If true, bypasses once-per-day cooldown check
    */
   async triggerSettlementNotification(force: boolean = false): Promise<boolean> {
     const isNotificationsEnabled = localStorage.getItem('notifications') !== 'false';
@@ -198,6 +229,7 @@ export class NotificationService {
     const isHi = this.translationService.getCurrentLanguage() === 'hi';
     const count = summary.dueRecords.length;
     const amountStr = '₹' + summary.totalDueAmount.toLocaleString('en-IN');
+    const singleRecordId = count === 1 ? summary.dueRecords[0].id : undefined;
 
     let title = '';
     let body = '';
@@ -236,29 +268,56 @@ export class NotificationService {
               schedule: { at: new Date(Date.now() + 500) },
               sound: 'default',
               smallIcon: 'ic_launcher',
-              extra: { action: 'open_records', date: todayKey }
+              extra: { 
+                action: 'open_records', 
+                filter: 'dueToday',
+                recordId: singleRecordId,
+                date: todayKey 
+              }
             }
           ]
         });
         dispatched = true;
       } else if (typeof window !== 'undefined' && 'Notification' in window) {
         if (Notification.permission === 'granted') {
-          new Notification(title, {
+          const notif = new Notification(title, {
             body,
             icon: '/favicon.ico',
             badge: '/favicon.ico',
             tag: `due-settlement-${todayKey}`
           });
+          notif.onclick = () => {
+            window.focus();
+            this.ngZone.run(() => {
+              this.router.navigate(['/records'], {
+                queryParams: {
+                  filter: 'dueToday',
+                  ...(singleRecordId ? { recordId: singleRecordId } : {})
+                }
+              });
+            });
+          };
           dispatched = true;
         } else if (Notification.permission !== 'denied') {
           const perm = await Notification.requestPermission();
           if (perm === 'granted') {
-            new Notification(title, {
+            const notif = new Notification(title, {
               body,
               icon: '/favicon.ico',
               badge: '/favicon.ico',
               tag: `due-settlement-${todayKey}`
             });
+            notif.onclick = () => {
+              window.focus();
+              this.ngZone.run(() => {
+                this.router.navigate(['/records'], {
+                  queryParams: {
+                    filter: 'dueToday',
+                    ...(singleRecordId ? { recordId: singleRecordId } : {})
+                  }
+                });
+              });
+            };
             dispatched = true;
           }
         }
@@ -297,17 +356,24 @@ export class NotificationService {
               body,
               schedule: { at: new Date(Date.now() + 300) },
               sound: 'default',
-              smallIcon: 'ic_launcher'
+              smallIcon: 'ic_launcher',
+              extra: { action: 'open_records', filter: 'dueToday' }
             }
           ]
         });
       } else if (typeof window !== 'undefined' && 'Notification' in window) {
         const perm = await Notification.requestPermission();
         if (perm === 'granted') {
-          new Notification(title, {
+          const notif = new Notification(title, {
             body,
             icon: '/favicon.ico'
           });
+          notif.onclick = () => {
+            window.focus();
+            this.ngZone.run(() => {
+              this.router.navigate(['/records'], { queryParams: { filter: 'dueToday' } });
+            });
+          };
         }
       }
     } catch (e) {
@@ -317,3 +383,4 @@ export class NotificationService {
     this.toastService.success(body);
   }
 }
+
