@@ -3,7 +3,7 @@
     "version": "0.0.0",
     "scripts": {
         "ng": "ng",
-        "dev": "node dev.js",
+        "dev": "ng serve --host 0.0.0.0 --port 3000",
         "build": "ng build && touch dist/.nojekyll && cp dist/index.html dist/404.html",
         "build:docs": "ng build && rm -rf docs && cp -r dist docs && touch docs/.nojekyll && cp docs/index.html docs/404.html",
         "watch": "ng build --watch --configuration development",

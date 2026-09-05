@@ -3,7 +3,6 @@
     <div 
         class="profile-menu-backdrop" 
         (click)="closeProfileMenu()" 
-        (pointerdown)="closeProfileMenu()"
         aria-hidden="true"></div>
 }
 
@@ -30,194 +29,196 @@
             </div>
         </div>
 
-        <!-- Header Actions (Always available on both mobile & desktop) -->
-        <div class="header-actions" id="header-actions-bar">
-            <!-- 3D Frosted Glass Language Toggle -->
-            <button 
-                type="button"
-                id="header-language-toggle-btn"
-                class="language-toggle-3d" 
-                (click)="onLanguageToggle()" 
-                [title]="getCurrentLanguage() === 'hi' ? translationService.get('settings.languageEnglish') : translationService.get('settings.languageHindi')"
-                aria-label="Toggle language">
-                <mat-icon class="language-globe-icon">translate</mat-icon>
-                <span class="language-code">{{ getCurrentLanguage() === 'hi' ? 'हि' : 'EN' }}</span>
-            </button>
-
-            <!-- 3D Neomorphic Theme Toggle -->
-            <button 
-                type="button"
-                id="header-theme-toggle-btn"
-                class="theme-toggle-3d" 
-                (click)="onThemeToggle()" 
-                aria-label="Toggle dark and light theme">
-                <div class="toggle-track">
-                    <div class="toggle-thumb">
-                        <!-- Sun Icon -->
-                        <svg class="theme-icon light-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="5"></circle>
-                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
-                        <!-- Moon Icon -->
-                        <svg class="theme-icon dark-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                        </svg>
-                    </div>
-                </div>
-            </button>
-
-            <!-- 3D Instagram Story Ring Profile Pill & Dropdown -->
-            <div class="profile-pill-wrapper" id="header-profile-menu-container">
+        <!-- Header Actions (Visible ONLY after login & not on auth/login pages) -->
+        @if (showUserActions()) {
+            <div class="header-actions" id="header-actions-bar">
+                <!-- 3D Frosted Glass Language Toggle -->
                 <button 
-                    type="button" 
-                    id="header-user-profile-btn"
-                    class="user-profile-pill-3d" 
-                    (click)="toggleProfileMenu()"
-                    [attr.aria-expanded]="isProfileMenuOpen()"
-                    aria-haspopup="menu"
-                    aria-label="User profile and photo menu">
-                    
-                    <!-- Avatar with Instagram Story Ring -->
-                    <div class="user-avatar-container-3d" [class.has-photo]="!!userPhotoURL()">
-                        @if (userPhotoURL()) {
-                            <img 
-                                [src]="userPhotoURL()" 
-                                [alt]="displayName()" 
-                                class="user-avatar-img"
-                                referrerpolicy="no-referrer" />
-                        } @else {
-                            <span class="user-avatar-initials">{{ userInitials() }}</span>
-                            <span class="upload-badge-icon-wrap" title="Upload Photo">
-                                <mat-icon class="upload-badge-icon">photo_camera</mat-icon>
-                            </span>
-                        }
-                        @if (isUploadingPhoto()) {
-                            <div class="avatar-upload-spinner">
-                                <mat-icon class="spin-icon">sync</mat-icon>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- User Display Name (visible on tablet and desktop) -->
-                    <div class="user-info-text">
-                        <span class="user-name-display">{{ displayName() }}</span>
-                        @if (userBusinessName()) {
-                            <span class="user-business-display">{{ userBusinessName() }}</span>
-                        }
-                    </div>
-
-                    <mat-icon class="profile-dropdown-arrow" [class.rotated]="isProfileMenuOpen()">expand_more</mat-icon>
+                    type="button"
+                    id="header-language-toggle-btn"
+                    class="language-toggle-3d" 
+                    (click)="onLanguageToggle()" 
+                    [title]="getCurrentLanguage() === 'hi' ? translationService.get('settings.languageEnglish') : translationService.get('settings.languageHindi')"
+                    aria-label="Toggle language">
+                    <mat-icon class="language-globe-icon">translate</mat-icon>
+                    <span class="language-code">{{ getCurrentLanguage() === 'hi' ? 'हि' : 'EN' }}</span>
                 </button>
 
-                <!-- Hidden file picker for photo upload -->
-                <input 
-                    #photoFileInput 
-                    type="file" 
-                    id="header-photo-file-input"
-                    accept="image/*" 
-                    (change)="onPhotoSelected($event)" 
-                    style="display: none;" />
+                <!-- 3D Neomorphic Theme Toggle -->
+                <button 
+                    type="button"
+                    id="header-theme-toggle-btn"
+                    class="theme-toggle-3d" 
+                    (click)="onThemeToggle()" 
+                    aria-label="Toggle dark and light theme">
+                    <div class="toggle-track">
+                        <div class="toggle-thumb">
+                            <!-- Sun Icon -->
+                            <svg class="theme-icon light-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                            <!-- Moon Icon -->
+                            <svg class="theme-icon dark-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </button>
 
-                <!-- Dropdown Modal / Popover -->
-                @if (isProfileMenuOpen()) {
-                    <div class="profile-dropdown-card" id="header-profile-dropdown" role="menu">
-                        <!-- Top Profile Info & Avatar -->
-                        <div class="profile-card-top">
-                            <div class="dropdown-avatar-wrapper">
-                                @if (userPhotoURL()) {
-                                    <img 
-                                        [src]="userPhotoURL()" 
-                                        [alt]="displayName()" 
-                                        class="dropdown-avatar-img"
-                                        referrerpolicy="no-referrer" />
-                                } @else {
-                                    <div class="dropdown-avatar-placeholder">
-                                        <span>{{ userInitials() }}</span>
-                                    </div>
-                                }
-                                
-                                <!-- Direct Photo Action on Avatar -->
+                <!-- 3D Instagram Story Ring Profile Pill & Dropdown -->
+                <div class="profile-pill-wrapper" id="header-profile-menu-container">
+                    <button 
+                        type="button" 
+                        id="header-user-profile-btn"
+                        class="user-profile-pill-3d" 
+                        (click)="toggleProfileMenu()"
+                        [attr.aria-expanded]="isProfileMenuOpen()"
+                        aria-haspopup="menu"
+                        aria-label="User profile and photo menu">
+                        
+                        <!-- Avatar with Instagram Story Ring -->
+                        <div class="user-avatar-container-3d" [class.has-photo]="!!userPhotoURL()">
+                            @if (userPhotoURL()) {
+                                <img 
+                                    [src]="userPhotoURL()" 
+                                    [alt]="displayName()" 
+                                    class="user-avatar-img"
+                                    referrerpolicy="no-referrer" />
+                            } @else {
+                                <span class="user-avatar-initials">{{ userInitials() }}</span>
+                                <span class="upload-badge-icon-wrap" title="Upload Photo">
+                                    <mat-icon class="upload-badge-icon">photo_camera</mat-icon>
+                                </span>
+                            }
+                            @if (isUploadingPhoto()) {
+                                <div class="avatar-upload-spinner">
+                                    <mat-icon class="spin-icon">sync</mat-icon>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- User Display Name (visible on tablet and desktop) -->
+                        <div class="user-info-text">
+                            <span class="user-name-display">{{ displayName() }}</span>
+                            @if (userBusinessName()) {
+                                <span class="user-business-display">{{ userBusinessName() }}</span>
+                            }
+                        </div>
+
+                        <mat-icon class="profile-dropdown-arrow" [class.rotated]="isProfileMenuOpen()">expand_more</mat-icon>
+                    </button>
+
+                    <!-- Hidden file picker for photo upload -->
+                    <input 
+                        #photoFileInput 
+                        type="file" 
+                        id="header-photo-file-input"
+                        accept="image/*" 
+                        (change)="onPhotoSelected($event)" 
+                        style="display: none;" />
+
+                    <!-- Dropdown Modal / Popover -->
+                    @if (isProfileMenuOpen()) {
+                        <div class="profile-dropdown-card" id="header-profile-dropdown" role="menu">
+                            <!-- Top Profile Info & Avatar -->
+                            <div class="profile-card-top">
+                                <div class="dropdown-avatar-wrapper">
+                                    @if (userPhotoURL()) {
+                                        <img 
+                                            [src]="userPhotoURL()" 
+                                            [alt]="displayName()" 
+                                            class="dropdown-avatar-img"
+                                            referrerpolicy="no-referrer" />
+                                    } @else {
+                                        <div class="dropdown-avatar-placeholder">
+                                            <span>{{ userInitials() }}</span>
+                                        </div>
+                                    }
+                                    
+                                    <!-- Direct Photo Action on Avatar -->
+                                    <button 
+                                        type="button" 
+                                        class="avatar-photo-action-btn"
+                                        (click)="triggerPhotoUpload($event)"
+                                        [title]="userPhotoURL() ? 'Change profile photo' : 'Upload profile photo'"
+                                        id="header-dropdown-change-photo-btn"
+                                        aria-label="Upload photo">
+                                        <mat-icon>photo_camera</mat-icon>
+                                    </button>
+                                </div>
+
+                                <div class="dropdown-user-details">
+                                    <h3 class="dropdown-user-name">{{ displayName() }}</h3>
+                                    @if (userBusinessName()) {
+                                        <p class="dropdown-user-business">{{ userBusinessName() }}</p>
+                                    }
+                                    @if (userPhone()) {
+                                        <p class="dropdown-user-phone">
+                                            <mat-icon>call</mat-icon>
+                                            <span>{{ userPhone() }}</span>
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Upload / Change Photo CTA Strip -->
+                            <div class="photo-upload-strip">
                                 <button 
                                     type="button" 
-                                    class="avatar-photo-action-btn"
+                                    class="upload-photo-cta-btn" 
                                     (click)="triggerPhotoUpload($event)"
-                                    [title]="userPhotoURL() ? 'Change profile photo' : 'Upload profile photo'"
-                                    id="header-dropdown-change-photo-btn"
-                                    aria-label="Upload photo">
-                                    <mat-icon>photo_camera</mat-icon>
+                                    id="header-dropdown-upload-btn">
+                                    <mat-icon>{{ userPhotoURL() ? 'cached' : 'add_a_photo' }}</mat-icon>
+                                    <span>{{ userPhotoURL() ? (translationService.getCurrentLanguage() === 'hi' ? 'फोटो बदलें' : 'Change Photo') : (translationService.getCurrentLanguage() === 'hi' ? 'फोटो अपलोड करें' : 'Upload Photo') }}</span>
                                 </button>
                             </div>
 
-                            <div class="dropdown-user-details">
-                                <h3 class="dropdown-user-name">{{ displayName() }}</h3>
-                                @if (userBusinessName()) {
-                                    <p class="dropdown-user-business">{{ userBusinessName() }}</p>
-                                }
-                                @if (userPhone()) {
-                                    <p class="dropdown-user-phone">
-                                        <mat-icon>call</mat-icon>
-                                        <span>{{ userPhone() }}</span>
-                                    </p>
-                                }
+                            <div class="dropdown-divider"></div>
+
+                            <!-- Dropdown Menu Navigation Items -->
+                            <div class="dropdown-menu-list">
+                                <button 
+                                    type="button" 
+                                    class="dropdown-menu-item" 
+                                    (click)="openEditProfileDialog()"
+                                    id="header-dropdown-edit-profile-btn">
+                                    <mat-icon class="item-icon">edit</mat-icon>
+                                    <span>{{ translationService.get('settings.profileEdit') }}</span>
+                                </button>
+
+                                <button 
+                                    type="button" 
+                                    class="dropdown-menu-item" 
+                                    (click)="navigateToSettings()"
+                                    id="header-dropdown-settings-btn">
+                                    <mat-icon class="item-icon">settings</mat-icon>
+                                    <span>{{ translationService.get('nav.settings') }}</span>
+                                </button>
                             </div>
-                        </div>
 
-                        <!-- Upload / Change Photo CTA Strip -->
-                        <div class="photo-upload-strip">
+                            <div class="dropdown-divider"></div>
+
+                            <!-- Logout Action -->
                             <button 
                                 type="button" 
-                                class="upload-photo-cta-btn" 
-                                (click)="triggerPhotoUpload($event)"
-                                id="header-dropdown-upload-btn">
-                                <mat-icon>{{ userPhotoURL() ? 'cached' : 'add_a_photo' }}</mat-icon>
-                                <span>{{ userPhotoURL() ? (translationService.getCurrentLanguage() === 'hi' ? 'फोटो बदलें' : 'Change Photo') : (translationService.getCurrentLanguage() === 'hi' ? 'फोटो अपलोड करें' : 'Upload Photo') }}</span>
+                                class="dropdown-signout-btn" 
+                                (click)="onLogout()"
+                                id="header-dropdown-signout-btn">
+                                <mat-icon>logout</mat-icon>
+                                <span>{{ translationService.get('settings.logout') }}</span>
                             </button>
                         </div>
-
-                        <div class="dropdown-divider"></div>
-
-                        <!-- Dropdown Menu Navigation Items -->
-                        <div class="dropdown-menu-list">
-                            <button 
-                                type="button" 
-                                class="dropdown-menu-item" 
-                                (click)="openEditProfileDialog()"
-                                id="header-dropdown-edit-profile-btn">
-                                <mat-icon class="item-icon">edit</mat-icon>
-                                <span>{{ translationService.get('settings.profileEdit') }}</span>
-                            </button>
-
-                            <button 
-                                type="button" 
-                                class="dropdown-menu-item" 
-                                (click)="navigateToSettings()"
-                                id="header-dropdown-settings-btn">
-                                <mat-icon class="item-icon">settings</mat-icon>
-                                <span>{{ translationService.get('nav.settings') }}</span>
-                            </button>
-                        </div>
-
-                        <div class="dropdown-divider"></div>
-
-                        <!-- Logout Action -->
-                        <button 
-                            type="button" 
-                            class="dropdown-signout-btn" 
-                            (click)="onLogout()"
-                            id="header-dropdown-signout-btn">
-                            <mat-icon>logout</mat-icon>
-                            <span>{{ translationService.get('settings.logout') }}</span>
-                        </button>
-                    </div>
-                }
+                    }
+                </div>
             </div>
-        </div>
+        }
     </div>
 </header>

@@ -1064,3 +1064,47 @@ $whatsapp-hover: #1EBE5D;
         }
     }
 }
+
+.whatsapp-hint-green {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #15803d !important;
+    font-size: 11.5px !important;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+.whatsapp-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: #25D366;
+    box-shadow: 0 0 6px rgba(37, 211, 102, 0.6);
+}
+
+.login-with-password-text {
+    text-align: center;
+    margin-top: 14px;
+    margin-bottom: 0;
+}
+
+.login-with-password-link {
+    display: inline-flex;
+    align-items: center;
+    background: none;
+    border: none;
+    color: $primary;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(22, 93, 174, 0.08);
+        color: $primary-dark;
+    }
+}

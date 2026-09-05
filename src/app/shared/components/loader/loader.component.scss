@@ -1,95 +1,417 @@
-.loader-overlay {
+// Harvester Animated Loader Stylesheet
+
+.harvester-loader-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgb(0 8 15);
+    width: 100vw;
+    height: 100vh;
+    /* Deep agricultural dark emerald night background with radial glow */
+    background: radial-gradient(circle at 50% 50%, rgba(6, 78, 59, 0.5) 0%, rgba(4, 25, 20, 0.94) 60%, rgba(2, 12, 10, 0.98) 100%);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
-    backdrop-filter: blur(8px);
-    animation: fadeIn 0.6s ease-in-out;
+    z-index: 99999;
+    padding: 24px;
+    box-sizing: border-box;
+    animation: loaderFadeIn 0.35s ease-out forwards;
+    user-select: none;
 }
 
-.loader-overlay.fade-out {
-    animation: fadeOut 0.6s ease-in-out;
+.harvester-loader-overlay.fade-out {
+    animation: loaderFadeOut 0.45s ease-in forwards;
+    pointer-events: none;
 }
 
-@keyframes fadeIn {
+@keyframes loaderFadeIn {
     from {
         opacity: 0;
         backdrop-filter: blur(0px);
     }
     to {
         opacity: 1;
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(14px);
     }
 }
 
-@keyframes fadeOut {
+@keyframes loaderFadeOut {
     from {
         opacity: 1;
-        backdrop-filter: blur(8px);
+        transform: scale(1);
     }
     to {
         opacity: 0;
+        transform: scale(1.04);
         backdrop-filter: blur(0px);
     }
 }
 
-.loader-content {
+.loader-container {
+    width: 100%;
+    max-width: 460px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    animation: scaleIn 0.5s ease-out;
+    position: relative;
+    animation: cardZoomIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes scaleIn {
+@keyframes cardZoomIn {
     from {
         opacity: 0;
-        transform: scale(0.8);
+        transform: translateY(20px) scale(0.92);
     }
     to {
         opacity: 1;
-        transform: scale(1);
+        transform: translateY(0) scale(1);
     }
 }
 
-.loader-gif {
-    width: 200px;
-    height: 200px;
-    object-fit: none;
-    margin-bottom: 20px;
-    filter: none;
+/* ===================================================
+   HARVESTER STAGE & SVG CONTAINER
+=================================================== */
+.harvester-stage {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.loader-tagline {
-    font-size: 14px;
-    color: #9aa4b2;
-    margin: 0;
-    letter-spacing: 1.5px;
-    font-weight: 500;
-    animation: fadeInText 0.8s ease-in-out 0.3s both;
+.ambient-field-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    height: 160px;
+    background: radial-gradient(ellipse, rgba(16, 185, 129, 0.35) 0%, rgba(245, 158, 11, 0.16) 45%, transparent 70%);
+    filter: blur(32px);
+    pointer-events: none;
+    z-index: 0;
+    animation: ambientPulse 2.8s ease-in-out infinite alternate;
 }
 
-@keyframes fadeInText {
-    from {
+@keyframes ambientPulse {
+    0% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    100% {
+        opacity: 0.95;
+        transform: translate(-50%, -50%) scale(1.15);
+    }
+}
+
+.harvester-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    z-index: 1;
+    filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.45));
+}
+
+/* ===================================================
+   HARVESTER PARTS ASSEMBLY ANIMATIONS
+=================================================== */
+
+/* 1. Main Chassis & Engine Shell */
+.part-chassis {
+    animation: assembleChassis 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes assembleChassis {
+    0% {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(-40px) scale(0.85);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 2. Driver's Cabin */
+.part-cab {
+    animation: assembleCab 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+
+@keyframes assembleCab {
+    0% {
+        opacity: 0;
+        transform: translate(30px, -30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0);
+    }
+}
+
+/* 3. Unloading Auger Pipe */
+.part-auger {
+    transform-origin: 120px 80px;
+    animation: assembleAuger 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+
+@keyframes assembleAuger {
+    0% {
+        opacity: 0;
+        transform: rotate(-35deg);
+    }
+    100% {
+        opacity: 1;
+        transform: rotate(0deg);
+    }
+}
+
+/* 4. Cutter Header Frame & Rotating Reel */
+.part-cutter-frame {
+    animation: assembleCutter 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) 0.18s both;
+}
+
+.part-cutter-reel {
+    animation: assembleCutter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.22s both;
+}
+
+@keyframes assembleCutter {
+    0% {
+        opacity: 0;
+        transform: translate(45px, 20px) scale(0.7);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+/* 5. Wheels Assembly */
+.part-front-wheel {
+    animation: assembleWheelFront 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+}
+
+.part-rear-wheel {
+    animation: assembleWheelRear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+
+@keyframes assembleWheelFront {
+    0% {
+        opacity: 0;
+        transform: translate(30px, 40px) rotate(180deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0deg);
+    }
+}
+
+@keyframes assembleWheelRear {
+    0% {
+        opacity: 0;
+        transform: translate(-30px, 40px) rotate(-180deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0deg);
+    }
+}
+
+/* ===================================================
+   CONTINUOUS LIVE HARVESTING ANIMATIONS
+=================================================== */
+
+/* Harvester Suspension Idle/Driving Bounce */
+.harvester-bounce-unit {
+    animation: harvesterBounce 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes harvesterBounce {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-2.2px);
+    }
+    100% {
+        transform: translateY(0.8px);
+    }
+}
+
+/* Giant Front Traction Wheel Rotation */
+.wheel-spin-front {
+    transform-origin: 232px 145px;
+    animation: wheelRotateCW 1.35s linear infinite;
+}
+
+/* Smaller Rear Steer Wheel Rotation */
+.wheel-spin-rear {
+    transform-origin: 118px 152px;
+    animation: wheelRotateCW 1.05s linear infinite;
+}
+
+@keyframes wheelRotateCW {
+    from {
+        transform: rotate(0deg);
     }
     to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Front Cutter Reel Rotation (कटाई की रील जो लगातार घूमती है) */
+.reel-spin-assembly {
+    transform-origin: 320px 132px;
+    animation: reelRotateCCW 1.6s linear infinite;
+}
+
+@keyframes reelRotateCCW {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+/* Roof Flashing Amber Beacon */
+.strobe-pulse {
+    animation: beaconFlash 0.75s ease-in-out infinite alternate;
+}
+
+@keyframes beaconFlash {
+    0%, 30% {
+        opacity: 0.3;
+        transform: scale(0.85);
+    }
+    70%, 100% {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1.3);
+        filter: drop-shadow(0 0 6px #F59E0B);
+    }
+}
+
+/* Headlight Light Beam Flicker */
+.headlight-beam {
+    animation: beamFlicker 2s ease-in-out infinite alternate;
+}
+
+@keyframes beamFlicker {
+    0% {
+        opacity: 0.65;
+    }
+    100% {
+        opacity: 0.95;
+    }
+}
+
+/* Scrolling Wheat Field Ground Track */
+.scrolling-wheat-track {
+    animation: scrollWheat 1.1s linear infinite;
+}
+
+@keyframes scrollWheat {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-30px);
+    }
+}
+
+/* Flying Golden Harvest Sparks & Chaff */
+.harvest-sparks .spark {
+    animation: sparkFloat 0.8s ease-out infinite;
+}
+
+.harvest-sparks .s-1 { animation-delay: 0.1s; }
+.harvest-sparks .s-2 { animation-delay: 0.28s; }
+.harvest-sparks .s-3 { animation-delay: 0.45s; }
+.harvest-sparks .s-4 { animation-delay: 0.62s; }
+.harvest-sparks .s-5 { animation-delay: 0.75s; }
+
+@keyframes sparkFloat {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-36px, -24px) scale(0.3);
+    }
+}
+
+/* Grain Flow from Auger Spout */
+.grain-particles .grain-dot {
+    animation: grainDrop 0.9s ease-in infinite;
+}
+
+.grain-particles .g-1 { animation-delay: 0.05s; }
+.grain-particles .g-2 { animation-delay: 0.25s; }
+.grain-particles .g-3 { animation-delay: 0.5s; }
+.grain-particles .g-4 { animation-delay: 0.7s; }
+
+@keyframes grainDrop {
+    0% {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.6);
+    }
+    30% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(28px) scale(0.4);
+    }
+}
+
+/* Engine Exhaust Smoke Puffs */
+.exhaust-system .smoke-puff {
+    fill: #CBD5E1;
+    animation: smokeDrift 1.6s ease-out infinite;
+}
+
+.exhaust-system .puff-1 { animation-delay: 0.1s; }
+.exhaust-system .puff-2 { animation-delay: 0.6s; }
+.exhaust-system .puff-3 { animation-delay: 1.1s; }
+
+@keyframes smokeDrift {
+    0% {
+        opacity: 0.8;
+        transform: translate(0, 0) scale(0.6);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-26px, -32px) scale(1.8);
+    }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
+    .harvester-stage {
+        height: 180px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .loader-overlay,
-    .loader-content,
-    .loader-tagline {
-        animation: none;
+    .harvester-loader-overlay,
+    .loader-container,
+    .wheel-spin-front,
+    .wheel-spin-rear,
+    .reel-spin-assembly,
+    .harvester-bounce-unit,
+    .scrolling-wheat-track,
+    .harvest-sparks .spark,
+    .grain-particles .grain-dot,
+    .exhaust-system .smoke-puff {
+        animation: none !important;
     }
 }
+

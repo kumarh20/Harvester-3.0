@@ -472,6 +472,13 @@ export interface Translations {
     change: string;
     enterOtp6Digit: string;
     checkWhatsappPhone: string;
+    checkWhatsappHint: string;
+    accountNotRegistered: string;
+    accountAlreadyRegistered: string;
+    loginWithOtp: string;
+    sendOtpAndRegister: string;
+    sendOtpBtn: string;
+    verifyAndComplete: string;
     expiresIn: string;
     otpExpired: string;
     resendIn: string;
@@ -919,6 +926,13 @@ const HINDI_TRANSLATIONS: Translations = {
     change: 'बदलें',
     enterOtp6Digit: '6-अंकीय ओटीपी दर्ज करें',
     checkWhatsappPhone: 'अपने फोन पर व्हाट्सएप चेक करें',
+    checkWhatsappHint: 'अपने व्हाट्सएप पर 6-अंकों का कोड देखें',
+    accountNotRegistered: 'यह नंबर पंजीकृत नहीं है। कृपया पहले साइन अप करें।',
+    accountAlreadyRegistered: 'यह नंबर पहले से पंजीकृत है। कृपया लॉगिन करें।',
+    loginWithOtp: 'व्हाट्सएप ओटीपी से लॉगिन करें',
+    sendOtpAndRegister: 'व्हाट्सएप ओटीपी भेजें व खाता बनाएं',
+    sendOtpBtn: 'व्हाट्सएप पर ओटीपी भेजें',
+    verifyAndComplete: 'सत्यापित करें व आगे बढ़ें',
     expiresIn: 'समाप्त होने में समय',
     otpExpired: 'ओटीपी समाप्त हो गया',
     resendIn: 'पुनः भेजें',
@@ -1366,6 +1380,13 @@ const ENGLISH_TRANSLATIONS: Translations = {
     change: 'Change',
     enterOtp6Digit: 'Enter 6-Digit OTP',
     checkWhatsappPhone: 'Check WhatsApp on your phone for code',
+    checkWhatsappHint: 'Check your WhatsApp for the 6-digit code',
+    accountNotRegistered: 'This number is not registered. Please sign up first.',
+    accountAlreadyRegistered: 'This number is already registered. Please sign in.',
+    loginWithOtp: 'Login with WhatsApp OTP',
+    sendOtpAndRegister: 'Send WhatsApp OTP & Register',
+    sendOtpBtn: 'Send OTP on WhatsApp',
+    verifyAndComplete: 'Verify & Complete Sign Up',
     expiresIn: 'Expires in',
     otpExpired: 'OTP Expired',
     resendIn: 'Resend in',

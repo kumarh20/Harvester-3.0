@@ -1,12 +1,14 @@
-import { Component, output, signal, computed, OnInit, NgZone, ViewChild, ElementRef, inject } from '@angular/core';
+import { Component, output, signal, computed, OnInit, NgZone, ViewChild, ElementRef, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { Auth, onAuthStateChanged, signOut, User } from '@angular/fire/auth';
 import { TranslationService } from '../../services/translation.service';
 import { LanguageService } from '../../services/language.service';
 import { UserService } from '../../../services/user/user-service';
+import { AuthService } from '../../../services/auth/auth-service';
 import { ToastService } from '../../services/toast.service';
 import { ProfileDialogComponent, ProfileDialogData } from '../profile-dialog/profile-dialog.component';
 
@@ -28,20 +30,32 @@ export class HeaderComponent implements OnInit {
   public translationService = inject(TranslationService);
   private languageService = inject(LanguageService);
   private auth = inject(Auth);
+  private authService = inject(AuthService);
   private ngZone = inject(NgZone);
   public userService = inject(UserService);
   private toastService = inject(ToastService);
   private matDialog = inject(MatDialog);
   private router = inject(Router);
   private elementRef = inject(ElementRef);
+  private cdr = inject(ChangeDetectorRef);
 
   // Auth and profile signals
   currentUser = signal<User | null>(null);
   userProfile = computed(() => this.userService.userProfile());
   isProfileMenuOpen = signal<boolean>(false);
   isUploadingPhoto = signal<boolean>(false);
+  currentUrl = signal<string>(this.router.url);
 
   @ViewChild('photoFileInput') photoFileInput?: ElementRef<HTMLInputElement>;
+
+  isAuthPage = computed(() => {
+    const url = this.currentUrl();
+    return url.includes('/auth') || url.includes('/whatsapp-login');
+  });
+
+  showUserActions = computed(() => {
+    return !!this.currentUser() && !this.isAuthPage();
+  });
 
   // Derived user display computed signals
   displayName = computed(() => {
@@ -71,6 +85,9 @@ export class HeaderComponent implements OnInit {
     if (user?.email && user.email.includes('@harvester.app')) {
       return user.email.split('@')[0];
     }
+    if (user?.phoneNumber) {
+      return user.phoneNumber.replace('+91', '');
+    }
     return '';
   });
 
@@ -87,8 +104,18 @@ export class HeaderComponent implements OnInit {
     // Check initial auth state immediately
     if (this.auth.currentUser) {
       this.currentUser.set(this.auth.currentUser);
-      this.userService.loadUserProfile(this.auth.currentUser.uid);
+      const phone = this.auth.currentUser.email?.includes('@harvester.app') 
+        ? this.auth.currentUser.email.split('@')[0] 
+        : (this.auth.currentUser.phoneNumber || '');
+      this.userService.loadUserProfile(this.auth.currentUser.uid, phone);
     }
+
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      this.currentUrl.set(event.urlAfterRedirects || event.url);
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnInit(): void {
@@ -97,8 +124,14 @@ export class HeaderComponent implements OnInit {
       this.ngZone.run(() => {
         this.currentUser.set(user);
         if (user) {
-          this.userService.loadUserProfile(user.uid);
+          const phone = user.email?.includes('@harvester.app') 
+            ? user.email.split('@')[0] 
+            : (user.phoneNumber || '');
+          this.userService.loadUserProfile(user.uid, phone);
+        } else {
+          this.userService.userProfile.set(null);
         }
+        this.cdr.markForCheck();
       });
     });
   }
@@ -237,15 +270,25 @@ export class HeaderComponent implements OnInit {
   async onLogout(): Promise<void> {
     this.closeProfileMenu();
     try {
-      await signOut(this.auth);
+      this.currentUser.set(null);
+      this.userService.userProfile.set(null);
+      await this.authService.logout();
       this.toastService.info(
         this.translationService.getCurrentLanguage() === 'hi'
           ? 'सफलतापूर्वक लॉगआउट हुआ'
           : 'Signed out successfully'
       );
-      this.router.navigate(['/']);
+      this.ngZone.run(() => {
+        this.router.navigate(['/auth']);
+        this.cdr.markForCheck();
+      });
     } catch (err) {
       console.error('Logout error:', err);
+      await signOut(this.auth).catch(() => {});
+      this.ngZone.run(() => {
+        this.router.navigate(['/auth']);
+        this.cdr.markForCheck();
+      });
     }
   }
 }

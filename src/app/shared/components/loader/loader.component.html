@@ -1,8 +1,314 @@
 @if (loaderService.isLoading()) {
-<div class="loader-overlay" [class.fade-out]="loaderService.isHiding()">
-    <div class="loader-content">
-        <img src="assets/funnel.gif" alt="Loading..." class="loader-gif" />
-        <p class="loader-tagline">Secure • Fast • Reliable</p>
+<div class="harvester-loader-overlay" [class.fade-out]="loaderService.isHiding()" id="app-harvester-loader" role="dialog" aria-modal="true" aria-label="Loading">
+    <div class="loader-container">
+        
+        <!-- Harvester Animated Illustration (Pure Visual Animation) -->
+        <div class="harvester-stage" id="harvester-stage-box">
+            <!-- Ambient Glow Effect behind the Harvester -->
+            <div class="ambient-field-glow"></div>
+
+            <svg 
+                class="harvester-svg" 
+                viewBox="0 0 420 220" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true">
+                
+                <defs>
+                    <!-- Body Emerald Gradient -->
+                    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#10B981" />
+                        <stop offset="50%" stop-color="#059669" />
+                        <stop offset="100%" stop-color="#047857" />
+                    </linearGradient>
+
+                    <!-- Dark Metal Chassis Gradient -->
+                    <linearGradient id="chassisGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#334155" />
+                        <stop offset="100%" stop-color="#1E293B" />
+                    </linearGradient>
+
+                    <!-- Golden Stripe Gradient -->
+                    <linearGradient id="goldStripe" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#F59E0B" />
+                        <stop offset="50%" stop-color="#FBBF24" />
+                        <stop offset="100%" stop-color="#F59E0B" />
+                    </linearGradient>
+
+                    <!-- Cabin Glass Tint -->
+                    <linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#BAE6FD" stop-opacity="0.9" />
+                        <stop offset="60%" stop-color="#38BDF8" stop-opacity="0.75" />
+                        <stop offset="100%" stop-color="#0284C7" stop-opacity="0.85" />
+                    </linearGradient>
+
+                    <!-- Rim Gold Gradient -->
+                    <radialGradient id="rimGrad" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#FEF3C7" />
+                        <stop offset="40%" stop-color="#F59E0B" />
+                        <stop offset="100%" stop-color="#D97706" />
+                    </radialGradient>
+
+                    <!-- Headlight Light Beam Cone -->
+                    <linearGradient id="headlightBeam" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#FEF08A" stop-opacity="0.6" />
+                        <stop offset="50%" stop-color="#FDE047" stop-opacity="0.25" />
+                        <stop offset="100%" stop-color="#FACC15" stop-opacity="0" />
+                    </linearGradient>
+
+                    <!-- Glow filter -->
+                    <filter id="glowFilter" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                </defs>
+
+                <!-- 1. Headlight Light Beam illuminating the field ahead -->
+                <polygon 
+                    points="310,122 410,105 418,175 315,142" 
+                    fill="url(#headlightBeam)" 
+                    class="headlight-beam" />
+
+                <!-- 2. Exhaust Steam / Smoke Wisps -->
+                <g class="exhaust-system">
+                    <circle cx="140" cy="22" r="4" class="smoke-puff puff-1" />
+                    <circle cx="134" cy="14" r="5.5" class="smoke-puff puff-2" />
+                    <circle cx="126" cy="6" r="7" class="smoke-puff puff-3" />
+                </g>
+
+                <!-- 3. Grain Flow particles from Unloading Auger -->
+                <g class="grain-particles">
+                    <circle cx="58" cy="72" r="2.5" class="grain-dot g-1" fill="#FBBF24" />
+                    <circle cx="54" cy="86" r="2.2" class="grain-dot g-2" fill="#F59E0B" />
+                    <circle cx="59" cy="100" r="2" class="grain-dot g-3" fill="#FDE68A" />
+                    <circle cx="53" cy="116" r="1.8" class="grain-dot g-4" fill="#FBBF24" />
+                </g>
+
+                <!-- 4. HARVESTER MAIN ASSEMBLY (Suspension bounce group) -->
+                <g class="harvester-bounce-unit">
+                    
+                    <!-- (A) Unloading Auger Pipe (Spout) -->
+                    <g class="part-auger">
+                        <!-- Pipe Arm -->
+                        <path d="M125 68 L60 52 L50 68 L58 72 L120 84 Z" fill="url(#bodyGrad)" stroke="#064E3B" stroke-width="1.5" />
+                        <!-- Golden Spout Tip -->
+                        <path d="M50 68 L48 76 L62 76 L58 72 Z" fill="#F59E0B" />
+                        <!-- Hydraulic Support Strut -->
+                        <line x1="110" y1="82" x2="85" y2="92" stroke="#64748B" stroke-width="2.5" stroke-linecap="round" />
+                    </g>
+
+                    <!-- (B) Exhaust Stack -->
+                    <g class="part-exhaust">
+                        <rect x="138" y="28" width="6" height="24" rx="2" fill="#475569" stroke="#1E293B" stroke-width="1" />
+                        <path d="M136 28 L146 28 L144 24 L138 24 Z" fill="#334155" />
+                    </g>
+
+                    <!-- (C) Main Grain Body & Engine Compartment -->
+                    <g class="part-chassis">
+                        <!-- Lower chassis base plate -->
+                        <path d="M90 135 L265 135 L255 152 L95 152 Z" fill="url(#chassisGrad)" />
+                        
+                        <!-- Main Green Body shell -->
+                        <path d="M85 75 
+                                 C85 62 98 52 112 52 
+                                 L215 52 
+                                 L268 78 
+                                 L268 135 
+                                 L85 135 Z" 
+                              fill="url(#bodyGrad)" 
+                              stroke="#064E3B" 
+                              stroke-width="2" />
+
+                        <!-- Agricultural Yellow Gold Speed Stripe -->
+                        <path d="M85 98 L268 98 L268 108 L85 108 Z" fill="url(#goldStripe)" />
+                        <line x1="85" y1="98" x2="268" y2="98" stroke="#D97706" stroke-width="0.8" />
+                        <line x1="85" y1="108" x2="268" y2="108" stroke="#D97706" stroke-width="0.8" />
+
+                        <!-- Engine Ventilation Louver Slots -->
+                        <g stroke="#064E3B" stroke-width="2" stroke-linecap="round">
+                            <line x1="105" y1="70" x2="135" y2="70" />
+                            <line x1="105" y1="76" x2="135" y2="76" />
+                            <line x1="105" y1="82" x2="135" y2="82" />
+                            <line x1="105" y1="88" x2="135" y2="88" />
+                        </g>
+
+                        <!-- Rear Service Access Ladder & Platform -->
+                        <path d="M85 88 L72 88 L72 135 L85 135" stroke="#94A3B8" stroke-width="2" fill="none" />
+                        <line x1="72" y1="100" x2="85" y2="100" stroke="#94A3B8" stroke-width="1.5" />
+                        <line x1="72" y1="112" x2="85" y2="112" stroke="#94A3B8" stroke-width="1.5" />
+                        <line x1="72" y1="124" x2="85" y2="124" stroke="#94A3B8" stroke-width="1.5" />
+                    </g>
+
+                    <!-- (D) Driver's Panoramic Cockpit Cab -->
+                    <g class="part-cab">
+                        <!-- Cab Roof Visor -->
+                        <path d="M195 44 L282 44 L276 54 L195 54 Z" fill="#047857" stroke="#064E3B" stroke-width="1.5" />
+                        
+                        <!-- Roof Flashing Amber Strobe Beacon -->
+                        <g class="roof-beacon">
+                            <rect x="234" y="36" width="10" height="8" rx="2" fill="#F59E0B" />
+                            <circle cx="239" cy="40" r="7" fill="#FDE047" opacity="0.85" filter="url(#glowFilter)" class="strobe-pulse" />
+                        </g>
+
+                        <!-- Cockpit Glass Window with reflections -->
+                        <path d="M200 54 L272 54 L258 108 L200 108 Z" 
+                              fill="url(#glassGrad)" 
+                              stroke="#064E3B" 
+                              stroke-width="1.8" />
+
+                        <!-- Glass Reflection diagonal highlights -->
+                        <path d="M220 56 L240 56 L215 104 L205 104 Z" fill="#FFFFFF" opacity="0.3" />
+                        <path d="M248 56 L258 56 L238 104 L230 104 Z" fill="#FFFFFF" opacity="0.2" />
+
+                        <!-- Driver Seat Silhouette -->
+                        <path d="M214 78 C214 74 218 70 224 70 C230 70 234 74 234 78 L234 94 L214 94 Z" fill="#1E293B" opacity="0.65" />
+                        <circle cx="224" cy="66" r="4.5" fill="#1E293B" opacity="0.65" />
+
+                        <!-- Cab Handrail & Side Mirror -->
+                        <path d="M272 62 L280 62 L280 75" stroke="#CBD5E1" stroke-width="1.5" fill="none" />
+                        <rect x="277" y="65" width="5" height="10" rx="1" fill="#1E293B" stroke="#94A3B8" stroke-width="1" />
+
+                        <!-- High-Beam Front Worklight -->
+                        <circle cx="270" cy="118" r="6" fill="#FEF08A" stroke="#CA8A04" stroke-width="1.5" filter="url(#glowFilter)" />
+                        <circle cx="270" cy="118" r="3" fill="#FFFFFF" />
+                    </g>
+
+                    <!-- (E) Front Feeder House & Cutter Bar Structure -->
+                    <g class="part-cutter-frame">
+                        <!-- Feeder elevator throat connecting cab to reel -->
+                        <path d="M255 110 L305 128 L295 146 L250 135 Z" fill="url(#chassisGrad)" stroke="#1E293B" stroke-width="1.5" />
+                        <!-- Hydraulic lift cylinder -->
+                        <line x1="245" y1="130" x2="280" y2="140" stroke="#F59E0B" stroke-width="3" stroke-linecap="round" />
+                        <line x1="250" y1="132" x2="270" y2="139" stroke="#E2E8F0" stroke-width="1.5" />
+                        
+                        <!-- Cutter Bar Bottom Bed with Triangular Knives -->
+                        <path d="M290 148 L350 148 L340 158 L285 158 Z" fill="#047857" stroke="#064E3B" stroke-width="1.5" />
+                        <!-- Saw Teeth / Knife Guards on bottom bed -->
+                        <path d="M295 158 L300 164 L305 158 L310 164 L315 158 L320 164 L325 158 L330 164 L335 158 L340 164" stroke="#F59E0B" stroke-width="2" fill="none" stroke-linejoin="round" />
+                    </g>
+
+                    <!-- (F) ROTATING CUTTER REEL (रील जो लगातार घूमती है) -->
+                    <g class="part-cutter-reel" id="harvester-cutter-reel">
+                        <!-- Support Arm -->
+                        <line x1="285" y1="132" x2="320" y2="132" stroke="#64748B" stroke-width="3.5" stroke-linecap="round" />
+                        
+                        <!-- Rotating Reel Spoke Assembly (Spins continuously around center 320, 132) -->
+                        <g class="reel-spin-assembly">
+                            <!-- Center Drive Hub -->
+                            <circle cx="320" cy="132" r="7" fill="#F59E0B" stroke="#B45309" stroke-width="1.5" />
+                            <circle cx="320" cy="132" r="3" fill="#FFFFFF" />
+
+                            <!-- 6 Curved Reel Bat Bars & Spring Tines -->
+                            <g>
+                                <line x1="320" y1="132" x2="344" y2="132" stroke="#FBBF24" stroke-width="2" />
+                                <path d="M344 132 L347 142 L341 144" stroke="#E2E8F0" stroke-width="1.8" fill="none" stroke-linecap="round" />
+                                <circle cx="344" cy="132" r="3" fill="#059669" />
+                            </g>
+                            <g>
+                                <line x1="320" y1="132" x2="332" y2="152" stroke="#FBBF24" stroke-width="2" />
+                                <path d="M332 152 L326 160 L322 154" stroke="#E2E8F0" stroke-width="1.8" fill="none" stroke-linecap="round" />
+                                <circle cx="332" cy="152" r="3" fill="#059669" />
+                            </g>
+                            <g>
+                                <line x1="320" y1="132" x2="308" y2="152" stroke="#FBBF24" stroke-width="2" />
+                                <path d="M308 152 L299 156 L298 149" stroke="#E2E8F0" stroke-width="1.8" fill="none" stroke-linecap="round" />
+                                <circle cx="308" cy="152" r="3" fill="#059669" />
+                            </g>
+                            <g>
+                                <line x1="320" y1="132" x2="296" y2="132" stroke="#FBBF24" stroke-width="2" />
+                                <path d="M296 132 L293 122 L299 120" stroke="#E2E8F0" stroke-width="1.8" fill="none" stroke-linecap="round" />
+                                <circle cx="296" cy="132" r="3" fill="#059669" />
+                            </g>
+                            <g>
+                                <line x1="320" y1="132" x2="308" y2="112" stroke="#FBBF24" stroke-width="2" />
+                                <path d="M308 112 L314 104 L318 110" stroke="#E2E8F0" stroke-width="1.8" fill="none" stroke-linecap="round" />
+                                <circle cx="308" cy="112" r="3" fill="#059669" />
+                            </g>
+                            <g>
+                                <line x1="320" y1="132" x2="332" y2="112" stroke="#FBBF24" stroke-width="2" />
+                                <path d="M332 112 L341 108 L342 115" stroke="#E2E8F0" stroke-width="1.8" fill="none" stroke-linecap="round" />
+                                <circle cx="332" cy="112" r="3" fill="#059669" />
+                            </g>
+
+                            <!-- Outer Reel Circular Guide Ring -->
+                            <circle cx="320" cy="132" r="24" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="8 4" fill="none" opacity="0.8" />
+                        </g>
+                    </g>
+
+                    <!-- (G) REAR STEER WHEEL (Smaller heavy-duty tyre at X:118, Y:152) -->
+                    <g class="part-rear-wheel">
+                        <!-- Mudguard Arch -->
+                        <path d="M96 142 C96 128 140 128 140 142" stroke="#047857" stroke-width="3" fill="none" />
+                        
+                        <!-- Rotating Rear Wheel Group -->
+                        <g class="wheel-spin-rear">
+                            <circle cx="118" cy="152" r="22" fill="#0F172A" stroke="#334155" stroke-width="2" />
+                            <circle cx="118" cy="152" r="20" stroke="#1E293B" stroke-width="4" stroke-dasharray="4 3" fill="none" />
+                            <circle cx="118" cy="152" r="14" fill="url(#rimGrad)" stroke="#B45309" stroke-width="1.5" />
+                            <circle cx="118" cy="152" r="8" fill="#1E293B" />
+                            <circle cx="118" cy="152" r="4" fill="#E2E8F0" />
+                            <circle cx="118" cy="143" r="1.5" fill="#475569" />
+                            <circle cx="127" cy="152" r="1.5" fill="#475569" />
+                            <circle cx="118" cy="161" r="1.5" fill="#475569" />
+                            <circle cx="109" cy="152" r="1.5" fill="#475569" />
+                        </g>
+                    </g>
+
+                    <!-- (H) GIANT FRONT DRIVE TRACTION WHEEL (Front Master Wheel at X:232, Y:145) -->
+                    <g class="part-front-wheel">
+                        <!-- Heavy Green Fender Guard -->
+                        <path d="M198 136 C198 112 266 112 266 136" stroke="#047857" stroke-width="4.5" fill="none" />
+                        
+                        <!-- Rotating Giant Wheel Group -->
+                        <g class="wheel-spin-front">
+                            <circle cx="232" cy="145" r="32" fill="#090D16" stroke="#1E293B" stroke-width="2.5" />
+                            <circle cx="232" cy="145" r="29" stroke="#1E293B" stroke-width="6" stroke-dasharray="6 4" fill="none" />
+                            <circle cx="232" cy="145" r="25" stroke="#334155" stroke-width="2" fill="none" />
+                            <circle cx="232" cy="145" r="20" fill="url(#rimGrad)" stroke="#92400E" stroke-width="2" />
+                            <circle cx="232" cy="145" r="11" fill="#1E293B" stroke="#0F172A" stroke-width="1.5" />
+                            <circle cx="232" cy="145" r="5" fill="#F8FAFC" />
+                            <circle cx="232" cy="138" r="1.8" fill="#FDE68A" />
+                            <circle cx="237" cy="140" r="1.8" fill="#FDE68A" />
+                            <circle cx="239" cy="145" r="1.8" fill="#FDE68A" />
+                            <circle cx="237" cy="150" r="1.8" fill="#FDE68A" />
+                            <circle cx="232" cy="152" r="1.8" fill="#FDE68A" />
+                            <circle cx="227" cy="150" r="1.8" fill="#FDE68A" />
+                            <circle cx="225" cy="145" r="1.8" fill="#FDE68A" />
+                            <circle cx="227" cy="140" r="1.8" fill="#FDE68A" />
+                        </g>
+                    </g>
+
+                </g>
+
+                <!-- 5. Flying Crop Chaff & Golden Sparks -->
+                <g class="harvest-sparks">
+                    <circle cx="340" cy="145" r="2" class="spark s-1" fill="#FDE047" />
+                    <circle cx="330" cy="160" r="2.5" class="spark s-2" fill="#F59E0B" />
+                    <circle cx="355" cy="150" r="1.5" class="spark s-3" fill="#FEF08A" />
+                    <circle cx="325" cy="168" r="2.2" class="spark s-4" fill="#FBBF24" />
+                    <circle cx="310" cy="165" r="1.8" class="spark s-5" fill="#E2E8F0" />
+                </g>
+
+                <!-- 6. Wheat Field Ground Line (Scrolling Golden Crops) -->
+                <g class="ground-field-layer">
+                    <line x1="0" y1="174" x2="420" y2="174" stroke="#059669" stroke-width="2.5" />
+                    <line x1="0" y1="178" x2="420" y2="178" stroke="#064E3B" stroke-width="1.5" opacity="0.6" />
+                    
+                    <!-- Scrolling Wheat Stalks Pattern -->
+                    <g class="scrolling-wheat-track">
+                        @for (item of [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420]; track item) {
+                            <g [attr.transform]="'translate(' + item + ', 0)'">
+                                <path d="M0 174 L3 162 M2 164 L6 161 M1 167 L-2 165" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round" />
+                                <path d="M12 174 L14 158 M13 160 L18 157 M12 164 L9 162" stroke="#10B981" stroke-width="1.5" stroke-linecap="round" />
+                                <path d="M22 174 L25 163 M24 165 L28 162 M23 168 L20 166" stroke="#FBBF24" stroke-width="1.5" stroke-linecap="round" />
+                            </g>
+                        }
+                    </g>
+                </g>
+
+            </svg>
+        </div>
+
     </div>
 </div>
 }

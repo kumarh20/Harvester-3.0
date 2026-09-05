@@ -14,6 +14,13 @@ export const routes: Routes = [
         .then(m => m.AuthPageComponent),
     canActivate: [guestGuard]
   },
+  {
+    path: 'whatsapp-login',
+    loadComponent: () =>
+      import('./features/auth/whatsapp-login.component')
+        .then(m => m.WhatsappLoginComponent),
+    canActivate: [guestGuard]
+  },
 
   // -----------------------------
   // PROTECTED ROUTES (Lazy-Loaded for Minimal Initial Bundle Size)

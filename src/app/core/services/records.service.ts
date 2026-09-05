@@ -31,8 +31,28 @@ export class RecordsService {
   constructor(private firestoreService: FirestoreService) {}
 
   async loadRecords(): Promise<void> {
-    const records = await this.firestoreService.getUserRecords();
-    this.recordsSignal.set(records);
+    this.isLoading.set(true);
+    try {
+      const records = await this.firestoreService.getUserRecords();
+      this.recordsSignal.set(records);
+      try {
+        localStorage.setItem('harvester_records_cache', JSON.stringify(records));
+      } catch {
+        // Ignore cache storage error
+      }
+    } catch (e) {
+      console.warn('Could not load records from Firestore, checking local cache:', e);
+      try {
+        const cached = localStorage.getItem('harvester_records_cache');
+        if (cached) {
+          this.recordsSignal.set(JSON.parse(cached));
+        }
+      } catch {
+        // Ignore JSON parse error
+      }
+    } finally {
+      this.isLoading.set(false);
+    }
   }
   
 

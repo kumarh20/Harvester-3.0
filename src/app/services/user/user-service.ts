@@ -34,20 +34,38 @@ export class UserService {
   }
 
   /**
-   * Load and cache user profile in the reactive signal
+   * Load and cache user profile in the reactive signal, supporting cross-auth method linking
    */
-  async loadUserProfile(uid: string): Promise<UserProfileData | null> {
+  async loadUserProfile(uid: string, fallbackPhone?: string): Promise<UserProfileData | null> {
     try {
       // Check local cache first for instant display
-      const localCachedPhoto = localStorage.getItem(`user_photo_${uid}`);
-      const localCachedName = localStorage.getItem(`user_name_${uid}`);
+      const localCachedPhoto = localStorage.getItem(`user_photo_${uid}`) || (fallbackPhone ? localStorage.getItem(`user_photo_phone_${fallbackPhone}`) : null);
+      const localCachedName = localStorage.getItem(`user_name_${uid}`) || (fallbackPhone ? localStorage.getItem(`user_name_phone_${fallbackPhone}`) : null);
 
-      const data = await this.getUser(uid);
+      let data = await this.getUser(uid);
+
+      // If document not found for this specific UID, look up by phone
+      const cleanPhone = (fallbackPhone || (uid.startsWith('phone_') ? uid.replace('phone_', '') : '')).replace(/\D/g, '').slice(-10);
+      if (!data && cleanPhone.length === 10) {
+        // Try direct phone doc ID
+        const phoneDocId = `phone_${cleanPhone}`;
+        if (phoneDocId !== uid) {
+          data = await this.getUser(phoneDocId);
+        }
+        // Try querying users collection where phone == cleanPhone
+        if (!data) {
+          const userSnap = await this.getUserByPhone(cleanPhone);
+          if (userSnap?.uid) {
+            data = await this.getUser(userSnap.uid);
+          }
+        }
+      }
+
       if (data) {
         const profile: UserProfileData = {
           uid,
           name: data.name || localCachedName || 'Operator',
-          phone: data.phone || '',
+          phone: data.phone || cleanPhone || '',
           businessName: data.businessName || '',
           photoURL: data.photoURL || localCachedPhoto || ''
         };
@@ -60,12 +78,27 @@ export class UserService {
         }
 
         this.userProfile.set(profile);
+
+        // Ensure this user's primary doc is synchronized if it didn't exist
+        try {
+          const mainRef = doc(this.firestore, `users/${uid}`);
+          await setDoc(mainRef, {
+            uid,
+            name: profile.name,
+            phone: profile.phone,
+            ...(profile.businessName ? { businessName: profile.businessName } : {}),
+            ...(profile.photoURL ? { photoURL: profile.photoURL } : {})
+          }, { merge: true });
+        } catch {
+          // Ignore sync write error
+        }
+
         return profile;
       } else if (localCachedName || localCachedPhoto) {
         const fallback: UserProfileData = {
           uid,
           name: localCachedName || 'Operator',
-          phone: '',
+          phone: cleanPhone || '',
           photoURL: localCachedPhoto || ''
         };
         this.userProfile.set(fallback);
