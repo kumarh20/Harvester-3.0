@@ -3,13 +3,13 @@
 // ==========================================
 .add-new-container {
   min-height: 100%;
-  padding: 16px;
+  padding: 10px 12px;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
 
   @media (min-width: 768px) {
-    padding: 24px 32px;
+    padding: 20px 28px;
   }
 }
 
@@ -18,66 +18,81 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
+
+  @media (min-width: 640px) {
+    gap: 14px;
+  }
 }
 
-// 1. Header Card
+// 1. Header Card (Thin, Sleek & Compact)
 .form-header-card {
   background: linear-gradient(145deg, #447A44 0%, #356335 100%);
   color: #FFFFFF;
-  border-radius: 20px;
-  padding: 20px 24px;
+  border-radius: 12px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  box-shadow: 0 6px 20px -2px rgba(68, 122, 68, 0.3);
+  gap: 10px;
+  box-shadow: 0 2px 6px -1px rgba(68, 122, 68, 0.22);
 
   [data-theme="dark"] & {
     background: linear-gradient(145deg, #2E562F 0%, #1A351C 100%);
-    box-shadow: 0 6px 22px -2px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.45);
+  }
+
+  @media (min-width: 640px) {
+    padding: 10px 16px;
+    border-radius: 14px;
+    gap: 12px;
   }
 }
 
 .form-header-badge {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.2);
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 
   mat-icon {
-    font-size: 28px;
-    width: 28px;
-    height: 28px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
     color: #FFFFFF;
+  }
+
+  @media (min-width: 640px) {
+    width: 32px;
+    height: 32px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
   }
 }
 
 .form-header-text {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
 
   .form-main-title {
-    font-size: 20px;
-    font-weight: 800;
+    font-size: 14.5px;
+    font-weight: 700;
     margin: 0;
-    letter-spacing: -0.3px;
+    line-height: 1.2;
+    letter-spacing: -0.2px;
     color: #FFFFFF;
 
     @media (min-width: 640px) {
-      font-size: 22px;
+      font-size: 16.5px;
     }
-  }
-
-  .form-main-subtitle {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.88);
-    margin: 0;
   }
 }
 
@@ -85,12 +100,13 @@
 .form-body-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 20px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 14px 12px;
   box-shadow: 0 4px 16px -2px rgba(35, 65, 38, 0.05);
 
   @media (min-width: 640px) {
-    padding: 28px;
+    border-radius: 20px;
+    padding: 24px 28px;
   }
 }
 

@@ -1,14 +1,13 @@
 <div class="add-new-container" id="add-new-form-view">
     <div class="form-card-container">
         
-        <!-- Form Header Card -->
+        <!-- Form Header Card (Thin & Compact) -->
         <div class="form-header-card" id="form-header-card">
             <div class="form-header-badge">
                 <mat-icon>{{ isEditMode() ? 'edit_note' : 'add_task' }}</mat-icon>
             </div>
             <div class="form-header-text">
                 <h1 class="form-main-title">{{ formTitle() }}</h1>
-                <p class="form-main-subtitle">{{ translationService.get('form.farmerInfo') }}</p>
             </div>
         </div>
 

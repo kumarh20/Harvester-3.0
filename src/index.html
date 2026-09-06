@@ -2,15 +2,20 @@
 <html lang="en">
 
 <head>
-  <meta name="theme-color" content="#059669">
+    <meta name="theme-color" content="#447A44">
     <meta charset="utf-8">
     <title>Harvester Cutting Tracker</title>
     <meta property="og:title" content="Harvester Cutting Tracker">
     <meta name="description" content="A web application for tracking harvester cutting operations, farmer records, acreage, rates, and payments.">
     <meta property="og:description" content="A web application for tracking harvester cutting operations, farmer records, acreage, rates, and payments.">
     <base href="/">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="assets/icons/harvester.svg">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Harvester">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -19,6 +24,13 @@
 
 <body>
     <app-root></app-root>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
 </body>
 
 </html>
