@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, signal, computed, effect, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,12 +6,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatGridListModule } from '@angular/material/grid-list';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RecordsService, Record } from '../../core/services/records.service';
 import { SeasonService } from '../../core/services/season.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
 import { DashboardSkeletonComponent } from '../../shared/components/skeleton/dashboard-skeleton/dashboard-skeleton.component';
+import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
 
 export type DashboardDateFilter = 'all' | 'today' | 'yesterday' | 'week' | 'month' | 'custom' | 'dueToday';
 export type ChartMetricMode = 'revenue' | 'acres';
@@ -115,6 +117,7 @@ export class DashboardComponent implements OnInit {
   // Dual Filter State (Identical to Records screen)
   selectedDateFilter = signal<DashboardDateFilter>('all');
   selectedSeasonFilter = signal<string>('all');
+  private userManuallySelectedSeason = false;
   isDateFilterOpen = signal<boolean>(false);
   isSeasonFilterOpen = signal<boolean>(false);
 
@@ -623,9 +626,59 @@ export class DashboardComponent implements OnInit {
     public notificationService: NotificationService,
     public translationService: TranslationService,
     private languageService: LanguageService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {
     this.updatePeriodCounts();
+
+    // Default season synchronization from Settings
+    effect(() => {
+      const defSeason = this.seasonService.defaultSeason();
+      if (!this.userManuallySelectedSeason && defSeason && defSeason.id) {
+        this.selectedSeasonFilter.set(defSeason.id);
+      }
+    });
+  }
+
+  openCustomDateDialog(type: 'single' | 'start' | 'end'): void {
+    const currentVal = type === 'single' ? this.customSingleDate() : type === 'start' ? this.customStartDate() : this.customEndDate();
+    let initialDateVal = new Date();
+    if (currentVal) {
+      const parsed = this.parseDate(currentVal);
+      if (parsed) initialDateVal = parsed;
+    }
+
+    const dialogRef = this.dialog.open(DateTimePickerDialogComponent, {
+      panelClass: 'kendo-dtp-dialog-panel',
+      data: {
+        initialDate: initialDateVal,
+        mode: 'date',
+        title: this.translationService.get('records.filterByDate') || 'तारीख अनुसार फ़िल्टर'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result: DateTimePickerResult | null) => {
+      if (result && result.date) {
+        const formatted = this.formatDateForInput(result.date);
+        if (type === 'single') {
+          this.customSingleDate.set(formatted);
+        } else if (type === 'start') {
+          this.customStartDate.set(formatted);
+        } else if (type === 'end') {
+          this.customEndDate.set(formatted);
+        }
+      }
+    });
+  }
+
+  formatDateDisplay(dateStr: string): string {
+    if (!dateStr) return '';
+    const parsed = this.parseDate(dateStr);
+    if (!parsed) return dateStr;
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    const yyyy = parsed.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
   }
 
   async ngOnInit(): Promise<void> {
@@ -710,6 +763,7 @@ export class DashboardComponent implements OnInit {
   }
 
   selectSeasonOption(seasonId: string): void {
+    this.userManuallySelectedSeason = true;
     this.selectedSeasonFilter.set(seasonId);
     this.isSeasonFilterOpen.set(false);
     this.activeBar.set(null);
@@ -717,8 +771,10 @@ export class DashboardComponent implements OnInit {
   }
 
   resetAllFilters(): void {
+    this.userManuallySelectedSeason = false;
     this.selectedDateFilter.set('all');
-    this.selectedSeasonFilter.set('all');
+    const defSeason = this.seasonService.defaultSeason();
+    this.selectedSeasonFilter.set(defSeason?.id || 'all');
     this.customStartDate.set('');
     this.customEndDate.set('');
     this.isDateFilterOpen.set(false);

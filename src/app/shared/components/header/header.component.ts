@@ -7,6 +7,7 @@ import { filter } from 'rxjs/operators';
 import { Auth, onAuthStateChanged, signOut, User } from '@angular/fire/auth';
 import { TranslationService } from '../../services/translation.service';
 import { LanguageService } from '../../services/language.service';
+import { ThemeService } from '../../services/theme.service';
 import { UserService } from '../../../services/user/user-service';
 import { AuthService } from '../../../services/auth/auth-service';
 import { ToastService } from '../../services/toast.service';
@@ -29,6 +30,7 @@ export class HeaderComponent implements OnInit {
   // Services
   public translationService = inject(TranslationService);
   private languageService = inject(LanguageService);
+  public themeService = inject(ThemeService);
   private auth = inject(Auth);
   private authService = inject(AuthService);
   private ngZone = inject(NgZone);
@@ -38,6 +40,9 @@ export class HeaderComponent implements OnInit {
   private router = inject(Router);
   private elementRef = inject(ElementRef);
   private cdr = inject(ChangeDetectorRef);
+
+  // Theme signal
+  isDarkMode = computed(() => this.themeService.isDarkMode());
 
   // Auth and profile signals
   currentUser = signal<User | null>(null);
@@ -137,7 +142,7 @@ export class HeaderComponent implements OnInit {
   }
 
   onThemeToggle(): void {
-    this.themeToggle.emit();
+    this.themeService.toggleTheme();
   }
 
   onLanguageToggle(): void {

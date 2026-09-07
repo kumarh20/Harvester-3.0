@@ -10,6 +10,7 @@ import { RecordsService } from './core/services/records.service';
 import { NotificationService } from './core/services/notification.service';
 import { TranslationService } from './shared/services/translation.service';
 import { LanguageService } from './shared/services/language.service';
+import { ThemeService } from './shared/services/theme.service';
 import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { IdleService } from './core/services/idle-service';
 
@@ -55,6 +56,7 @@ export class App implements OnInit {
     private notificationService: NotificationService,
     public translationService: TranslationService,
     private languageService: LanguageService,
+    public themeService: ThemeService,
     private idleService: IdleService,
     private ngZone: NgZone
   ) {
@@ -66,8 +68,6 @@ export class App implements OnInit {
           this.recordsService.isKisanDetailPageOpen.set(false);
         }
       });
-
-    this.initializeTheme();
 
     // Always land on Dashboard
     if (this.router.url === '/' || this.router.url === '') {
@@ -135,25 +135,7 @@ export class App implements OnInit {
   }
 
   toggleTheme(): void {
-    this.isDarkTheme.set(!this.isDarkTheme());
-    const htmlElement = document.documentElement;
-
-    if (this.isDarkTheme()) {
-      htmlElement.setAttribute('data-theme', 'dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      htmlElement.removeAttribute('data-theme');
-      localStorage.setItem('theme', 'light');
-    }
-  }
-
-  private initializeTheme(): void {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    this.isDarkTheme.set(savedTheme === 'dark');
-
-    if (savedTheme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
+    this.themeService.toggleTheme();
   }
 
   /**

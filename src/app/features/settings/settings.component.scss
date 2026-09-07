@@ -1408,7 +1408,7 @@
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        padding: 5px 8px;
+        padding: 5px 9px;
         border-radius: 7px;
         border: none;
         background: transparent;
@@ -1416,23 +1416,39 @@
         font-weight: 600;
         color: #475569;
         cursor: pointer;
-        transition: all 0.15s ease;
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         -webkit-tap-highlight-color: transparent;
+
+        &:hover:not(.active) {
+            background: rgba(0, 0, 0, 0.04);
+            color: #1E293B;
+        }
 
         &.active {
             background: #FFFFFF;
             color: #059669;
             font-weight: 800;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            transform: scale(1.02);
 
             [data-theme="dark"] & {
                 background: #059669;
                 color: #FFFFFF;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
             }
+        }
+
+        &:active {
+            transform: scale(0.96);
         }
 
         [data-theme="dark"] & {
             color: #94A3B8;
+
+            &:hover:not(.active) {
+                background: rgba(255, 255, 255, 0.06);
+                color: #F8FAFC;
+            }
         }
 
         mat-icon {

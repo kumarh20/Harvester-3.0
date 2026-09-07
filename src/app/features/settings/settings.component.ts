@@ -13,6 +13,7 @@ import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import { DialogService } from '../../shared/services/dialog.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
+import { ThemeService } from '../../shared/services/theme.service';
 import { AuthService } from '../../services/auth/auth-service';
 import { UserService } from '../../services/user/user-service';
 import { HarvesterService } from '../../core/services/harvester.service';
@@ -70,7 +71,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   isUploadingPhoto = signal<boolean>(false);
 
   // Theme preference signal
-  isDarkMode = signal(false);
+  isDarkMode = computed(() => this.themeService.isDarkMode());
 
   // Language preference signal - computed from LanguageService
   language = computed(() => this.languageService.getCurrentLanguage());
@@ -118,6 +119,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private matDialog: MatDialog,
     public translationService: TranslationService,
     private languageService: LanguageService,
+    public themeService: ThemeService,
     private authService: AuthService,
     private userService: UserService,
     private auth: Auth,
@@ -269,9 +271,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
    * Load settings from localStorage
    */
   private loadSettings(): void {
-    const theme = localStorage.getItem('theme') || 'light';
-    this.isDarkMode.set(theme === 'dark');
-
     const notifications = localStorage.getItem('notifications');
     this.notificationsEnabled.set(notifications !== 'false');
 
@@ -333,14 +332,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
    * Toggle dark/light mode
    */
   onThemeToggle(value: boolean): void {
-    this.isDarkMode.set(value);
-    const theme = value ? 'dark' : 'light';
-    localStorage.setItem('theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
+    this.themeService.setDarkMode(value);
   }
 
   setThemeMode(dark: boolean): void {
-    this.onThemeToggle(dark);
+    this.themeService.setDarkMode(dark);
   }
 
   /**

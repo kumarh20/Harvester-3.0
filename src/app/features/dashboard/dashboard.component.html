@@ -97,48 +97,6 @@
         </div>
       }
 
-      <!-- Financial Overview Banner (2 Modern Hero Cards) -->
-      <div class="financial-hero-grid" id="dashboard-financial-cards">
-        <!-- Revenue Card -->
-        <div class="financial-card revenue-card" id="card-total-billing">
-          <div class="financial-card-glow revenue-glow"></div>
-          <div class="financial-card-top">
-            <div class="financial-icon-badge revenue-badge">
-              <mat-icon>payments</mat-icon>
-            </div>
-            <span class="card-metric-label">{{ translationService.get('dashboard.totalAmount') }}</span>
-          </div>
-          <div class="financial-card-body">
-            <div class="financial-main-amount">{{ formatCurrency(stats().totalPayment) }}</div>
-            <div class="financial-sub-badge">
-              <mat-icon>eco</mat-icon>
-              <span>{{ formatNumber(stats().totalLand) }} {{ translationService.get('dashboard.acresHarvested') }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pending Collections Card -->
-        <div 
-          class="financial-card pending-card" 
-          [class.has-pending]="stats().totalPending > 0"
-          id="card-pending-collections">
-          <div class="financial-card-glow pending-glow"></div>
-          <div class="financial-card-top">
-            <div class="financial-icon-badge pending-badge">
-              <mat-icon>{{ stats().totalPending > 0 ? 'pending_actions' : 'check_circle' }}</mat-icon>
-            </div>
-            <span class="card-metric-label">{{ translationService.get('dashboard.pendingAmount') }}</span>
-          </div>
-          <div class="financial-card-body">
-            <div class="financial-main-amount">{{ formatCurrency(stats().totalPending) }}</div>
-            <div class="financial-sub-badge" [class.alert-badge]="stats().totalPending > 0">
-              <mat-icon>{{ stats().totalPending > 0 ? 'hourglass_top' : 'verified' }}</mat-icon>
-              <span>{{ stats().totalPending > 0 ? translationService.get('dashboard.outstandingDue') : translationService.get('dashboard.allDuesCleared') }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Date & Season Dual Filters in One Single Row (Matching Records Page) -->
       <div class="records-filter-bar-row" id="dashboard-filter-bar-row">
         <!-- Date Filter Dropdown -->
@@ -309,25 +267,17 @@
 
           @if (customMode() === 'single') {
             <div class="single-picker-row">
-              <div class="date-input-wrap">
+              <div class="date-input-wrap" (click)="openCustomDateDialog('single')" style="cursor: pointer;">
                 <mat-icon class="date-wrap-icon">calendar_today</mat-icon>
                 <input 
-                  type="date" 
+                  type="text" 
                   class="styled-date-input" 
-                  [ngModel]="customSingleDate()"
-                  (ngModelChange)="customSingleDate.set($event)"
+                  [value]="formatDateDisplay(customSingleDate())"
+                  placeholder="DD-MM-YYYY"
+                  readonly
+                  style="cursor: pointer;"
                   id="dash-custom-single-date-field" />
-              </div>
-              <div class="single-quick-steppers">
-                <button type="button" class="stepper-arrow-btn" (click)="shiftCustomSingleDate(-1)" title="Previous day">
-                  <mat-icon>chevron_left</mat-icon>
-                </button>
-                <button type="button" class="stepper-today-btn" (click)="setCustomSingleDateToday()">
-                  {{ translationService.get('records.today') || 'आज' }}
-                </button>
-                <button type="button" class="stepper-arrow-btn" (click)="shiftCustomSingleDate(1)" title="Next day">
-                  <mat-icon>chevron_right</mat-icon>
-                </button>
+                <mat-icon class="date-wrap-icon" style="margin-left: auto;">event</mat-icon>
               </div>
             </div>
           }
@@ -336,26 +286,30 @@
             <div class="range-picker-row">
               <div class="range-date-col">
                 <label for="dash-custom-start-date" class="date-col-label">{{ translationService.get('records.fromDate') || 'प्रारंभ तारीख' }}</label>
-                <div class="date-input-wrap">
+                <div class="date-input-wrap" (click)="openCustomDateDialog('start')" style="cursor: pointer;">
                   <mat-icon class="date-wrap-icon">event</mat-icon>
                   <input 
-                    type="date" 
+                    type="text" 
                     id="dash-custom-start-date"
                     class="styled-date-input" 
-                    [ngModel]="customStartDate()"
-                    (ngModelChange)="customStartDate.set($event)" />
+                    [value]="formatDateDisplay(customStartDate())"
+                    placeholder="DD-MM-YYYY"
+                    readonly
+                    style="cursor: pointer;" />
                 </div>
               </div>
               <div class="range-date-col">
                 <label for="dash-custom-end-date" class="date-col-label">{{ translationService.get('records.toDate') || 'अंतिम तारीख' }}</label>
-                <div class="date-input-wrap">
+                <div class="date-input-wrap" (click)="openCustomDateDialog('end')" style="cursor: pointer;">
                   <mat-icon class="date-wrap-icon">event_available</mat-icon>
                   <input 
-                    type="date" 
+                    type="text" 
                     id="dash-custom-end-date"
                     class="styled-date-input" 
-                    [ngModel]="customEndDate()"
-                    (ngModelChange)="customEndDate.set($event)" />
+                    [value]="formatDateDisplay(customEndDate())"
+                    placeholder="DD-MM-YYYY"
+                    readonly
+                    style="cursor: pointer;" />
                 </div>
               </div>
               @if (customStartDate() || customEndDate()) {
@@ -392,6 +346,48 @@
           </button>
         </div>
       }
+
+      <!-- Financial Overview Banner (2 Modern Hero Cards) -->
+      <div class="financial-hero-grid" id="dashboard-financial-cards">
+        <!-- Revenue Card -->
+        <div class="financial-card revenue-card" id="card-total-billing">
+          <div class="financial-card-glow revenue-glow"></div>
+          <div class="financial-card-top">
+            <div class="financial-icon-badge revenue-badge">
+              <mat-icon>payments</mat-icon>
+            </div>
+            <span class="card-metric-label">{{ translationService.get('dashboard.totalAmount') }}</span>
+          </div>
+          <div class="financial-card-body">
+            <div class="financial-main-amount">{{ formatCurrency(stats().totalPayment) }}</div>
+            <div class="financial-sub-badge">
+              <mat-icon>eco</mat-icon>
+              <span>{{ formatNumber(stats().totalLand) }} {{ translationService.get('dashboard.acresHarvested') }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pending Collections Card -->
+        <div 
+          class="financial-card pending-card" 
+          [class.has-pending]="stats().totalPending > 0"
+          id="card-pending-collections">
+          <div class="financial-card-glow pending-glow"></div>
+          <div class="financial-card-top">
+            <div class="financial-icon-badge pending-badge">
+              <mat-icon>{{ stats().totalPending > 0 ? 'pending_actions' : 'check_circle' }}</mat-icon>
+            </div>
+            <span class="card-metric-label">{{ translationService.get('dashboard.pendingAmount') }}</span>
+          </div>
+          <div class="financial-card-body">
+            <div class="financial-main-amount">{{ formatCurrency(stats().totalPending) }}</div>
+            <div class="financial-sub-badge" [class.alert-badge]="stats().totalPending > 0">
+              <mat-icon>{{ stats().totalPending > 0 ? 'hourglass_top' : 'verified' }}</mat-icon>
+              <span>{{ stats().totalPending > 0 ? translationService.get('dashboard.outstandingDue') : translationService.get('dashboard.allDuesCleared') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- ============================================================== -->
       <!-- 📊 MODERN ANDROID ANALYTICS & CHARTS SUITE                    -->

@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatDialog } from '@angular/material/dialog';
 import { RecordsService } from '../../core/services/records.service';
 import { RemindersService, Reminder } from '../../core/services/reminders.service';
 import { HarvesterService } from '../../core/services/harvester.service';
@@ -20,6 +21,7 @@ import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
 import { UiPreferencesService, DefaultRecordFilterSetting } from '../../core/services/ui-preferences.service';
 import { RecordSkeletonComponent } from '../../shared/components/skeleton/record-skeleton/record-skeleton.component';
+import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
 
 export type RecordDateFilterOption = 'today' | 'yesterday' | 'week' | 'month' | 'custom' | 'all' | 'dueToday';
 
@@ -86,6 +88,7 @@ export class RecordsComponent implements OnInit, OnDestroy {
 
   // Season Filtering State (default 'all')
   selectedSeasonFilter = signal<string>('all');
+  private userManuallySelectedSeason = false;
 
   // Filter Dropdown Open State
   isDateFilterOpen = signal<boolean>(false);
@@ -105,12 +108,62 @@ export class RecordsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     public translationService: TranslationService,
     private languageService: LanguageService,
-    private uiPreferencesService: UiPreferencesService
+    private uiPreferencesService: UiPreferencesService,
+    private dialog: MatDialog
   ) {
     effect(() => {
       const isFarmerDetailOpen = !!this.selectedFarmer();
       this.recordsService.isKisanDetailPageOpen.set(isFarmerDetailOpen);
     });
+
+    // Default season synchronization from Settings
+    effect(() => {
+      const defSeason = this.seasonService.defaultSeason();
+      if (!this.userManuallySelectedSeason && defSeason && defSeason.id) {
+        this.selectedSeasonFilter.set(defSeason.id);
+      }
+    });
+  }
+
+  openCustomDateDialog(type: 'single' | 'start' | 'end'): void {
+    const currentVal = type === 'single' ? this.customSingleDate() : type === 'start' ? this.customStartDate() : this.customEndDate();
+    let initialDateVal = new Date();
+    if (currentVal) {
+      const parsed = this.parseDate(currentVal);
+      if (parsed) initialDateVal = parsed;
+    }
+
+    const dialogRef = this.dialog.open(DateTimePickerDialogComponent, {
+      panelClass: 'kendo-dtp-dialog-panel',
+      data: {
+        initialDate: initialDateVal,
+        mode: 'date',
+        title: this.translationService.get('records.filterByDate') || 'तारीख अनुसार फ़िल्टर'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result: DateTimePickerResult | null) => {
+      if (result && result.date) {
+        const formatted = this.formatDateForInput(result.date);
+        if (type === 'single') {
+          this.customSingleDate.set(formatted);
+        } else if (type === 'start') {
+          this.customStartDate.set(formatted);
+        } else if (type === 'end') {
+          this.customEndDate.set(formatted);
+        }
+      }
+    });
+  }
+
+  formatDateDisplay(dateStr: string): string {
+    if (!dateStr) return '';
+    const parsed = this.parseDate(dateStr);
+    if (!parsed) return dateStr;
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    const yyyy = parsed.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
   }
 
   ngOnDestroy(): void {
@@ -223,6 +276,7 @@ export class RecordsComponent implements OnInit, OnDestroy {
   }
 
   setSeasonFilter(seasonId: string): void {
+    this.userManuallySelectedSeason = true;
     this.selectedSeasonFilter.set(seasonId);
   }
 

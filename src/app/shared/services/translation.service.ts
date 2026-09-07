@@ -286,6 +286,7 @@ export interface Translations {
     resetButton: string;
     logout: string;
     logoutDesc: string;
+    aboutApp: string;
     systemVersion: string;
     defaultRecordFilter?: string;
     defaultRecordFilterDesc?: string;
@@ -820,6 +821,7 @@ const HINDI_TRANSLATIONS: Translations = {
     resetButton: 'रीसेट करें',
     logout: 'लॉगआउट',
     logoutDesc: 'खाते से सुरक्षित बाहर निकलें',
+    aboutApp: 'ऐप जानकारी',
     systemVersion: 'संस्करण'
   },
   more: {
@@ -1326,6 +1328,7 @@ const ENGLISH_TRANSLATIONS: Translations = {
     resetButton: 'Reset to Defaults',
     logout: 'Log Out',
     logoutDesc: 'Sign out of your account securely',
+    aboutApp: 'About App',
     systemVersion: 'Version'
   },
   more: {

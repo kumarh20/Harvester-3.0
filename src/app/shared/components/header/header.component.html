@@ -36,17 +36,19 @@
                     <span class="language-code">{{ getCurrentLanguage() === 'hi' ? 'हि' : 'EN' }}</span>
                 </button>
 
-                <!-- 3D Neomorphic Theme Toggle -->
+                <!-- 3D Neomorphic Theme Toggle (Daylight & Dark Mode with Smooth Physics Animation) -->
                 <button 
                     type="button"
                     id="header-theme-toggle-btn"
                     class="theme-toggle-3d" 
+                    [class.is-dark]="isDarkMode()"
                     (click)="onThemeToggle()" 
+                    [title]="isDarkMode() ? 'Switch to Daylight / Light Mode' : 'Switch to Dark Mode'"
                     aria-label="Toggle dark and light theme">
-                    <div class="toggle-track">
-                        <div class="toggle-thumb">
-                            <!-- Sun Icon -->
-                            <svg class="theme-icon light-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <div class="toggle-track" [class.dark-track]="isDarkMode()">
+                        <div class="toggle-thumb" [class.dark-thumb]="isDarkMode()">
+                            <!-- Sun Icon (Daylight) -->
+                            <svg class="theme-icon light-icon" [class.active-icon]="!isDarkMode()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="5"></circle>
                                 <line x1="12" y1="1" x2="12" y2="3"></line>
                                 <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -57,8 +59,8 @@
                                 <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                             </svg>
-                            <!-- Moon Icon -->
-                            <svg class="theme-icon dark-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                            <!-- Moon Icon (Night) -->
+                            <svg class="theme-icon dark-icon" [class.active-icon]="isDarkMode()" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
                                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                             </svg>
                         </div>

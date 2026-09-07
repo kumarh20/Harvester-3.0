@@ -513,25 +513,17 @@
 
                         @if (customMode() === 'single') {
                             <div class="single-picker-row">
-                                <div class="date-input-wrap">
+                                <div class="date-input-wrap" (click)="openCustomDateDialog('single')" style="cursor: pointer;">
                                     <mat-icon class="date-wrap-icon">calendar_today</mat-icon>
                                     <input 
-                                        type="date" 
+                                        type="text" 
                                         class="styled-date-input" 
-                                        [ngModel]="customSingleDate()"
-                                        (ngModelChange)="customSingleDate.set($event)"
+                                        [value]="formatDateDisplay(customSingleDate())"
+                                        placeholder="DD-MM-YYYY"
+                                        readonly
+                                        style="cursor: pointer;"
                                         id="custom-single-date-field" />
-                                </div>
-                                <div class="single-quick-steppers">
-                                    <button type="button" class="stepper-arrow-btn" (click)="shiftCustomSingleDate(-1)" title="Previous day">
-                                        <mat-icon>chevron_left</mat-icon>
-                                    </button>
-                                    <button type="button" class="stepper-today-btn" (click)="setCustomSingleDateToday()">
-                                        {{ translationService.get('records.today') }}
-                                    </button>
-                                    <button type="button" class="stepper-arrow-btn" (click)="shiftCustomSingleDate(1)" title="Next day">
-                                        <mat-icon>chevron_right</mat-icon>
-                                    </button>
+                                    <mat-icon class="date-wrap-icon" style="margin-left: auto;">event</mat-icon>
                                 </div>
                             </div>
                         }
@@ -540,26 +532,30 @@
                             <div class="range-picker-row">
                                 <div class="range-date-col">
                                     <label for="custom-start-date" class="date-col-label">{{ translationService.get('records.fromDate') }}</label>
-                                    <div class="date-input-wrap">
+                                    <div class="date-input-wrap" (click)="openCustomDateDialog('start')" style="cursor: pointer;">
                                         <mat-icon class="date-wrap-icon">event</mat-icon>
                                         <input 
-                                            type="date" 
+                                            type="text" 
                                             id="custom-start-date"
                                             class="styled-date-input" 
-                                            [ngModel]="customStartDate()"
-                                            (ngModelChange)="customStartDate.set($event)" />
+                                            [value]="formatDateDisplay(customStartDate())"
+                                            placeholder="DD-MM-YYYY"
+                                            readonly
+                                            style="cursor: pointer;" />
                                     </div>
                                 </div>
                                 <div class="range-date-col">
                                     <label for="custom-end-date" class="date-col-label">{{ translationService.get('records.toDate') }}</label>
-                                    <div class="date-input-wrap">
+                                    <div class="date-input-wrap" (click)="openCustomDateDialog('end')" style="cursor: pointer;">
                                         <mat-icon class="date-wrap-icon">event_available</mat-icon>
                                         <input 
-                                            type="date" 
+                                            type="text" 
                                             id="custom-end-date"
                                             class="styled-date-input" 
-                                            [ngModel]="customEndDate()"
-                                            (ngModelChange)="customEndDate.set($event)" />
+                                            [value]="formatDateDisplay(customEndDate())"
+                                            placeholder="DD-MM-YYYY"
+                                            readonly
+                                            style="cursor: pointer;" />
                                     </div>
                                 </div>
                                 @if (customStartDate() || customEndDate()) {
