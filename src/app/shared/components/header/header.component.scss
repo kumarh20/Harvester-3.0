@@ -26,11 +26,11 @@
     padding-top: env(safe-area-inset-top);
     display: flex;
     align-items: center;
-    background-color: #356335;
+    background-color: #2e562f;
     transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 
     // Rich Organic Avocado Forest Glassmorphism (matching image.png)
-    background: linear-gradient(135deg, rgba(46, 86, 47, 0.96) 0%, rgba(53, 99, 53, 0.97) 50%, rgba(35, 66, 36, 0.98) 100%);
+    background: linear-gradient(135deg, rgba(46, 86, 47, 1) 0%, rgba(53, 99, 53, 0.97) 50%, rgba(35, 66, 36, 0.98) 100%);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
