@@ -1,0 +1,89 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and settings",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "businessName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "defaultHarvester": { "type": "string" },
+        "harvesters": { "type": "array" },
+        "reminders": { "type": "array" },
+        "seasons": { "type": "array" },
+        "defaultSeasonId": { "type": "string" }
+      }
+    },
+    "Record": {
+      "title": "Record",
+      "description": "Harvester cutting record for a farmer",
+      "type": "object",
+      "properties": {
+        "farmerName": { "type": "string" },
+        "contactNumber": { "type": "string" },
+        "date": { "type": "string" },
+        "landInAcres": { "type": "number" },
+        "ratePerAcre": { "type": "number" },
+        "totalPayment": { "type": "number" },
+        "paidOnSight": { "type": "number" },
+        "pendingAmount": { "type": "number" },
+        "seasonId": { "type": "string" },
+        "uid": { "type": "string" }
+      }
+    },
+    "Season": {
+      "title": "Season",
+      "description": "Harvesting season entity with start/end months, year, and default status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "startMonth": { "type": "number" },
+        "endMonth": { "type": "number" },
+        "year": { "type": "number" },
+        "isDefault": { "type": "boolean" },
+        "uid": { "type": "string" }
+      }
+    },
+    "Reminder": {
+      "title": "Reminder",
+      "description": "Scheduled cutting booking or reminder",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "farmerName": { "type": "string" },
+        "contactNumber": { "type": "string" },
+        "scheduledDate": { "type": "string" },
+        "scheduledTime": { "type": "string" },
+        "landInAcres": { "type": "number" },
+        "ratePerAcre": { "type": "number" },
+        "estimatedTotal": { "type": "number" },
+        "harvester": { "type": "string" },
+        "notes": { "type": "string" },
+        "status": { "type": "string" },
+        "uid": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile data, harvester settings, and synchronized reminder fallbacks"
+    },
+    "/records/{recordId}": {
+      "schema": "Record",
+      "description": "Farmer cutting records"
+    },
+    "/reminders/{reminderId}": {
+      "schema": "Reminder",
+      "description": "Farmer scheduled cutting bookings and reminders"
+    },
+    "/seasons/{seasonId}": {
+      "schema": "Season",
+      "description": "Harvesting seasons configured by the operator"
+    }
+  }
+}

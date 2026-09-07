@@ -10,45 +10,51 @@
       
       <!-- Top Android Material 3 Hero Header -->
       <div class="dashboard-hero-header" id="dashboard-hero-header">
-        <div class="hero-header-text">
-          <div class="welcome-badge">
-            <span class="pulse-dot"></span>
-            <span>{{ translationService.get('dashboard.activeOperations') }}</span>
+        <!-- Top Section: Title, Status Indicator, and Quick Refresh -->
+        <div class="hero-top-bar">
+          <div class="hero-header-text">
+            <div class="hero-title-group">
+              <h1 class="hero-title">{{ translationService.get('dashboard.title') }}</h1>
+              <div class="welcome-badge">
+                <span class="pulse-dot"></span>
+                <span>{{ translationService.get('dashboard.activeOperations') }}</span>
+              </div>
+            </div>
+            <p class="hero-subtitle">{{ translationService.get('dashboard.subtitle') }}</p>
           </div>
-          <h1 class="hero-title">{{ translationService.get('dashboard.title') }}</h1>
-          <p class="hero-subtitle">{{ translationService.get('dashboard.subtitle') }}</p>
-        </div>
 
-        <!-- Android Quick Action Chips / Floating Bar -->
-        <div class="hero-header-actions" id="dashboard-action-chips">
-          <button 
-            type="button"
-            id="dashboard-measure-land-btn" 
-            class="action-chip-pill emerald-chip" 
-            (click)="goToLandMeasure()"
-            aria-label="Measure field on GPS or map">
-            <mat-icon>straighten</mat-icon>
-            <span>{{ translationService.get('dashboard.measureField') }}</span>
-          </button>
-
-          <button 
-            type="button"
-            id="dashboard-quick-add-btn" 
-            class="action-chip-pill primary-chip" 
-            (click)="goToAddNew()"
-            aria-label="Add new cutting job">
-            <mat-icon>add_circle</mat-icon>
-            <span>{{ translationService.get('form.addNewRecord') }}</span>
-          </button>
-
+          <!-- Top Right Utility: Refresh Button -->
           <button 
             type="button"
             id="dashboard-refresh-btn" 
-            class="action-icon-btn" 
+            class="hero-refresh-btn" 
             (click)="refreshData()"
-            title="Refresh dashboard stats"
+            [title]="translationService.getCurrentLanguage() === 'hi' ? 'डेटा रीफ्रेश करें' : 'Refresh dashboard stats'"
             aria-label="Refresh stats">
             <mat-icon [class.spin-anim]="isLoading()">refresh</mat-icon>
+          </button>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="hero-header-actions" id="dashboard-action-chips">
+          <button 
+            type="button"
+            id="dashboard-quick-add-btn" 
+            class="hero-action-btn primary-action-btn" 
+            (click)="goToAddNew()"
+            aria-label="Add new cutting job">
+            <mat-icon class="action-icon">add_circle</mat-icon>
+            <span class="action-label">{{ translationService.get('form.addNewRecord') }}</span>
+          </button>
+
+          <button 
+            type="button"
+            id="dashboard-measure-land-btn" 
+            class="hero-action-btn secondary-action-btn" 
+            (click)="goToLandMeasure()"
+            aria-label="Measure field on GPS or map">
+            <mat-icon class="action-icon">straighten</mat-icon>
+            <span class="action-label">{{ translationService.get('dashboard.measureField') }}</span>
           </button>
         </div>
       </div>
@@ -133,179 +139,601 @@
         </div>
       </div>
 
-      <!-- Segmented Time Period Selector (Material 3 Segmented Filter) -->
-      <div class="period-selector-container" id="dashboard-period-selector">
-        <div class="period-segmented-control" role="tablist" aria-label="Time period selection">
+      <!-- Date & Season Dual Filters in One Single Row (Matching Records Page) -->
+      <div class="records-filter-bar-row" id="dashboard-filter-bar-row">
+        <!-- Date Filter Dropdown -->
+        <div class="filter-dropdown-container" id="dashboard-date-filter-container">
           <button 
-            type="button"
-            id="period-tab-today"
-            role="tab"
-            [attr.aria-selected]="selectedPeriod() === 'today'"
-            [class.active]="selectedPeriod() === 'today'" 
-            (click)="selectPeriod('today')" 
-            class="period-segment-btn">
-            <span class="segment-label">{{ translationService.get('dashboard.today') }}</span>
-            <span class="segment-count-chip">{{ todayCount() }}</span>
+            type="button" 
+            class="filter-select-btn" 
+            [class.is-active]="selectedDateFilter() !== 'all'"
+            [class.is-open]="isDateFilterOpen()"
+            (click)="toggleDateDropdown($event)"
+            id="btn-dashboard-date-filter"
+            aria-label="Filter by date">
+            <mat-icon class="filter-btn-icon">calendar_today</mat-icon>
+            <span class="filter-btn-label">{{ getSelectedDateFilterLabel() }}</span>
+            <mat-icon class="filter-btn-chevron" [class.rotated]="isDateFilterOpen()">expand_more</mat-icon>
           </button>
 
-          <button 
-            type="button"
-            id="period-tab-week"
-            role="tab"
-            [attr.aria-selected]="selectedPeriod() === 'week'"
-            [class.active]="selectedPeriod() === 'week'" 
-            (click)="selectPeriod('week')" 
-            class="period-segment-btn">
-            <span class="segment-label">{{ translationService.get('dashboard.week') }}</span>
-            <span class="segment-count-chip">{{ weekCount() }}</span>
-          </button>
+          @if (isDateFilterOpen()) {
+            <div class="filter-dropdown-backdrop" (click)="closeAllFilterDropdowns()"></div>
+            <div class="filter-dropdown-menu" role="listbox" id="dashboard-date-filter-menu">
+              <button type="button" 
+                      class="filter-dropdown-item" 
+                      [class.selected]="selectedDateFilter() === 'all'"
+                      (click)="selectDateOption('all')"
+                      id="dash-date-opt-all">
+                <span>{{ translationService.get('records.filterAll') || 'सभी (All)' }} ({{ allCount() }})</span>
+                @if (selectedDateFilter() === 'all') {
+                  <mat-icon class="check-icon">check</mat-icon>
+                }
+              </button>
+              <button type="button" 
+                      class="filter-dropdown-item" 
+                      [class.selected]="selectedDateFilter() === 'today'"
+                      (click)="selectDateOption('today')"
+                      id="dash-date-opt-today">
+                <span>{{ translationService.get('records.filterToday') || 'आज' }} ({{ todayCount() }})</span>
+                @if (selectedDateFilter() === 'today') {
+                  <mat-icon class="check-icon">check</mat-icon>
+                }
+              </button>
+              <button type="button" 
+                      class="filter-dropdown-item" 
+                      [class.selected]="selectedDateFilter() === 'yesterday'"
+                      (click)="selectDateOption('yesterday')"
+                      id="dash-date-opt-yesterday">
+                <span>{{ translationService.get('records.filterYesterday') || 'कल' }}</span>
+                @if (selectedDateFilter() === 'yesterday') {
+                  <mat-icon class="check-icon">check</mat-icon>
+                }
+              </button>
+              <button type="button" 
+                      class="filter-dropdown-item" 
+                      [class.selected]="selectedDateFilter() === 'week'"
+                      (click)="selectDateOption('week')"
+                      id="dash-date-opt-week">
+                <span>{{ translationService.get('records.filterWeek') || 'इस सप्ताह' }} ({{ weekCount() }})</span>
+                @if (selectedDateFilter() === 'week') {
+                  <mat-icon class="check-icon">check</mat-icon>
+                }
+              </button>
+              <button type="button" 
+                      class="filter-dropdown-item" 
+                      [class.selected]="selectedDateFilter() === 'month'"
+                      (click)="selectDateOption('month')"
+                      id="dash-date-opt-month">
+                <span>{{ translationService.get('records.filterMonth') || 'इस माह' }} ({{ monthCount() }})</span>
+                @if (selectedDateFilter() === 'month') {
+                  <mat-icon class="check-icon">check</mat-icon>
+                }
+              </button>
+              <button type="button" 
+                      class="filter-dropdown-item" 
+                      [class.selected]="selectedDateFilter() === 'custom'"
+                      (click)="selectDateOption('custom')"
+                      id="dash-date-opt-custom">
+                <span>{{ translationService.get('records.filterCustom') || 'कस्टम तारीख' }}</span>
+                @if (selectedDateFilter() === 'custom') {
+                  <mat-icon class="check-icon">check</mat-icon>
+                }
+              </button>
+              @if (dueTodaySettlementCount() > 0) {
+                <button type="button" 
+                        class="filter-dropdown-item item-due" 
+                        [class.selected]="selectedDateFilter() === 'dueToday'"
+                        (click)="selectDateOption('dueToday')"
+                        id="dash-date-opt-due">
+                  <span>{{ translationService.get('records.filterDueToday') || 'आज देय' }} ({{ dueTodaySettlementCount() }})</span>
+                  @if (selectedDateFilter() === 'dueToday') {
+                    <mat-icon class="check-icon">check</mat-icon>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
 
-          <button 
-            type="button"
-            id="period-tab-month"
-            role="tab"
-            [attr.aria-selected]="selectedPeriod() === 'month'"
-            [class.active]="selectedPeriod() === 'month'" 
-            (click)="selectPeriod('month')" 
-            class="period-segment-btn">
-            <span class="segment-label">{{ translationService.get('dashboard.month') }}</span>
-            <span class="segment-count-chip">{{ monthCount() }}</span>
-          </button>
+        <!-- Season Filter Dropdown -->
+        @if (seasonService.seasons().length > 0) {
+          <div class="filter-dropdown-container" id="dashboard-season-filter-container">
+            <button 
+              type="button" 
+              class="filter-select-btn" 
+              [class.is-active]="selectedSeasonFilter() !== 'all'"
+              [class.is-open]="isSeasonFilterOpen()"
+              (click)="toggleSeasonDropdown($event)"
+              id="btn-dashboard-season-filter"
+              aria-label="Filter by season">
+              <mat-icon class="filter-btn-icon">grass</mat-icon>
+              <span class="filter-btn-label">{{ getSelectedSeasonFilterLabel() }}</span>
+              <mat-icon class="filter-btn-chevron" [class.rotated]="isSeasonFilterOpen()">expand_more</mat-icon>
+            </button>
 
-          <button 
-            type="button"
-            id="period-tab-all"
-            role="tab"
-            [attr.aria-selected]="selectedPeriod() === 'all'"
-            [class.active]="selectedPeriod() === 'all'" 
-            (click)="selectPeriod('all')" 
-            class="period-segment-btn">
-            <span class="segment-label">{{ translationService.get('dashboard.all') }}</span>
-            <span class="segment-count-chip">{{ allCount() }}</span>
+            @if (isSeasonFilterOpen()) {
+              <div class="filter-dropdown-backdrop" (click)="closeAllFilterDropdowns()"></div>
+              <div class="filter-dropdown-menu filter-dropdown-menu-right" role="listbox" id="dashboard-season-filter-menu">
+                <!-- Option: All Seasons -->
+                <button type="button" 
+                        class="filter-dropdown-item" 
+                        [class.selected]="selectedSeasonFilter() === 'all'"
+                        (click)="selectSeasonOption('all')"
+                        id="dash-season-opt-all">
+                  <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी सीज़न (All Seasons)' : 'All Seasons' }}</span>
+                  @if (selectedSeasonFilter() === 'all') {
+                    <mat-icon class="check-icon">check</mat-icon>
+                  }
+                </button>
+
+                <!-- Seasons from SeasonService -->
+                @for (season of seasonService.seasons(); track (season.id || season.name)) {
+                  <button type="button" 
+                          class="filter-dropdown-item" 
+                          [class.selected]="selectedSeasonFilter() === (season.id || '')"
+                          (click)="selectSeasonOption(season.id || '')"
+                          [id]="'dash-season-opt-' + (season.id || '')">
+                    <span>{{ season.name }} {{ season.year }}</span>
+                    @if (selectedSeasonFilter() === (season.id || '')) {
+                      <mat-icon class="check-icon">check</mat-icon>
+                    }
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Custom Date Filter Drawer -->
+      @if (selectedDateFilter() === 'custom') {
+        <div class="custom-date-container" id="dashboard-custom-date-container">
+          <div class="custom-mode-switcher">
+            <button 
+              type="button" 
+              class="custom-mode-pill" 
+              [class.active]="customMode() === 'single'"
+              (click)="setCustomMode('single')">
+              <mat-icon>event</mat-icon>
+              <span>{{ translationService.get('records.customSingleDate') || 'एक तारीख' }}</span>
+            </button>
+            <button 
+              type="button" 
+              class="custom-mode-pill" 
+              [class.active]="customMode() === 'range'"
+              (click)="setCustomMode('range')">
+              <mat-icon>date_range</mat-icon>
+              <span>{{ translationService.get('records.customDateRange') || 'तारीख रेंज' }}</span>
+            </button>
+          </div>
+
+          @if (customMode() === 'single') {
+            <div class="single-picker-row">
+              <div class="date-input-wrap">
+                <mat-icon class="date-wrap-icon">calendar_today</mat-icon>
+                <input 
+                  type="date" 
+                  class="styled-date-input" 
+                  [ngModel]="customSingleDate()"
+                  (ngModelChange)="customSingleDate.set($event)"
+                  id="dash-custom-single-date-field" />
+              </div>
+              <div class="single-quick-steppers">
+                <button type="button" class="stepper-arrow-btn" (click)="shiftCustomSingleDate(-1)" title="Previous day">
+                  <mat-icon>chevron_left</mat-icon>
+                </button>
+                <button type="button" class="stepper-today-btn" (click)="setCustomSingleDateToday()">
+                  {{ translationService.get('records.today') || 'आज' }}
+                </button>
+                <button type="button" class="stepper-arrow-btn" (click)="shiftCustomSingleDate(1)" title="Next day">
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (customMode() === 'range') {
+            <div class="range-picker-row">
+              <div class="range-date-col">
+                <label for="dash-custom-start-date" class="date-col-label">{{ translationService.get('records.fromDate') || 'प्रारंभ तारीख' }}</label>
+                <div class="date-input-wrap">
+                  <mat-icon class="date-wrap-icon">event</mat-icon>
+                  <input 
+                    type="date" 
+                    id="dash-custom-start-date"
+                    class="styled-date-input" 
+                    [ngModel]="customStartDate()"
+                    (ngModelChange)="customStartDate.set($event)" />
+                </div>
+              </div>
+              <div class="range-date-col">
+                <label for="dash-custom-end-date" class="date-col-label">{{ translationService.get('records.toDate') || 'अंतिम तारीख' }}</label>
+                <div class="date-input-wrap">
+                  <mat-icon class="date-wrap-icon">event_available</mat-icon>
+                  <input 
+                    type="date" 
+                    id="dash-custom-end-date"
+                    class="styled-date-input" 
+                    [ngModel]="customEndDate()"
+                    (ngModelChange)="customEndDate.set($event)" />
+                </div>
+              </div>
+              @if (customStartDate() || customEndDate()) {
+                <button type="button" class="range-reset-btn" (click)="customStartDate.set(''); customEndDate.set('')">
+                  <mat-icon>restart_alt</mat-icon>
+                  <span>{{ translationService.get('records.clearFilter') || 'रीसेट' }}</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Active Filters Status Indicator -->
+      @if (selectedDateFilter() !== 'all' || selectedSeasonFilter() !== 'all') {
+        <div class="dashboard-active-filter-chips" id="dashboard-active-filter-chips">
+          <span class="active-filter-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'लागू फ़िल्टर:' : 'Active Filter:' }}</span>
+          @if (selectedDateFilter() !== 'all') {
+            <span class="filter-badge-chip">
+              <mat-icon>calendar_today</mat-icon>
+              <span>{{ getSelectedDateFilterLabel() }}</span>
+              <button type="button" (click)="selectDateOption('all')" class="chip-remove-btn" title="Clear date filter"><mat-icon>close</mat-icon></button>
+            </span>
+          }
+          @if (selectedSeasonFilter() !== 'all') {
+            <span class="filter-badge-chip season-chip">
+              <mat-icon>grass</mat-icon>
+              <span>{{ getSelectedSeasonFilterLabel() }}</span>
+              <button type="button" (click)="selectSeasonOption('all')" class="chip-remove-btn" title="Clear season filter"><mat-icon>close</mat-icon></button>
+            </span>
+          }
+          <button type="button" (click)="resetAllFilters()" class="clear-all-filters-btn">
+            {{ translationService.getCurrentLanguage() === 'hi' ? 'सभी हटाएं' : 'Clear All' }}
           </button>
         </div>
-      </div>
+      }
 
       <!-- ============================================================== -->
       <!-- 📊 MODERN ANDROID ANALYTICS & CHARTS SUITE                    -->
       <!-- ============================================================== -->
       <div class="analytics-charts-grid" id="dashboard-analytics-section">
         
-        <!-- CHART 1: Cutting & Earnings Timeline Bar Graph -->
-        <div class="chart-card-container main-trend-card" id="chart-timeline-card">
+        <!-- CHART 1: Cutting & Earnings Timeline Bar Graph (Daily or Season view) -->
+        <div class="chart-card-container main-trend-card screenshot-styled-chart" id="chart-timeline-card">
           <div class="chart-card-header">
             <div class="chart-header-title-box">
               <div class="chart-title-icon-wrapper trend-icon">
-                <mat-icon>analytics</mat-icon>
+                <mat-icon>{{ chartViewMode() === 'season' ? 'grass' : 'analytics' }}</mat-icon>
               </div>
               <div>
-                <h3 class="chart-main-title">{{ translationService.get('dashboard.harvestTrend') }}</h3>
-                <p class="chart-sub-title">{{ translationService.get('dashboard.trendSubtitle') }}</p>
+                <h3 class="chart-main-title">
+                  {{ chartViewMode() === 'season' 
+                      ? (translationService.getCurrentLanguage() === 'hi' ? 'सीज़न अनुसार कटाई व आमदनी' : 'Season-Wise Trend') 
+                      : translationService.get('dashboard.harvestTrend') }}
+                </h3>
+                <p class="chart-sub-title">
+                  {{ chartViewMode() === 'season'
+                      ? (translationService.getCurrentLanguage() === 'hi' ? 'सभी सीज़न का तुलनात्मक विवरण' : 'Comparative season performance')
+                      : translationService.get('dashboard.trendSubtitle') }}
+                </p>
               </div>
             </div>
 
-            <!-- Metric Toggle Pills (Revenue vs Acres) -->
-            <div class="chart-metric-toggle-group" role="group" aria-label="Chart metric selector">
-              <button 
-                type="button" 
-                id="chart-toggle-revenue"
-                class="metric-toggle-btn"
-                [class.active]="chartMetric() === 'revenue'"
-                (click)="setChartMetric('revenue')">
-                <mat-icon>currency_rupee</mat-icon>
-                <span>{{ translationService.get('dashboard.chartRevenue') }}</span>
-              </button>
-              <button 
-                type="button" 
-                id="chart-toggle-acres"
-                class="metric-toggle-btn"
-                [class.active]="chartMetric() === 'acres'"
-                (click)="setChartMetric('acres')">
-                <mat-icon>grass</mat-icon>
-                <span>{{ translationService.get('dashboard.chartAcres') }}</span>
-              </button>
+            <div class="chart-header-actions-wrap">
+              <!-- Screenshot-Style Top-Right Legend Indicators -->
+              <div class="chart-legend-box" id="chart-legend-indicators">
+                <div class="legend-indicator-item">
+                  <span class="legend-box-dot primary-dot"></span>
+                  <span class="legend-box-text">
+                    {{ chartMetric() === 'revenue' 
+                        ? (translationService.getCurrentLanguage() === 'hi' ? 'कुल बिल' : 'Total Billed') 
+                        : (translationService.getCurrentLanguage() === 'hi' ? 'रकबा (Acres)' : 'Acres') }}
+                  </span>
+                </div>
+                <div class="legend-indicator-item">
+                  <span class="legend-box-dot secondary-dot"></span>
+                  <span class="legend-box-text">
+                    {{ chartMetric() === 'revenue' 
+                        ? (translationService.getCurrentLanguage() === 'hi' ? 'वसूल राशि' : 'Collected') 
+                        : (translationService.getCurrentLanguage() === 'hi' ? 'जॉब्स संख्या' : 'Jobs') }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Controls Group: View Mode (Day vs Season) & Metric (Revenue vs Acres) -->
+              <div class="chart-controls-cluster">
+                <!-- View Mode Toggle Pills (Day vs Season) -->
+                <div class="chart-view-mode-toggle-group" role="group" aria-label="Chart view mode selector">
+                  <button 
+                    type="button" 
+                    id="chart-view-daily"
+                    class="view-mode-pill-btn"
+                    [class.active]="chartViewMode() === 'daily'"
+                    (click)="setChartViewMode('daily')">
+                    <mat-icon>calendar_today</mat-icon>
+                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'दिन' : 'Daily' }}</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    id="chart-view-season"
+                    class="view-mode-pill-btn"
+                    [class.active]="chartViewMode() === 'season'"
+                    (click)="setChartViewMode('season')">
+                    <mat-icon>grass</mat-icon>
+                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Season' }}</span>
+                  </button>
+                </div>
+
+                <!-- Metric Toggle Pills (Revenue vs Acres) -->
+                <div class="chart-metric-toggle-group" role="group" aria-label="Chart metric selector">
+                  <button 
+                    type="button" 
+                    id="chart-toggle-revenue"
+                    class="metric-toggle-btn"
+                    [class.active]="chartMetric() === 'revenue'"
+                    (click)="setChartMetric('revenue')">
+                    <mat-icon>currency_rupee</mat-icon>
+                    <span>{{ translationService.get('dashboard.chartRevenue') }}</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    id="chart-toggle-acres"
+                    class="metric-toggle-btn"
+                    [class.active]="chartMetric() === 'acres'"
+                    (click)="setChartMetric('acres')">
+                    <mat-icon>grass</mat-icon>
+                    <span>{{ translationService.get('dashboard.chartAcres') }}</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Chart Body Area -->
+          <!-- Chart Body Area with Y-Axis, Horizontal Dashed Grid & Paired Pill Bars -->
           <div class="chart-body-area">
-            @if (chartTimeline().length > 0) {
-              <!-- Interactive Visual SVG Bar Graph -->
-              <div class="svg-chart-wrapper" id="svg-trend-graph">
-                <div class="chart-bars-viewport">
-                  @for (item of chartTimeline(); track item.id) {
-                    <div 
-                      class="chart-bar-column" 
-                      [id]="'bar-col-' + item.id"
-                      [class.is-active]="activeBar()?.id === item.id"
-                      (click)="toggleBar(item)">
-                      
-                      <!-- Bar Value Popover / Hover Label -->
-                      <div class="bar-value-pill">
-                        {{ chartMetric() === 'revenue' ? ('₹' + formatNumber(item.revenue, 0)) : (formatNumber(item.acres, 1) + ' ac') }}
-                      </div>
-
-                      <!-- The Bar Track & Colored Pillar -->
-                      <div class="bar-track">
-                        <div 
-                          class="bar-fill" 
-                          [class.revenue-fill]="chartMetric() === 'revenue'"
-                          [class.acres-fill]="chartMetric() === 'acres'"
-                          [style.height.%]="item.barHeightPercent">
-                          <div class="bar-gloss"></div>
-                        </div>
-                      </div>
-
-                      <!-- X-Axis Date Label -->
-                      <span class="bar-x-label">{{ item.label }}</span>
+            <!-- DAILY VIEW -->
+            @if (chartViewMode() === 'daily') {
+              @if (chartTimeline().length > 0) {
+                <div class="modern-bar-chart-stage" id="svg-trend-graph">
+                  <div class="chart-plot-area">
+                    <!-- Left Y-Axis Labels Column -->
+                    <div class="y-axis-labels-col" aria-hidden="true">
+                      <span class="y-axis-tick">100%</span>
+                      <span class="y-axis-tick">75%</span>
+                      <span class="y-axis-tick">50%</span>
+                      <span class="y-axis-tick">25%</span>
+                      <span class="y-axis-tick">0</span>
                     </div>
-                  }
+
+                    <!-- Plot Area with Horizontal Grid Lines and Overlaid Bars -->
+                    <div class="chart-grid-canvas">
+                      <!-- 5 Horizontal Dashed Guide Lines (matching screenshot) -->
+                      <div class="chart-grid-lines-layer" aria-hidden="true">
+                        <div class="grid-horizontal-line"></div>
+                        <div class="grid-horizontal-line"></div>
+                        <div class="grid-horizontal-line"></div>
+                        <div class="grid-horizontal-line"></div>
+                        <div class="grid-horizontal-line baseline"></div>
+                      </div>
+
+                      <!-- Grouped Bars Layer (Side-by-side pill bars) -->
+                      <div class="chart-bars-layer">
+                        @for (item of chartTimeline(); track item.id) {
+                          <div 
+                            class="chart-bar-group" 
+                            [id]="'bar-col-' + item.id"
+                            [class.is-active]="activeBar()?.id === item.id"
+                            (click)="toggleBar(item)">
+                            
+                            <!-- Floating Tooltip on Hover / Active -->
+                            <div class="bar-pair-popover">
+                              <div class="popover-val p-val">
+                                {{ chartMetric() === 'revenue' ? ('₹' + formatNumber(item.revenue, 0)) : (formatNumber(item.acres, 1) + ' ac') }}
+                              </div>
+                              <div class="popover-val s-val">
+                                {{ chartMetric() === 'revenue' ? ('₹' + formatNumber(item.collected, 0)) : (item.jobsCount + ' jobs') }}
+                              </div>
+                            </div>
+
+                            <!-- Paired Bars Container (standing from baseline 0) -->
+                            <div class="bar-pair-container">
+                              <!-- Primary Bar (Emerald Green Gradient) -->
+                              <div 
+                                class="bar-pill bar-primary" 
+                                [style.height.%]="item.primaryBarHeightPercent"
+                                [title]="(chartMetric() === 'revenue' ? 'कुल बिल: ₹' + formatNumber(item.revenue, 0) : 'रकबा: ' + item.acres + ' ac')">
+                                <div class="bar-top-cap"></div>
+                              </div>
+
+                              <!-- Secondary Bar (Sky Blue Gradient) -->
+                              <div 
+                                class="bar-pill bar-secondary" 
+                                [style.height.%]="item.secondaryBarHeightPercent"
+                                [title]="(chartMetric() === 'revenue' ? 'वसूल: ₹' + formatNumber(item.collected, 0) : 'जॉब्स: ' + item.jobsCount)">
+                                <div class="bar-top-cap"></div>
+                              </div>
+                            </div>
+
+                            <!-- X-Axis Category Label (centered below the pair) -->
+                            <span class="x-axis-label">{{ item.label }}</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Interactive Selected Bar Detail Card -->
-              @if (activeBar()) {
-                <div class="active-bar-details-card" id="active-bar-details-card">
-                  <div class="details-card-header">
-                    <div class="details-date-info">
-                      <mat-icon class="calendar-icon">event</mat-icon>
-                      <span class="details-date-text">{{ activeBar()!.fullDate }}</span>
+                <!-- Interactive Selected Bar Detail Card -->
+                @if (activeBar()) {
+                  <div class="active-bar-details-card" id="active-bar-details-card">
+                    <div class="details-card-header">
+                      <div class="details-date-info">
+                        <mat-icon class="calendar-icon">event</mat-icon>
+                        <span class="details-date-text">{{ activeBar()!.fullDate }}</span>
+                      </div>
+                      <button 
+                        type="button" 
+                        id="close-active-bar-btn"
+                        class="close-details-btn" 
+                        (click)="selectBar(null)" 
+                        aria-label="Dismiss details">
+                        <mat-icon>close</mat-icon>
+                      </button>
                     </div>
-                    <button 
-                      type="button" 
-                      id="close-active-bar-btn"
-                      class="close-details-btn" 
-                      (click)="selectBar(null)" 
-                      aria-label="Dismiss details">
-                      <mat-icon>close</mat-icon>
-                    </button>
+                    <div class="details-metrics-row">
+                      <div class="detail-metric-item">
+                        <span class="detail-metric-label">{{ translationService.get('dashboard.totalAmount') }}</span>
+                        <span class="detail-metric-val emerald-val">{{ formatCurrency(activeBar()!.revenue) }}</span>
+                      </div>
+                      <div class="detail-metric-item">
+                        <span class="detail-metric-label">{{ translationService.get('dashboard.totalLand') }}</span>
+                        <span class="detail-metric-val">{{ activeBar()!.acres }} {{ translationService.get('dashboard.acres') }}</span>
+                      </div>
+                      <div class="detail-metric-item">
+                        <span class="detail-metric-label">{{ translationService.get('dashboard.chartJobs') }}</span>
+                        <span class="detail-metric-val">{{ activeBar()!.jobsCount }}</span>
+                      </div>
+                      <div class="detail-metric-item">
+                        <span class="detail-metric-label">{{ translationService.get('dashboard.pendingAmount') }}</span>
+                        <span class="detail-metric-val amber-val">{{ formatCurrency(activeBar()!.pending) }}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div class="details-metrics-row">
-                    <div class="detail-metric-item">
-                      <span class="detail-metric-label">{{ translationService.get('dashboard.totalAmount') }}</span>
-                      <span class="detail-metric-val emerald-val">{{ formatCurrency(activeBar()!.revenue) }}</span>
-                    </div>
-                    <div class="detail-metric-item">
-                      <span class="detail-metric-label">{{ translationService.get('dashboard.totalLand') }}</span>
-                      <span class="detail-metric-val">{{ activeBar()!.acres }} {{ translationService.get('dashboard.acres') }}</span>
-                    </div>
-                    <div class="detail-metric-item">
-                      <span class="detail-metric-label">{{ translationService.get('dashboard.chartJobs') }}</span>
-                      <span class="detail-metric-val">{{ activeBar()!.jobsCount }}</span>
-                    </div>
-                    <div class="detail-metric-item">
-                      <span class="detail-metric-label">{{ translationService.get('dashboard.pendingAmount') }}</span>
-                      <span class="detail-metric-val amber-val">{{ formatCurrency(activeBar()!.pending) }}</span>
-                    </div>
-                  </div>
+                }
+              } @else {
+                <!-- Empty Chart State -->
+                <div class="chart-empty-state">
+                  <mat-icon class="empty-icon">bar_chart</mat-icon>
+                  <p>{{ translationService.get('dashboard.noRecordsDesc') }}</p>
                 </div>
               }
-            } @else {
-              <!-- Empty Chart State -->
-              <div class="chart-empty-state">
-                <mat-icon class="empty-icon">bar_chart</mat-icon>
-                <p>{{ translationService.get('dashboard.noRecordsDesc') }}</p>
-              </div>
+            }
+
+            <!-- SEASON VIEW -->
+            @if (chartViewMode() === 'season') {
+              @if (chartSeasonBreakdown().length > 0) {
+                <div class="modern-bar-chart-stage season-chart-stage" id="svg-season-graph">
+                  <div class="chart-plot-area">
+                    <!-- Left Y-Axis Labels Column -->
+                    <div class="y-axis-labels-col" aria-hidden="true">
+                      <span class="y-axis-tick">100%</span>
+                      <span class="y-axis-tick">75%</span>
+                      <span class="y-axis-tick">50%</span>
+                      <span class="y-axis-tick">25%</span>
+                      <span class="y-axis-tick">0</span>
+                    </div>
+
+                    <!-- Plot Area with Horizontal Grid Lines and Overlaid Season Bars -->
+                    <div class="chart-grid-canvas">
+                      <div class="chart-grid-lines-layer" aria-hidden="true">
+                        <div class="grid-horizontal-line"></div>
+                        <div class="grid-horizontal-line"></div>
+                        <div class="grid-horizontal-line"></div>
+                        <div class="grid-horizontal-line"></div>
+                        <div class="grid-horizontal-line baseline"></div>
+                      </div>
+
+                      <div class="chart-bars-layer">
+                        @for (item of chartSeasonBreakdown(); track item.id) {
+                          <div 
+                            class="chart-bar-group season-bar-group" 
+                            [id]="'season-bar-col-' + item.id"
+                            [class.is-active]="activeSeasonBar()?.id === item.id || item.isSelected"
+                            (click)="toggleSeasonBar(item)">
+                            
+                            <!-- Floating Tooltip on Hover / Active -->
+                            <div class="bar-pair-popover">
+                              <div class="popover-val p-val">
+                                {{ chartMetric() === 'revenue' ? ('₹' + formatNumber(item.revenue, 0)) : (formatNumber(item.acres, 1) + ' ac') }}
+                              </div>
+                              <div class="popover-val s-val">
+                                {{ chartMetric() === 'revenue' ? ('₹' + formatNumber(item.collected, 0)) : (item.jobsCount + ' jobs') }}
+                              </div>
+                            </div>
+
+                            <div class="bar-pair-container">
+                              <div 
+                                class="bar-pill bar-primary" 
+                                [style.height.%]="item.primaryBarHeightPercent"
+                                [class.season-highlight]="item.isSelected"
+                                [title]="(chartMetric() === 'revenue' ? 'कुल बिल: ₹' + formatNumber(item.revenue, 0) : 'रकबा: ' + item.acres + ' ac')">
+                                <div class="bar-top-cap"></div>
+                              </div>
+                              <div 
+                                class="bar-pill bar-secondary" 
+                                [style.height.%]="item.secondaryBarHeightPercent"
+                                [title]="(chartMetric() === 'revenue' ? 'वसूल: ₹' + formatNumber(item.collected, 0) : 'जॉब्स: ' + item.jobsCount)">
+                                <div class="bar-top-cap"></div>
+                              </div>
+                            </div>
+
+                            <!-- X-Axis Season Label -->
+                            <span class="x-axis-label season-x-label" [title]="item.fullLabel">{{ item.label }}</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Interactive Selected Season Bar Detail Card -->
+                @if (activeSeasonBar()) {
+                  <div class="active-bar-details-card season-details-card" id="active-season-bar-details-card">
+                    <div class="details-card-header">
+                      <div class="details-date-info">
+                        <mat-icon class="calendar-icon">grass</mat-icon>
+                        <span class="details-date-text">{{ activeSeasonBar()!.fullLabel }}</span>
+                      </div>
+                      <button 
+                        type="button" 
+                        id="close-active-season-bar-btn"
+                        class="close-details-btn" 
+                        (click)="selectSeasonBar(null)" 
+                        aria-label="Dismiss details">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </div>
+                    <div class="details-metrics-row">
+                      <div class="detail-metric-item">
+                        <span class="detail-metric-label">{{ translationService.get('dashboard.totalAmount') }}</span>
+                        <span class="detail-metric-val emerald-val">{{ formatCurrency(activeSeasonBar()!.revenue) }}</span>
+                      </div>
+                      <div class="detail-metric-item">
+                        <span class="detail-metric-label">{{ translationService.get('dashboard.totalLand') }}</span>
+                        <span class="detail-metric-val">{{ activeSeasonBar()!.acres }} {{ translationService.get('dashboard.acres') }}</span>
+                      </div>
+                      <div class="detail-metric-item">
+                        <span class="detail-metric-label">{{ translationService.get('dashboard.chartJobs') }}</span>
+                        <span class="detail-metric-val">{{ activeSeasonBar()!.jobsCount }}</span>
+                      </div>
+                      <div class="detail-metric-item">
+                        <span class="detail-metric-label">{{ translationService.get('dashboard.pendingAmount') }}</span>
+                        <span class="detail-metric-val amber-val">{{ formatCurrency(activeSeasonBar()!.pending) }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Season Quick Action Row -->
+                    <div class="season-detail-action-row">
+                      @if (selectedSeasonFilter() === activeSeasonBar()!.seasonId) {
+                        <button type="button" class="season-action-btn is-active-btn" (click)="selectSeasonOption('all')">
+                          <mat-icon>check_circle</mat-icon>
+                          <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'यह सीज़न लागू है (सभी सीज़न देखें)' : 'Season Active (View All)' }}</span>
+                        </button>
+                      } @else {
+                        <button type="button" class="season-action-btn" (click)="selectSeasonOption(activeSeasonBar()!.seasonId)">
+                          <mat-icon>filter_alt</mat-icon>
+                          <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'इस सीज़न का डैशबोर्ड देखें' : 'View Season Dashboard' }}</span>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              } @else {
+                <div class="chart-empty-state">
+                  <mat-icon class="empty-icon">grass</mat-icon>
+                  <p>{{ translationService.getCurrentLanguage() === 'hi' ? 'कोई सीज़न डेटा उपलब्ध नहीं है' : 'No season data available' }}</p>
+                </div>
+              }
             }
           </div>
         </div>
@@ -324,61 +752,134 @@
             </div>
           </div>
 
-          <div class="recovery-chart-body">
-            <!-- Circular SVG Ring Gauge -->
-            <div class="donut-gauge-wrapper">
-              <svg class="donut-svg" viewBox="0 0 120 120" width="120" height="120">
+          <div class="modern-donut-card-body">
+            <!-- Left: Donut Chart Stage with Center Title & Big Value -->
+            <div class="modern-donut-stage">
+              <svg class="modern-donut-svg" viewBox="0 0 160 160">
                 <!-- Background Base Ring -->
                 <circle 
-                  cx="60" 
-                  cy="60" 
+                  cx="80" 
+                  cy="80" 
                   r="52" 
-                  class="donut-bg-ring" 
-                  stroke-width="12" 
+                  class="donut-bg-track" 
+                  stroke-width="16" 
                   fill="none" />
                 
-                <!-- Active Progress Ring -->
-                <circle 
-                  cx="60" 
-                  cy="60" 
-                  r="52" 
-                  class="donut-progress-ring" 
-                  stroke-width="12" 
-                  fill="none"
-                  stroke-linecap="round"
-                  [attr.stroke-dasharray]="recoveryOverview().circumference"
-                  [attr.stroke-dashoffset]="recoveryOverview().strokeDashoffset" />
+                <!-- Slices: Segment 1 (Blue), Segment 2 (Pink), Segment 3 (Green) -->
+                @if (recoveryOverview().seg1Pct > 0) {
+                  <circle 
+                    cx="80" 
+                    cy="80" 
+                    r="52" 
+                    class="donut-segment segment-blue" 
+                    stroke-width="16" 
+                    fill="none"
+                    [attr.stroke-dasharray]="recoveryOverview().dashArray1"
+                    [attr.stroke-dashoffset]="recoveryOverview().dashOffset1" />
+                }
+
+                @if (recoveryOverview().seg2Pct > 0) {
+                  <circle 
+                    cx="80" 
+                    cy="80" 
+                    r="52" 
+                    class="donut-segment segment-pink" 
+                    stroke-width="16" 
+                    fill="none"
+                    [attr.stroke-dasharray]="recoveryOverview().dashArray2"
+                    [attr.stroke-dashoffset]="recoveryOverview().dashOffset2" />
+                }
+
+                @if (recoveryOverview().seg3Pct > 0) {
+                  <circle 
+                    cx="80" 
+                    cy="80" 
+                    r="52" 
+                    class="donut-segment segment-green" 
+                    stroke-width="16" 
+                    fill="none"
+                    [attr.stroke-dasharray]="recoveryOverview().dashArray3"
+                    [attr.stroke-dashoffset]="recoveryOverview().dashOffset3" />
+                }
+
+                <!-- Fallback Ring when no records yet -->
+                @if (recoveryOverview().totalBilled === 0) {
+                  <circle 
+                    cx="80" 
+                    cy="80" 
+                    r="52" 
+                    class="donut-segment segment-blue" 
+                    stroke-width="16" 
+                    fill="none"
+                    stroke-dasharray="326.7 326.7"
+                    stroke-dashoffset="0"
+                    opacity="0.2" />
+                }
               </svg>
               
-              <div class="donut-center-content">
-                <span class="donut-percentage-number">{{ recoveryOverview().recoveryPercentage }}%</span>
-                <span class="donut-percentage-label">{{ translationService.get('dashboard.collected') }}</span>
+              <!-- Center Title & Big Value -->
+              <div class="modern-donut-center-info">
+                <span class="donut-center-title-text">{{ translationService.get('dashboard.totalAmount') }}</span>
+                <span class="donut-center-big-number">{{ formatCurrency(recoveryOverview().totalBilled) }}</span>
               </div>
             </div>
 
-            <!-- Recovery Legend Breakdown -->
-            <div class="recovery-legend-list">
-              <div class="recovery-legend-item collected-item">
-                <div class="legend-color-dot collected-dot"></div>
-                <div class="legend-info">
-                  <span class="legend-label">{{ translationService.get('dashboard.collected') }}</span>
-                  <span class="legend-value">{{ formatCurrency(recoveryOverview().totalCollected) }}</span>
+            <!-- Right: 3 Metric Breakdown Rows with Horizontal Dividers (Screenshot matched) -->
+            <div class="analysis-metrics-panel">
+              <!-- Metric 1: Blue - Collected Amount -->
+              <div class="analysis-metric-row">
+                <div class="analysis-stat-val text-blue">
+                  {{ formatCurrency(recoveryOverview().totalCollected) }}
+                </div>
+                <div class="analysis-meta-wrap">
+                  <span class="analysis-title">{{ translationService.get('dashboard.collected') }}</span>
+                  <span class="analysis-subtitle">
+                    {{ recoveryOverview().recoveryPercentage }}% {{ translationService.getCurrentLanguage() === 'hi' ? 'वसूली' : 'recovered' }}
+                  </span>
                 </div>
               </div>
 
-              <div class="recovery-legend-item pending-item">
-                <div class="legend-color-dot pending-dot"></div>
-                <div class="legend-info">
-                  <span class="legend-label">{{ translationService.get('dashboard.pending') }}</span>
-                  <span class="legend-value">{{ formatCurrency(recoveryOverview().totalPending) }}</span>
+              <div class="analysis-row-divider"></div>
+
+              <!-- Metric 2: Pink - Pending / Outstanding -->
+              <div class="analysis-metric-row">
+                <div class="analysis-stat-val text-pink">
+                  {{ formatCurrency(recoveryOverview().totalPending) }}
+                </div>
+                <div class="analysis-meta-wrap">
+                  <span class="analysis-title">{{ translationService.get('dashboard.pending') }}</span>
+                  <span class="analysis-subtitle">
+                    {{ recoveryOverview().pendingPercentage }}% {{ translationService.getCurrentLanguage() === 'hi' ? 'बकाया' : 'pending' }}
+                  </span>
                 </div>
               </div>
 
-              <div class="recovery-legend-item total-item">
-                <div class="legend-color-dot total-dot"></div>
-                <div class="legend-info">
-                  <span class="legend-label">{{ translationService.get('dashboard.totalAmount') }}</span>
-                  <span class="legend-value">{{ formatCurrency(recoveryOverview().totalBilled) }}</span>
+              <div class="analysis-row-divider"></div>
+
+              <!-- Metric 3: Green - Due Today / Harvest Area -->
+              <div class="analysis-metric-row">
+                <div class="analysis-stat-val text-green">
+                  @if (recoveryOverview().dueTodayAmount > 0) {
+                    {{ formatCurrency(recoveryOverview().dueTodayAmount) }}
+                  } @else {
+                    {{ recoveryOverview().totalAcres }} <small class="text-xs font-semibold">ac</small>
+                  }
+                </div>
+                <div class="analysis-meta-wrap">
+                  <span class="analysis-title">
+                    @if (recoveryOverview().dueTodayAmount > 0) {
+                      {{ translationService.getCurrentLanguage() === 'hi' ? 'आज देय' : 'Due Today' }}
+                    } @else {
+                      {{ translationService.get('dashboard.totalLand') }}
+                    }
+                  </span>
+                  <span class="analysis-subtitle">
+                    @if (recoveryOverview().dueTodayAmount > 0) {
+                      {{ recoveryOverview().dueTodayPercentage }}% {{ translationService.getCurrentLanguage() === 'hi' ? 'तत्काल वसूली' : 'due today' }}
+                    } @else {
+                      {{ translationService.getCurrentLanguage() === 'hi' ? 'कुल रकबा' : 'Harvest area' }}
+                    }
+                  </span>
                 </div>
               </div>
             </div>
@@ -387,6 +888,75 @@
 
       </div>
 
+      <!-- Season Performance Breakdown Cards (Visible when seasons are registered) -->
+      @if (chartSeasonBreakdown().length > 0) {
+        <div class="season-performance-card" id="dashboard-season-performance">
+          <div class="season-perf-header">
+            <div class="season-perf-title-wrap">
+              <div class="season-perf-icon-badge">
+                <mat-icon>grass</mat-icon>
+              </div>
+              <div>
+                <h3 class="season-perf-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न अनुसार कटाई रिपोर्ट' : 'Season Performance Overview' }}</h3>
+                <p class="season-perf-subtitle">{{ translationService.getCurrentLanguage() === 'hi' ? 'प्रत्येक सीज़न का रकबा, कुल आमदनी व बकाया विवरण' : 'Harvested acres, revenue, and outstanding by season' }}</p>
+              </div>
+            </div>
+            @if (selectedSeasonFilter() !== 'all') {
+              <button 
+                type="button" 
+                class="season-perf-reset-btn"
+                (click)="selectSeasonOption('all')"
+                aria-label="View all seasons">
+                <mat-icon>restart_alt</mat-icon>
+                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी सीज़न देखें' : 'All Seasons' }}</span>
+              </button>
+            }
+          </div>
+
+          <div class="season-perf-grid">
+            @for (season of chartSeasonBreakdown(); track season.id) {
+              <div 
+                class="season-perf-item-card" 
+                [class.is-selected]="season.isSelected || selectedSeasonFilter() === season.seasonId"
+                (click)="selectSeasonOption(season.seasonId)">
+                <div class="season-perf-top">
+                  <span class="season-perf-name">{{ season.fullLabel }}</span>
+                  @if (selectedSeasonFilter() === season.seasonId) {
+                    <span class="season-active-badge">
+                      <mat-icon>check</mat-icon>
+                      {{ translationService.getCurrentLanguage() === 'hi' ? 'सक्रिय' : 'Active' }}
+                    </span>
+                  }
+                </div>
+
+                <div class="season-perf-metrics">
+                  <div class="season-perf-metric">
+                    <span class="m-label">{{ translationService.get('dashboard.totalLand') }}</span>
+                    <span class="m-value">{{ season.acres }} <small>{{ translationService.get('dashboard.acresUnit') }}</small></span>
+                  </div>
+                  <div class="season-perf-metric">
+                    <span class="m-label">{{ translationService.get('dashboard.totalAmount') }}</span>
+                    <span class="m-value emerald-txt">{{ formatCurrency(season.revenue) }}</span>
+                  </div>
+                  <div class="season-perf-metric">
+                    <span class="m-label">{{ translationService.get('dashboard.pendingAmount') }}</span>
+                    <span class="m-value amber-txt">{{ formatCurrency(season.pending) }}</span>
+                  </div>
+                </div>
+
+                <div class="season-perf-footer">
+                  <span class="season-jobs-count">{{ season.jobsCount }} {{ translationService.get('dashboard.completedJobs') }}</span>
+                  <span class="season-filter-hint">
+                    {{ selectedSeasonFilter() === season.seasonId 
+                        ? (translationService.getCurrentLanguage() === 'hi' ? 'फ़िल्टर लागू ✓' : 'Filtered ✓') 
+                        : (translationService.getCurrentLanguage() === 'hi' ? 'डैशबोर्ड फ़िल्टर करें →' : 'Filter dashboard →') }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
       <!-- Machine / Fleet Activity Progress Distribution (if machines exist) -->
       @if (harvesterStats().length > 0) {
         <div class="fleet-activity-card" id="dashboard-fleet-distribution">
@@ -510,7 +1080,7 @@
               <div 
                 class="recent-record-item" 
                 [id]="'recent-job-' + record.id"
-                (click)="goToRecords()">
+                (click)="goToFarmerRecord(record)">
                 <div class="record-item-avatar">
                   {{ record.farmerName ? record.farmerName.charAt(0).toUpperCase() : '🌾' }}
                 </div>

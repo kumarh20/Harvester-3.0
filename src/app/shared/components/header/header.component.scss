@@ -8,6 +8,10 @@
     height: 64px;
     z-index: 1000;
     pointer-events: none; // Allow clicks outside header to pass through when menu is closed
+
+    &.menu-open {
+        pointer-events: auto;
+    }
 }
 
 // ==========================================
@@ -15,16 +19,12 @@
 // ==========================================
 .modern-header {
     pointer-events: auto;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    position: relative;
     width: 100%;
     height: 64px;
-    z-index: 1000;
     display: flex;
     align-items: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 
     // Rich Organic Avocado Forest Glassmorphism (matching image.png)
     background: linear-gradient(135deg, rgba(46, 86, 47, 0.96) 0%, rgba(53, 99, 53, 0.97) 50%, rgba(35, 66, 36, 0.98) 100%);
@@ -409,6 +409,7 @@
     position: relative;
     display: flex;
     align-items: center;
+    z-index: 1005;
 }
 
 .user-profile-pill-3d {
@@ -571,7 +572,7 @@
     }
 }
 
-// Full Screen Backdrop
+// Full Screen Backdrop (Clean invisible click-away listener, NO blur, NO dark tint)
 .profile-menu-backdrop {
     position: fixed;
     top: 0;
@@ -581,10 +582,10 @@
     width: 100vw;
     height: 100vh;
     height: 100dvh;
-    z-index: 1000;
-    background: rgba(0, 0, 0, 0.28);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+    z-index: 1010;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     pointer-events: auto;
     cursor: default;
     -webkit-tap-highlight-color: transparent;
@@ -593,29 +594,25 @@
 // Dropdown Popover Card
 .profile-dropdown-card {
     position: absolute;
-    top: calc(100% + 10px);
+    top: calc(100% + 8px);
     right: 0;
-    z-index: 1002;
+    z-index: 1020;
     pointer-events: auto;
-    width: 290px;
+    width: 295px;
+    max-width: calc(100vw - 20px);
     background: #FFFFFF;
     border-radius: 20px;
     box-shadow: 0 16px 40px -4px rgba(15, 23, 42, 0.25), 0 6px 16px rgba(0, 0, 0, 0.08);
     border: 1px solid #E2E8F0;
-    padding: 18px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    animation: profileMenuPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top right;
+    animation: profileMenuPop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 
-    @media (max-width: 600px) {
-        position: fixed;
-        top: 74px;
-        right: 14px;
-        left: 14px;
-        width: auto;
-        max-width: 320px;
-        margin: 0 auto;
+    &, & * {
+        pointer-events: auto;
     }
 
     [data-theme="dark"] & {
@@ -628,7 +625,7 @@
 @keyframes profileMenuPop {
     from {
         opacity: 0;
-        transform: translateY(-8px) scale(0.96);
+        transform: translateY(-6px) scale(0.97);
     }
     to {
         opacity: 1;
@@ -639,7 +636,35 @@
 .profile-card-top {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
+    padding: 6px 8px;
+    margin: -4px -4px 0 -4px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.18s ease;
+
+    &:hover {
+        background: #F1F5F9;
+    }
+
+    [data-theme="dark"] &:hover {
+        background: #334155;
+    }
+
+    .dropdown-profile-arrow {
+        margin-left: auto;
+        color: #94A3B8;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    &:hover .dropdown-profile-arrow {
+        color: #059669;
+        transform: translateX(2px);
+    }
 }
 
 .dropdown-avatar-wrapper {

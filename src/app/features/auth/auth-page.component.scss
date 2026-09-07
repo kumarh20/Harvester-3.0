@@ -549,20 +549,34 @@ form {
 .auth-form-field {
     width: 100%;
     margin-bottom: 16px;
+
     // Outline style
-     ::ng-deep {
+    ::ng-deep {
         .mat-mdc-text-field-wrapper {
             background: $bg-input;
+            border-radius: 12px;
         }
+
         .mat-mdc-form-field-flex {
-            height: 56px;
+            height: 52px;
+            align-items: center;
         }
+
+        .mat-mdc-form-field-infix {
+            display: flex;
+            align-items: center;
+            min-height: 52px;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+
         // Outline border
         .mdc-notched-outline__leading,
         .mdc-notched-outline__notch,
         .mdc-notched-outline__trailing {
             border-color: $border-color !important;
         }
+
         // Focused state
         .mat-mdc-form-field.mat-focused {
             .mdc-notched-outline__leading,
@@ -572,36 +586,95 @@ form {
                 border-width: 2px !important;
             }
         }
-        // Label color
+
+        // Label color & alignment
         .mdc-floating-label {
             color: $text-secondary !important;
+            font-size: 14px;
         }
         .mat-mdc-form-field.mat-focused .mdc-floating-label {
             color: $primary !important;
         }
+
         // Input text
         .mat-mdc-input-element {
             color: $text-primary;
-            font-size: 14px;
+            font-size: 15px;
+            font-weight: 500;
+            line-height: normal;
+            vertical-align: middle;
+            margin: 0;
+            padding: 0;
         }
+
         // Placeholder
         .mat-mdc-input-element::placeholder {
             color: $text-secondary;
-            opacity: 0.6;
+            opacity: 0.65;
+            font-size: 14.5px;
+            font-weight: 400;
         }
-        // Prefix icon
-        .mat-mdc-form-field-icon-prefix {
+
+        // Prefix wrapper (Icon + Text)
+        .mat-mdc-form-field-icon-prefix,
+        .mat-mdc-form-field-text-prefix {
+            display: inline-flex !important;
+            align-items: center !important;
+            vertical-align: middle !important;
             color: $text-secondary;
-            padding-right: 8px;
+            padding: 0 !important;
+            margin: 0 !important;
+            height: 100%;
+
             mat-icon {
                 font-size: 20px;
                 width: 20px;
                 height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 8px;
+                color: $text-secondary;
+                vertical-align: middle;
             }
         }
-        .mat-mdc-form-field.mat-focused .mat-mdc-form-field-icon-prefix {
+
+        .phone-prefix {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: $text-primary;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            margin-right: 10px;
+            padding-right: 8px;
+            border-right: 1.5px solid rgba(0, 0, 0, 0.15);
+            height: 18px;
+            vertical-align: middle;
+            letter-spacing: 0.2px;
+
+            [data-theme="dark"] & {
+                border-right-color: rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        .mat-mdc-form-field.mat-focused .mat-mdc-form-field-icon-prefix mat-icon {
             color: $primary;
         }
+
+        // Suffix icon
+        .mat-mdc-form-field-icon-suffix {
+            display: inline-flex;
+            align-items: center;
+            mat-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+                color: $text-secondary;
+            }
+        }
+
         // Remove default margins
         .mat-mdc-form-field-subscript-wrapper {
             display: none;

@@ -6,6 +6,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { routes } from './app.routes';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { provideAuth, getAuth } from '@angular/fire/auth';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { CustomDateAdapter, CUSTOM_DATE_FORMATS } from './core/adapters/custom-date-adapter';
 
 
 // Your web app's Firebase configuration
@@ -28,7 +30,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideFirestore(() => getFirestore()),
-    provideAuth(() => getAuth())
-
+    provideAuth(() => getAuth()),
+    { provide: DateAdapter, useClass: CustomDateAdapter },
+    { provide: MAT_DATE_FORMATS, useValue: CUSTOM_DATE_FORMATS },
+    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' }
   ]
 };

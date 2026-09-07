@@ -6,6 +6,7 @@ export interface Record {
   farmerName: string;
   contactNumber: string;
   date: string;
+  cuttingTime?: string;
   landInAcres: number;
   ratePerAcre: number;
   paidOnSight: number;
@@ -14,6 +15,8 @@ export interface Record {
   pendingAmount: number;
   /** Optional harvester name (e.g. Harvester 1, Harvester 2) */
   harvester?: string;
+  /** Optional season document ID */
+  seasonId?: string;
   /** When true, record is soft-deleted: shown with strikethrough, pending = 0, status Paid. User can edit to revert. */
   markedAsPaid?: boolean;
 }
@@ -27,6 +30,9 @@ export class RecordsService {
   records = computed(() => this.recordsSignal());
 
   isLoading = signal<boolean>(false);
+  isKisanDetailPageOpen = signal<boolean>(false);
+  // Shared state for pre-filling Add Record form from Kisan Records page
+  prefillFarmerData = signal<{ name: string; phone: string } | null>(null);
 
   constructor(private firestoreService: FirestoreService) {}
 

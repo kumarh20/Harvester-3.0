@@ -38,20 +38,20 @@ export class App implements OnInit {
   protected currentTab = signal('dashboard');
   protected isDarkTheme = signal(false);
 
-  // Navigation items - arranged: Home, Records, Center Add (+), Settings, Profile
+  // Navigation items - arranged: Home, Records, Center Add (+), Reminders, Settings
   // Display will use translations via getNavLabel()
   protected readonly navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'home', route: '/dashboard' },
     { label: 'Records', icon: 'receipt_long', route: '/records' },
     { label: 'Add New', icon: 'add_circle', route: '/add-new' },
-    { label: 'Settings', icon: 'settings', route: '/settings' },
-    { label: 'Profile', icon: 'person', route: '/profile' }
+    { label: 'Reminders', icon: 'alarm', route: '/reminders' },
+    { label: 'Settings', icon: 'settings', route: '/settings' }
   ];
 
   constructor(
     private auth: Auth,
     private router: Router,
-    private recordsService: RecordsService,
+    public recordsService: RecordsService,
     private notificationService: NotificationService,
     public translationService: TranslationService,
     private languageService: LanguageService,
@@ -62,6 +62,9 @@ export class App implements OnInit {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
         this.activeRoute.set(event.url);
+        if (!event.url.includes('/records')) {
+          this.recordsService.isKisanDetailPageOpen.set(false);
+        }
       });
 
     this.initializeTheme();
@@ -109,6 +112,9 @@ export class App implements OnInit {
         break;
       case 'records':
         route = '/records';
+        break;
+      case 'reminders':
+        route = '/reminders';
         break;
       case 'dashboard':
       case 'summary':
@@ -194,6 +200,7 @@ export class App implements OnInit {
       'Home': 'nav.home',
       'Add New': 'nav.addNew',
       'Records': 'nav.records',
+      'Reminders': 'nav.reminders',
       'Settings': 'nav.settings',
       'Profile': 'nav.profile',
       'More': 'nav.more'

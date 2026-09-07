@@ -1,0 +1,546 @@
+<div class="reminders-page-container" id="reminders-main-view">
+
+  <!-- Clean Top Header (Matching Screenshot) -->
+  <header class="reminders-header-bar" id="reminders-header">
+    <div class="header-titles">
+      <h1 class="page-main-title" id="reminders-title">
+        {{ translationService.getCurrentLanguage() === 'hi' ? 'कटाई रिमाइंडर' : (translationService.get('reminders.title') || 'कटाई रिमाइंडर') }}
+      </h1>
+      <p class="page-subtitle" id="reminders-subtitle">
+        {{ translationService.getCurrentLanguage() === 'hi' ? 'आगामी बुकिंग व रिमाइंडर प्रबंधित करें' : (translationService.get('reminders.subtitle') || 'आगामी बुकिंग व रिमाइंडर प्रबंधित करें') }}
+      </p>
+    </div>
+
+    <button 
+      type="button" 
+      class="btn-new-primary" 
+      id="btn-new-reminder" 
+      (click)="openNewBookingForm()">
+      <span class="plus-sign">+</span>
+      <span class="btn-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'नया' : 'New' }}</span>
+    </button>
+  </header>
+
+  <!-- Search Bar (Matching Screenshot) -->
+  <div class="search-box-card" id="reminders-search-box">
+    <mat-icon class="search-box-icon">search</mat-icon>
+    <input 
+      type="text" 
+      class="search-box-input" 
+      [placeholder]="translationService.getCurrentLanguage() === 'hi' ? 'किसान के नाम, नंबर या तारीख से खोजें...' : 'Search by farmer name, number or date...'"
+      [value]="searchQuery()"
+      (input)="searchQuery.set($any($event.target).value)"
+      id="input-search-reminders" />
+    @if (searchQuery()) {
+      <button 
+        type="button" 
+        class="search-clear-btn" 
+        (click)="searchQuery.set('')"
+        aria-label="Clear search">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </div>
+
+  <!-- Filter Pills Row with Count Badges & Calendar Trigger (Matching Screenshot) -->
+  <div class="filters-pills-row" id="reminders-filter-tabs">
+    <!-- Pill 1: All -->
+    <button 
+      type="button" 
+      class="pill-filter-btn" 
+      [class.active]="activeTab() === 'all'"
+      (click)="activeTab.set('all')"
+      id="tab-all-reminders">
+      <span class="pill-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी' : 'All' }}</span>
+      <span class="pill-count">{{ allCount() }}</span>
+    </button>
+
+    <!-- Pill 2: Today -->
+    <button 
+      type="button" 
+      class="pill-filter-btn" 
+      [class.active]="activeTab() === 'today'"
+      (click)="activeTab.set('today')"
+      id="tab-today-reminders">
+      <span class="pill-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'आज' : 'Today' }}</span>
+      <span class="pill-count">{{ todayCount() }}</span>
+    </button>
+
+    <!-- Pill 3: Tomorrow -->
+    <button 
+      type="button" 
+      class="pill-filter-btn" 
+      [class.active]="activeTab() === 'tomorrow'"
+      (click)="activeTab.set('tomorrow')"
+      id="tab-tomorrow-reminders">
+      <span class="pill-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कल' : 'Tomorrow' }}</span>
+      <span class="pill-count">{{ tomorrowCount() }}</span>
+    </button>
+
+    <!-- Right: Calendar Trigger Button -->
+    <div class="calendar-btn-wrap">
+      <button 
+        type="button" 
+        class="calendar-icon-btn" 
+        [class.active]="activeTab() === 'custom'"
+        (click)="picker.open()"
+        title="तारीख चुनें / Select Date"
+        id="btn-calendar-filter">
+        <mat-icon>calendar_today</mat-icon>
+      </button>
+      <input 
+        matInput 
+        [matDatepicker]="picker" 
+        class="hidden-datepicker-input" 
+        (dateChange)="onCustomDateSelected($event.value)" />
+      <mat-datepicker #picker></mat-datepicker>
+    </div>
+  </div>
+
+  @if (activeTab() === 'custom' && customFilterDate()) {
+    <div class="custom-date-active-chip">
+      <mat-icon class="chip-cal-icon">event</mat-icon>
+      <span>{{ customFilterDate() }}</span>
+      <button type="button" class="chip-close-btn" (click)="customFilterDate.set(''); activeTab.set('all')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
+
+  <!-- Reminders Cards Feed -->
+  <main class="reminders-list-container" id="reminders-list-feed">
+    @if (remindersService.isLoading()) {
+      <div class="loading-state-box" id="reminders-loading">
+        <mat-spinner diameter="42"></mat-spinner>
+        <p>{{ translationService.get('common.loading') }}</p>
+      </div>
+    } @else if (filteredReminders().length === 0) {
+      <div class="empty-state-card" id="reminders-empty">
+        <div class="empty-icon-circle">
+          <mat-icon>event_available</mat-icon>
+        </div>
+        <h3 class="empty-title">{{ translationService.get('reminders.noReminders') }}</h3>
+        <p class="empty-desc">{{ translationService.get('reminders.noRemindersSub') }}</p>
+        <button 
+          type="button" 
+          class="empty-action-btn" 
+          (click)="openNewBookingForm()"
+          id="btn-empty-new-booking">
+          <mat-icon>alarm_add</mat-icon>
+          <span>{{ translationService.get('reminders.newBooking') }}</span>
+        </button>
+      </div>
+    } @else {
+      <div class="reminders-grid" id="reminders-cards-grid">
+        @for (reminder of filteredReminders(); track reminder.id) {
+          <article 
+            class="reminder-item-card" 
+            [class.card-today]="isToday(reminder.scheduledDate)"
+            [id]="'reminder-card-' + reminder.id">
+            
+            <!-- Row 1: Farmer Name, Timing Badge, Date & Time -->
+            <div class="card-header-row">
+              <div class="farmer-info-left">
+                <div class="farmer-name-badge-line">
+                  <h3 class="farmer-name">{{ reminder.farmerName }}</h3>
+                  @if (isToday(reminder.scheduledDate)) {
+                    <span class="badge-timing badge-timing-today">{{ translationService.getCurrentLanguage() === 'hi' ? 'आज' : 'Today' }}</span>
+                  } @else if (isTomorrow(reminder.scheduledDate)) {
+                    <span class="badge-timing badge-timing-tomorrow">{{ translationService.getCurrentLanguage() === 'hi' ? 'कल' : 'Tomorrow' }}</span>
+                  }
+                </div>
+                
+                <a [href]="'tel:' + reminder.contactNumber" class="farmer-phone-link">
+                  <mat-icon class="phone-icon">call</mat-icon>
+                  <span>{{ reminder.contactNumber }}</span>
+                </a>
+              </div>
+
+              <div class="date-time-right">
+                <span class="card-date-text">{{ formatCardDate(reminder.scheduledDate) }}</span>
+                <span class="card-time-text">{{ formatDisplayTime(reminder.scheduledTime || '08:00 AM') }}</span>
+              </div>
+            </div>
+
+            <!-- Row 2: 3 Specification Tags (Green Acres, Yellow Rate, Purple Harvester) -->
+            <div class="card-tags-row">
+              <div class="tag-pill tag-acres">
+                <span class="tag-emoji">🌾</span>
+                <span class="tag-label">{{ reminder.landInAcres }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Ac' }}</span>
+              </div>
+
+              <div class="tag-pill tag-rate">
+                <span class="tag-label">{{ formatRate(reminder.ratePerAcre) }}</span>
+              </div>
+
+              @if (reminder.harvester) {
+                <div class="tag-pill tag-harvester">
+                  <span class="tag-emoji">🚜</span>
+                  <span class="tag-label">{{ reminder.harvester }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Notes if available -->
+            @if (reminder.notes) {
+              <div class="card-notes-row">
+                <mat-icon class="notes-icon">notes</mat-icon>
+                <span class="notes-text">{{ reminder.notes }}</span>
+              </div>
+            }
+
+            <!-- Row 3: Estimation & Action Buttons -->
+            <div class="card-bottom-row">
+              <div class="estimate-block">
+                <span class="estimate-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल अनुमान' : 'Est. Total' }}</span>
+                <span class="estimate-value">{{ formatCurrency(reminder.estimatedTotal) }}</span>
+              </div>
+
+              <div class="card-actions-group">
+                <!-- Edit Button -->
+                <button 
+                  type="button" 
+                  class="icon-action-btn btn-edit" 
+                  (click)="openEditForm(reminder)" 
+                  [title]="translationService.get('common.edit') || 'संपादित करें'">
+                  <mat-icon>edit_square</mat-icon>
+                </button>
+
+                <!-- Delete Button -->
+                <button 
+                  type="button" 
+                  class="icon-action-btn btn-delete" 
+                  (click)="deleteBooking(reminder)" 
+                  [title]="translationService.get('common.delete') || 'हटाएं'">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+
+                <!-- Record Status / Action Button -->
+                @if (reminder.status === 'completed' || reminder.movedToRecordId) {
+                  <button 
+                    type="button" 
+                    class="status-action-btn btn-added" 
+                    (click)="goToRecord(reminder)"
+                    title="रिकॉर्ड देखें / View Record">
+                    <mat-icon class="btn-check-icon">check</mat-icon>
+                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'जोड़ा गया' : 'Added' }}</span>
+                  </button>
+                } @else {
+                  <button 
+                    type="button" 
+                    class="status-action-btn btn-add-record" 
+                    (click)="promptMoveToRecord(reminder)"
+                    [id]="'btn-convert-' + reminder.id">
+                    <span class="plus-icon">+</span>
+                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'रिकॉर्ड में जोड़ें' : 'Add to Records' }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+          </article>
+        }
+      </div>
+    }
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: ADD / EDIT REMINDER BOOKING FORM -->
+  <!-- ========================================================= -->
+  @if (isFormOpen()) {
+    <div class="modal-backdrop-overlay" (click)="closeForm()" id="modal-reminder-form-backdrop">
+      <div class="modal-card-dialog" (click)="$event.stopPropagation()" id="modal-reminder-form">
+        
+        <!-- Modal Header -->
+        <div class="modal-header-row">
+          <div class="modal-title-wrap">
+            <div class="modal-icon-badge">
+              <mat-icon>{{ isEditMode() ? 'edit_calendar' : 'alarm_add' }}</mat-icon>
+            </div>
+            <div>
+              <h2 class="modal-title">
+                {{ isEditMode() ? translationService.get('reminders.editBooking') : translationService.get('reminders.newBooking') }}
+              </h2>
+              <p class="modal-subtitle">
+                {{ isEditMode() ? 'बुकिंग विवरण अपडेट करें' : 'भविष्य की कटाई के लिए नई बुकिंग जोड़ें' }}
+              </p>
+            </div>
+          </div>
+
+          <button type="button" class="modal-close-icon-btn" (click)="closeForm()" aria-label="Close">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <!-- Modal Form Body -->
+        <form [formGroup]="bookingForm" (ngSubmit)="saveBooking()" class="booking-modal-form">
+          
+          <!-- Section 1: Farmer Contact -->
+          <div class="form-sub-section">
+            <div class="sub-section-title">
+              <mat-icon class="sub-icon">person</mat-icon>
+              <span>{{ translationService.get('form.farmerInfo') }}</span>
+            </div>
+
+            <!-- Farmer Name -->
+            <mat-form-field appearance="outline" class="custom-mat-field" id="field-reminder-farmer-name">
+              <mat-label>{{ translationService.get('form.farmerName') }}</mat-label>
+              <input 
+                matInput 
+                formControlName="farmerName" 
+                [placeholder]="translationService.get('form.farmerNamePlaceholder')" 
+                required />
+              <mat-icon matPrefix class="field-icon">person_outline</mat-icon>
+              @if (isExistingFarmerLocked()) {
+                <button 
+                  type="button" 
+                  matSuffix 
+                  class="unlock-field-btn" 
+                  (click)="unlockFarmerFields()" 
+                  title="बदलें / Edit">
+                  <mat-icon>lock_open</mat-icon>
+                </button>
+              }
+              @if (bookingForm.get('farmerName')?.touched && bookingForm.get('farmerName')?.invalid) {
+                <mat-error>{{ translationService.get('errors.farmerNameRequired') }}</mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Contact Number -->
+            <mat-form-field appearance="outline" class="custom-mat-field" id="field-reminder-contact-number">
+              <mat-label>{{ translationService.get('form.contactNumber') }}</mat-label>
+              <input 
+                matInput 
+                type="tel" 
+                formControlName="contactNumber" 
+                placeholder="10-digit mobile number" 
+                maxlength="10" 
+                required />
+              <mat-icon matPrefix class="field-icon">phone</mat-icon>
+              <span matPrefix class="country-prefix">+91&nbsp;</span>
+              @if (bookingForm.get('contactNumber')?.touched && bookingForm.get('contactNumber')?.invalid) {
+                <mat-error>{{ translationService.get('errors.contactNumberRequired') }}</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <!-- Section 2: Scheduled Date & Time (Clean, Simple, Mobile-Friendly) -->
+          <div class="form-sub-section">
+            <div class="sub-section-title">
+              <mat-icon class="sub-icon">calendar_today</mat-icon>
+              <span>{{ translationService.get('reminders.scheduledDate') || 'कटाई का दिनांक व समय' }}</span>
+            </div>
+
+            <div class="date-validation-hint">
+              <mat-icon class="hint-icon">info</mat-icon>
+              <span>{{ translationService.get('reminders.futureDateValidation') || 'कृपया भविष्य या आज की तारीख चुनें' }}</span>
+            </div>
+
+            <!-- Clean, Simple 2-column Date & Time row -->
+            <div class="form-grid-2-inline">
+              <!-- Scheduled Date Picker -->
+              <mat-form-field appearance="outline" class="custom-mat-field" id="field-reminder-date">
+                <mat-label>{{ translationService.get('form.date') || 'दिनांक (तारीख)' }}</mat-label>
+                <input 
+                  matInput 
+                  [matDatepicker]="simpleDatePicker" 
+                  formControlName="scheduledDate" 
+                  placeholder="DD/MM/YYYY" 
+                  (click)="simpleDatePicker.open()" 
+                  [min]="todayDate" 
+                  required />
+                <mat-datepicker-toggle matSuffix [for]="simpleDatePicker"></mat-datepicker-toggle>
+                <mat-datepicker #simpleDatePicker></mat-datepicker>
+                @if (bookingForm.get('scheduledDate')?.touched && bookingForm.get('scheduledDate')?.invalid) {
+                  <mat-error>{{ translationService.get('errors.dateRequired') || 'दिनांक आवश्यक है' }}</mat-error>
+                }
+              </mat-form-field>
+
+              <!-- Scheduled Time Input -->
+              <mat-form-field appearance="outline" class="custom-mat-field" id="field-reminder-time">
+                <mat-label>{{ translationService.get('reminders.scheduledTime') || 'समय' }}</mat-label>
+                <input 
+                  matInput 
+                  type="time" 
+                  formControlName="scheduledTime" 
+                  required />
+                <mat-icon matPrefix class="field-icon">schedule</mat-icon>
+                @if (bookingForm.get('scheduledTime')?.touched && bookingForm.get('scheduledTime')?.invalid) {
+                  <mat-error>{{ translationService.get('errors.timeRequired') || 'समय आवश्यक है' }}</mat-error>
+                }
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Section 3: Land & Commercial Details -->
+          <div class="form-sub-section">
+            <div class="sub-section-title">
+              <mat-icon class="sub-icon">agriculture</mat-icon>
+              <span>{{ translationService.get('form.cuttingDetails') }}</span>
+            </div>
+
+            <!-- Land in Acres -->
+            <div class="field-with-aux-btn">
+              <mat-form-field appearance="outline" class="custom-mat-field flex-1" id="field-reminder-land">
+                <mat-label>{{ translationService.get('form.landInAcres') }}</mat-label>
+                <input 
+                  matInput 
+                  type="number" 
+                  step="0.01" 
+                  min="0.01" 
+                  formControlName="landInAcres" 
+                  (input)="onLandChange($event)"
+                  placeholder="0.00" 
+                  required />
+                <mat-icon matPrefix class="field-icon">square_foot</mat-icon>
+                <span matSuffix class="field-suffix-text">एकड़</span>
+              </mat-form-field>
+
+              <button 
+                type="button" 
+                class="measure-land-aux-btn" 
+                (click)="openLandMeasurementDialog()" 
+                title="खेत नापें (GPS/Map)">
+                <mat-icon>map</mat-icon>
+                <span>नापें</span>
+              </button>
+            </div>
+
+            <div class="form-grid-2-inline">
+              <!-- Rate per Acre -->
+              <mat-form-field appearance="outline" class="custom-mat-field" id="field-reminder-rate">
+                <mat-label>{{ translationService.get('form.ratePerAcre') }}</mat-label>
+                <input 
+                  matInput 
+                  type="number" 
+                  formControlName="ratePerAcre" 
+                  (input)="onRateChange($event)"
+                  placeholder="2500" 
+                  required />
+                <span matPrefix class="currency-prefix">₹&nbsp;</span>
+                <span matSuffix class="field-suffix-text">/एकड़</span>
+              </mat-form-field>
+
+              <!-- Harvester Select -->
+              <mat-form-field appearance="outline" class="custom-mat-field" id="field-reminder-harvester">
+                <mat-label>{{ translationService.get('form.harvester') }}</mat-label>
+                <mat-select formControlName="harvester">
+                  @for (h of harvesterService.harvesters(); track h) {
+                    <mat-option [value]="h">{{ h }}</mat-option>
+                  }
+                </mat-select>
+                <mat-icon matPrefix class="field-icon">agriculture</mat-icon>
+              </mat-form-field>
+            </div>
+
+            <!-- Live Calculation Summary Banner -->
+            <div class="estimate-summary-box">
+              <div class="estimate-label-col">
+                <span class="est-title">{{ translationService.get('reminders.estimatedTotal') }}:</span>
+                <span class="est-formula">{{ landInAcresVal() }} एकड़ × ₹{{ ratePerAcreVal() }}</span>
+              </div>
+              <div class="estimate-amount-col">
+                <span class="est-amount">₹{{ estimatedTotal() }}</span>
+              </div>
+            </div>
+
+            <!-- Special Notes -->
+            <mat-form-field appearance="outline" class="custom-mat-field" id="field-reminder-notes">
+              <mat-label>{{ translationService.get('reminders.notes') }}</mat-label>
+              <textarea 
+                matInput 
+                rows="2" 
+                formControlName="notes" 
+                [placeholder]="translationService.get('reminders.notesPlaceholder')"></textarea>
+              <mat-icon matPrefix class="field-icon">edit_note</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <!-- Modal Footer Buttons -->
+          <div class="modal-actions-footer">
+            <button 
+              type="button" 
+              class="btn-modal-cancel" 
+              (click)="closeForm()">
+              {{ translationService.get('common.cancel') }}
+            </button>
+
+            <button 
+              type="submit" 
+              class="btn-modal-submit" 
+              [disabled]="isSubmitting() || bookingForm.invalid"
+              id="btn-save-reminder">
+              @if (isSubmitting()) {
+                <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+                <span>{{ translationService.get('common.saving') }}</span>
+              } @else {
+                <mat-icon class="btn-save-icon">check</mat-icon>
+                <span>{{ isEditMode() ? translationService.get('reminders.updateBooking') : translationService.get('reminders.saveBooking') }}</span>
+              }
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================= -->
+  <!-- MODAL: CONVERT TO CUTTING RECORD CHOICE PROMPT -->
+  <!-- ========================================================= -->
+  @if (pendingMoveReminder()) {
+    <div class="modal-backdrop-overlay" (click)="closeMovePrompt()" id="modal-move-prompt-backdrop">
+      <div class="modal-card-dialog modal-prompt-dialog" (click)="$event.stopPropagation()" id="modal-move-prompt">
+        
+        <div class="prompt-icon-badge">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+
+        <h2 class="prompt-title">{{ translationService.get('reminders.moveToRecords') }}</h2>
+        
+        <div class="prompt-farmer-details">
+          <strong>{{ pendingMoveReminder()?.farmerName }}</strong> • {{ pendingMoveReminder()?.landInAcres }} एकड़ (₹{{ pendingMoveReminder()?.estimatedTotal }})
+        </div>
+
+        <p class="prompt-message">{{ translationService.get('reminders.moveToRecordsPromptEdit') }}</p>
+
+        <div class="prompt-actions-column">
+          <!-- Option 1: Edit details before adding -->
+          <button 
+            type="button" 
+            class="prompt-btn-primary" 
+            (click)="moveToRecordWithEdit(pendingMoveReminder()!)"
+            id="btn-move-with-edit">
+            <mat-icon>edit_note</mat-icon>
+            <div class="btn-text-col">
+              <span class="btn-main-label">{{ translationService.get('reminders.editAndAdd') }}</span>
+              <span class="btn-sub-label">नकद भुगतान या रकबा अपडेट करके जोड़ें</span>
+            </div>
+          </button>
+
+          <!-- Option 2: Direct Move -->
+          <button 
+            type="button" 
+            class="prompt-btn-secondary" 
+            (click)="directMoveToRecord(pendingMoveReminder()!)"
+            id="btn-move-direct">
+            <mat-icon>flash_on</mat-icon>
+            <div class="btn-text-col">
+              <span class="btn-main-label">{{ translationService.get('reminders.directMove') }}</span>
+              <span class="btn-sub-label">अनुमानित राशि के साथ सीधे रिकॉर्ड में दर्ज करें</span>
+            </div>
+          </button>
+
+          <button 
+            type="button" 
+            class="prompt-btn-cancel" 
+            (click)="closeMovePrompt()">
+            {{ translationService.get('common.cancel') }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>

@@ -7,7 +7,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
+import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { CustomDateAdapter, CUSTOM_DATE_FORMATS } from '../../core/adapters/custom-date-adapter';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
@@ -15,9 +16,12 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { LandMeasurementComponent } from '../land-measurement/land-measurement.component';
 import { RecordsService } from '../../core/services/records.service';
 import { HarvesterService } from '../../core/services/harvester.service';
+import { RemindersService } from '../../core/services/reminders.service';
+import { SeasonService } from '../../core/services/season.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { LoaderService } from '../../shared/services/loader.service';
 import { TranslationService } from '../../shared/services/translation.service';
+import { DialogService } from '../../shared/services/dialog.service';
 import { Auth } from '@angular/fire/auth';
 
 @Component({
@@ -37,7 +41,11 @@ import { Auth } from '@angular/fire/auth';
     MatSelectModule,
     MatDialogModule
   ],
-  providers: [provideNativeDateAdapter()],
+  providers: [
+    { provide: DateAdapter, useClass: CustomDateAdapter },
+    { provide: MAT_DATE_FORMATS, useValue: CUSTOM_DATE_FORMATS },
+    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' }
+  ],
   templateUrl: './add-new.component.html',
   styleUrl: './add-new.component.scss',
   encapsulation: ViewEncapsulation.None
@@ -57,6 +65,16 @@ export class AddNewComponent implements OnInit {
   isEditMode = signal(false);
   editingRecordId = signal<string | null>(null);
   currentDate = new Date();
+
+  // Temporary selected time in date & time picker
+  tempSelectedTime = signal<string>(this.getCurrentTimeString());
+
+  // Converted from reminder ID (if coming from booking conversion)
+  fromReminderId = signal<string | null>(null);
+
+  // Existing Farmer Detection & Locking state
+  isExistingFarmerLocked = signal(false);
+  private isCheckingFarmer = false;
 
   // Computed signals for form titles
   formTitle = computed(() => {
@@ -89,14 +107,17 @@ export class AddNewComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private recordsService: RecordsService,
+    private remindersService: RemindersService,
     public harvesterService: HarvesterService,
+    public seasonService: SeasonService,
     private toastService: ToastService,
     private route: ActivatedRoute,
     private router: Router,
     public translationService: TranslationService,
     private loaderService: LoaderService,
     private auth: Auth,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private dialogService: DialogService
   ) {
     this.initializeForm();
   }
@@ -130,6 +151,86 @@ export class AddNewComponent implements OnInit {
     return 2500;
   }
 
+  getCurrentTimeString(): string {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+
+  getInitialDateTime(): Date {
+    const now = new Date();
+    (now as any).hasTime = true;
+    (now as any).timeString = this.getCurrentTimeString();
+    return now;
+  }
+
+  isHindi(): boolean {
+    return this.translationService.getCurrentLanguage() === 'hi';
+  }
+
+  onPickerOpened(): void {
+    const currentTime = this.recordForm.get('cuttingTime')?.value || this.getCurrentTimeString();
+    this.tempSelectedTime.set(currentTime);
+  }
+
+  onTempTimeChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input && input.value) {
+      this.tempSelectedTime.set(input.value);
+    }
+  }
+
+  setTempTimeToNow(): void {
+    this.tempSelectedTime.set(this.getCurrentTimeString());
+  }
+
+  setTempTimePreset(timeStr: string): void {
+    this.tempSelectedTime.set(timeStr);
+  }
+
+  getFormattedTimePreview(): string {
+    const time = this.tempSelectedTime();
+    if (!time) return '';
+    const [hStr, mStr] = time.split(':');
+    let h = parseInt(hStr, 10) || 0;
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    h = h ? h : 12;
+    const formattedH = String(h).padStart(2, '0');
+    return `${formattedH}:${mStr} ${ampm}`;
+  }
+
+  confirmDateTimeSelection(picker: any): void {
+    let baseDate: Date;
+    if (picker && picker._pendingSelection) {
+      baseDate = new Date(picker._pendingSelection);
+    } else {
+      const formDate = this.recordForm.get('date')?.value;
+      baseDate = formDate instanceof Date && !isNaN(formDate.getTime()) ? new Date(formDate) : new Date();
+    }
+
+    const time = this.tempSelectedTime() || this.getCurrentTimeString();
+    const [hStr, mStr] = time.split(':');
+    const hours = parseInt(hStr, 10) || 0;
+    const minutes = parseInt(mStr, 10) || 0;
+
+    baseDate.setHours(hours, minutes, 0, 0);
+    (baseDate as any).hasTime = true;
+    (baseDate as any).timeString = time;
+
+    this.recordForm.patchValue({
+      date: baseDate,
+      cuttingTime: time
+    });
+    this.recordForm.get('date')?.markAsDirty();
+    this.recordForm.get('date')?.markAsTouched();
+
+    if (picker) {
+      picker.close();
+    }
+  }
+
   /**
    * Initialize Reactive Form with FormControls and Validators
    */
@@ -138,12 +239,14 @@ export class AddNewComponent implements OnInit {
     this.recordForm = this.fb.group({
       farmerName: ['', [Validators.required, Validators.minLength(2)]],
       contactNumber: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
-      date: [new Date(), Validators.required],
+      date: [this.getInitialDateTime(), Validators.required],
+      cuttingTime: [this.getCurrentTimeString(), Validators.required],
       landInAcres: [0, [Validators.required, Validators.min(0.01)]],
       ratePerAcre: [defaultRate, [Validators.required, Validators.min(1)]],
       paidOnSight: [0, [Validators.min(0)]],
       fullPaymentDate: [''],
-      harvester: ['']
+      harvester: [''],
+      seasonId: ['']
     });
 
     // Subscribe to value changes for automatic calculations
@@ -151,17 +254,80 @@ export class AddNewComponent implements OnInit {
       this.updateCalculations();
     });
 
+    // Listen to contactNumber changes to detect if farmer record already exists
+    this.recordForm.get('contactNumber')?.valueChanges.subscribe(val => {
+      if (this.isEditMode() || this.isExistingFarmerLocked() || this.isCheckingFarmer) return;
+      const clean = (val || '').toString().replace(/\D/g, '').slice(-10);
+      if (clean.length === 10) {
+        this.checkExistingFarmer(clean);
+      }
+    });
+
     // Initial calculation
     this.updateCalculations();
   }
 
-  async ngOnInit(): Promise<void> {
-    await this.harvesterService.loadHarvesters();
-    const defaultHarvester = this.harvesterService.getDefaultHarvester();
-    this.recordForm.patchValue({ harvester: defaultHarvester });
-    if (!this.isEditMode()) {
-      this.recordForm.patchValue({ ratePerAcre: this.getDefaultRate() });
-    }
+  private cleanPhone(phone: string): string {
+    return (phone || '').toString().replace(/\D/g, '').slice(-10);
+  }
+
+  /**
+   * Check if farmer record exists for the entered phone number and prompt with popup
+   */
+  private checkExistingFarmer(phone10: string): void {
+    if (this.isCheckingFarmer || this.isExistingFarmerLocked() || this.isEditMode()) return;
+
+    const allRecords = this.recordsService.getAllRecords();
+    const matchingRecords = allRecords.filter(r => 
+      this.cleanPhone(r.contactNumber) === phone10 && r.farmerName
+    );
+
+    if (matchingRecords.length === 0) return;
+
+    this.isCheckingFarmer = true;
+    const existingName = matchingRecords[0].farmerName;
+    const count = matchingRecords.length;
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+
+    const title = isHi ? 'किसान रिकॉर्ड मौजूद है' : 'Existing Farmer Record';
+    const message = isHi
+      ? `इस नंबर (${phone10}) पर किसान "${existingName}" का रिकॉर्ड पहले से मौजूद है (${count} कटाई रिकॉर्ड)। क्या आप इसी किसान के लिए नई कटाई जोड़ना चाहते हैं?`
+      : `A record for farmer "${existingName}" already exists for this number (${count} cutting record${count > 1 ? 's' : ''}). Do you want to add a new cutting record for this farmer?`;
+    const confirmText = isHi ? 'हाँ, नई कटाई जोड़ें' : 'Yes, Add Cutting';
+    const cancelText = isHi ? 'रद्द करें' : 'Cancel';
+
+    this.dialogService.confirm(message, title, confirmText, cancelText, 'info').subscribe(confirmed => {
+      this.isCheckingFarmer = false;
+      if (confirmed) {
+        this.isExistingFarmerLocked.set(true);
+        this.recordForm.patchValue({
+          farmerName: existingName,
+          contactNumber: phone10
+        });
+        this.recordForm.get('farmerName')?.enable();
+        this.recordForm.get('contactNumber')?.enable();
+        this.toastService.success(
+          isHi 
+            ? `मौजूदा किसान "${existingName}" चुना गया। नई कटाई का विवरण भरें।`
+            : `Existing farmer "${existingName}" selected. Fill in new cutting details.`
+        );
+      } else {
+        this.recordForm.patchValue({ contactNumber: '' });
+      }
+    });
+  }
+
+  /**
+   * Unlock farmer fields if user wants to change or enter fresh details
+   */
+  unlockFarmerFields(): void {
+    this.recordForm.get('farmerName')?.enable();
+    this.recordForm.get('contactNumber')?.enable();
+    this.isExistingFarmerLocked.set(false);
+  }
+
+  ngOnInit(): void {
+    // 1. Synchronously process route parameters and query params without delay
     this.route.params.subscribe(params => {
       const recordId = params['id'];
       if (recordId) {
@@ -170,11 +336,78 @@ export class AddNewComponent implements OnInit {
     });
 
     this.route.queryParams.subscribe(queryParams => {
+      if (queryParams['fromReminderId']) {
+        this.fromReminderId.set(queryParams['fromReminderId']);
+      }
+
       if (queryParams['acres']) {
         const acresVal = parseFloat(queryParams['acres']);
         if (!isNaN(acresVal) && acresVal > 0) {
           this.recordForm.patchValue({ landInAcres: acresVal });
           this.toastService.success(`Applied measured area: ${acresVal} Acres`);
+        }
+      }
+
+      if (queryParams['rate']) {
+        const rateVal = parseFloat(queryParams['rate']);
+        if (!isNaN(rateVal) && rateVal > 0) {
+          this.recordForm.patchValue({ ratePerAcre: rateVal });
+        }
+      }
+
+      if (queryParams['time']) {
+        this.recordForm.patchValue({ cuttingTime: queryParams['time'] });
+        this.tempSelectedTime.set(queryParams['time']);
+      }
+
+      if (queryParams['harvester']) {
+        this.recordForm.patchValue({ harvester: queryParams['harvester'] });
+      }
+
+      // Pre-fill farmer name & phone from Kisan Record page or query parameters
+      const servicePrefill = this.recordsService.prefillFarmerData();
+      const phoneParam = queryParams['prefillPhone'] || servicePrefill?.phone;
+      const nameParam = queryParams['prefillName'] || servicePrefill?.name;
+
+      if (phoneParam || nameParam) {
+        const phone = (phoneParam || '').toString().replace(/\D/g, '').slice(-10);
+        const name = (nameParam || '').toString().trim();
+
+        // Lock existing farmer state immediately BEFORE patching form to prevent any popup
+        this.isExistingFarmerLocked.set(true);
+        this.isCheckingFarmer = false;
+
+        this.recordForm.patchValue({
+          farmerName: name,
+          contactNumber: phone
+        });
+
+        // Ensure controls remain enabled for full text visibility while readonly attribute locks editing
+        this.recordForm.get('farmerName')?.enable();
+        this.recordForm.get('contactNumber')?.enable();
+
+        // Clear service prefill data so future direct visits are clean
+        this.recordsService.prefillFarmerData.set(null);
+      }
+    });
+
+    // 2. Load default rate, harvesters, and seasons
+    if (!this.isEditMode()) {
+      this.recordForm.patchValue({ ratePerAcre: this.getDefaultRate() });
+    }
+
+    this.harvesterService.loadHarvesters().then(() => {
+      const defaultHarvester = this.harvesterService.getDefaultHarvester();
+      if (!this.recordForm.get('harvester')?.value) {
+        this.recordForm.patchValue({ harvester: defaultHarvester });
+      }
+    });
+
+    this.seasonService.loadSeasons().then(() => {
+      if (!this.isEditMode() && !this.recordForm.get('seasonId')?.value) {
+        const defaultSeason = this.seasonService.getDefaultSeason();
+        if (defaultSeason?.id) {
+          this.recordForm.patchValue({ seasonId: defaultSeason.id });
         }
       }
     });
@@ -195,6 +428,15 @@ export class AddNewComponent implements OnInit {
 
       // Convert dates to Date objects for Material Datepicker
       const dateObj = this.convertToDateObject(record.date);
+      const cuttingTime = record.cuttingTime || this.getCurrentTimeString();
+      if (dateObj instanceof Date && !isNaN(dateObj.getTime())) {
+        const [hStr, mStr] = cuttingTime.split(':');
+        const h = parseInt(hStr, 10) || 0;
+        const m = parseInt(mStr, 10) || 0;
+        dateObj.setHours(h, m, 0, 0);
+        (dateObj as any).hasTime = true;
+        (dateObj as any).timeString = cuttingTime;
+      }
       const paymentDateObj = record.fullPaymentDate ? this.convertToDateObject(record.fullPaymentDate) : null;
 
       console.log('🔄 Date conversions:', {
@@ -216,11 +458,13 @@ export class AddNewComponent implements OnInit {
         farmerName: record.farmerName,
         contactNumber: record.contactNumber,
         date: dateObj,
+        cuttingTime: cuttingTime,
         landInAcres: Number(record.landInAcres) || 0,
         ratePerAcre: Number(record.ratePerAcre) || 0,
         paidOnSight: Number(record.paidOnSight) || 0,
         fullPaymentDate: paymentDateObj || '',
-        harvester: record.harvester || this.harvesterService.getDefaultHarvester()
+        harvester: record.harvester || this.harvesterService.getDefaultHarvester(),
+        seasonId: record.seasonId || ''
       });
 
       console.log('✅ Form patched with values:', this.recordForm.value);
@@ -234,109 +478,67 @@ export class AddNewComponent implements OnInit {
 
   /**
    * Convert string date to Date object for Material Datepicker
-   * Handles multiple formats: DD/MM/YYYY, YYYY-MM-DD, ISO strings
+   * Handles multiple formats: DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD, ISO strings
    */
   private convertToDateObject(dateString: string): Date | string {
     if (!dateString || dateString.trim() === '') {
-      console.log('⚠️ Empty date string');
       return '';
     }
 
-    console.log('🔍 Converting to Date object:', dateString);
-
-    // DD/MM/YYYY format
-    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateString)) {
-      const parts = dateString.split('/');
-      if (parts.length === 3) {
-        const [day, month, year] = parts;
-        // Month is 0-indexed in JavaScript Date
-        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        console.log('✅ Converted DD/MM/YYYY to Date:', date);
-        return date;
+    const clean = dateString.trim().replace(/\-/g, '/');
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        // YYYY/MM/DD
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        return new Date(year, month, day);
+      } else {
+        // DD/MM/YYYY
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const year = parseInt(parts[2], 10);
+        return new Date(year, month, day);
       }
     }
 
-    // YYYY-MM-DD format or ISO string
     try {
       const date = new Date(dateString);
       if (!isNaN(date.getTime())) {
-        console.log('✅ Parsed as Date object:', date);
         return date;
       }
     } catch (e) {
       console.error('❌ Error parsing date:', e);
     }
 
-    console.warn('⚠️ Could not convert date, returning empty string');
     return '';
   }
 
   /**
-   * Convert date to ISO format (YYYY-MM-DD) for storage
-   * Handles multiple input types: Date objects, strings in various formats
+   * Format date as DD/MM/YYYY string across the entire application
+   */
+  formatDateToDDMMYYYY(dateInput: Date | string | null | undefined): string {
+    if (!dateInput) return '';
+    let d: Date | null = null;
+    if (dateInput instanceof Date) {
+      d = dateInput;
+    } else {
+      const obj = this.convertToDateObject(String(dateInput));
+      d = obj instanceof Date ? obj : null;
+    }
+    if (!d || isNaN(d.getTime())) return String(dateInput);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  /**
+   * Convert date to ISO format (YYYY-MM-DD) fallback
    */
   private convertDateToISO(dateInput: Date | string): string {
-    if (!dateInput) {
-      console.log('⚠️ Empty date input');
-      return '';
-    }
-
-    console.log('🔍 Converting date to ISO:', dateInput);
-
-    // Handle Date object
-    if (dateInput instanceof Date) {
-      if (!isNaN(dateInput.getTime())) {
-        const year = dateInput.getFullYear();
-        const month = String(dateInput.getMonth() + 1).padStart(2, '0');
-        const day = String(dateInput.getDate()).padStart(2, '0');
-        const isoDate = `${year}-${month}-${day}`;
-        console.log('✅ Converted Date object to ISO:', isoDate);
-        return isoDate;
-      }
-      console.error('❌ Invalid Date object');
-      return '';
-    }
-
-    // Handle string
-    const dateString = String(dateInput).trim();
-    if (dateString === '') {
-      return '';
-    }
-
-    // Already in ISO format (YYYY-MM-DD)
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-      console.log('✅ Already ISO format:', dateString);
-      return dateString;
-    }
-
-    // DD/MM/YYYY format
-    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateString)) {
-      const parts = dateString.split('/');
-      if (parts.length === 3) {
-        const [day, month, year] = parts;
-        const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-        console.log('✅ Converted DD/MM/YYYY to ISO:', isoDate);
-        return isoDate;
-      }
-    }
-
-    // Try to parse as Date object (handles ISO 8601 strings)
-    try {
-      const date = new Date(dateString);
-      if (!isNaN(date.getTime())) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const isoDate = `${year}-${month}-${day}`;
-        console.log('✅ Parsed string as Date to ISO:', isoDate);
-        return isoDate;
-      }
-    } catch (e) {
-      console.error('❌ Error parsing date string:', e);
-    }
-
-    console.warn('⚠️ Could not convert date, returning empty string');
-    return '';
+    return this.formatDateToDDMMYYYY(dateInput);
   }
 
 
@@ -369,8 +571,8 @@ export class AddNewComponent implements OnInit {
       return;
     }
 
-    // Get form values
-    const formValue = this.recordForm.value;
+    // Get form values using getRawValue to include disabled controls (farmerName, contactNumber)
+    const formValue = this.recordForm.getRawValue();
 
     // Check if cash payment exceeds total
     if (formValue.paidOnSight > this.totalPayment()) {
@@ -388,18 +590,23 @@ export class AddNewComponent implements OnInit {
     try {
       // Prepare data for API and Firestore (harvester is optional)
       const harvesterValue = formValue.harvester ? String(formValue.harvester).trim() : '';
+      const formattedRecordDate = this.formatDateToDDMMYYYY(formValue.date);
+      const resolvedSeasonId = formValue.seasonId || this.seasonService.getSeasonForDate(formattedRecordDate)?.id || this.seasonService.getDefaultSeason()?.id || '';
+
       const recordData: Record<string, unknown> = {
         uid: uid,
         farmerName: formValue.farmerName,
         contactNumber: formValue.contactNumber,
-        date: this.convertDateToISO(formValue.date),
+        date: formattedRecordDate,
+        cuttingTime: formValue.cuttingTime || this.getCurrentTimeString(),
         landInAcres: Number(formValue.landInAcres),
         ratePerAcre: Number(formValue.ratePerAcre),
         paidOnSight: Number(formValue.paidOnSight),
-        fullPaymentDate: formValue.fullPaymentDate ? this.convertDateToISO(formValue.fullPaymentDate) : '',
+        fullPaymentDate: formValue.fullPaymentDate ? this.formatDateToDDMMYYYY(formValue.fullPaymentDate) : '',
         totalPayment: this.totalPayment(),
         pendingAmount: this.pendingPayment(),
-        ...(harvesterValue ? { harvester: harvesterValue } : {})
+        ...(harvesterValue ? { harvester: harvesterValue } : {}),
+        ...(resolvedSeasonId ? { seasonId: resolvedSeasonId } : {})
       };
       if (this.isEditMode()) {
         recordData['markedAsPaid'] = false;
@@ -413,16 +620,36 @@ export class AddNewComponent implements OnInit {
         this.toastService.success(this.translationService.get('messages.recordUpdated'));
 
         // Navigate back to records page
-        this.router.navigate(['/records']);
+        this.router.navigate(['/records'], { queryParams: { farmer: formValue.contactNumber || formValue.farmerName } });
       } else {
         // Create new record
         console.log('📤 Saving new record with data:', recordData);
 
-        await this.recordsService.addRecord(recordData as any);
+        const createdRes = await this.recordsService.addRecord(recordData as any);
+        const newRecordId = (createdRes as any)?.id || '';
+
+        // If converted from reminder booking, mark reminder completed
+        const remId = this.fromReminderId();
+        if (remId) {
+          try {
+            await this.remindersService.markAsCompleted(remId, newRecordId);
+          } catch (remErr) {
+            console.warn('Could not mark reminder as completed:', remErr);
+          }
+          this.fromReminderId.set(null);
+        }
+
         this.toastService.success(this.translationService.get('messages.recordSaved'));
 
+        const wasExisting = this.isExistingFarmerLocked();
+        const farmerTarget = formValue.contactNumber || formValue.farmerName;
         // Reset form
         this.resetForm();
+
+        // If this cutting was added for an existing farmer, redirect straight to their kisan detail view
+        if (wasExisting) {
+          this.router.navigate(['/records'], { queryParams: { farmer: farmerTarget } });
+        }
       }
     } catch (error) {
       console.error('Error saving/updating record:', error);
@@ -440,18 +667,24 @@ export class AddNewComponent implements OnInit {
    * Reset form to initial state - Uses FormGroup.reset()
    */
   resetForm(): void {
+    this.recordForm.get('farmerName')?.enable();
+    this.recordForm.get('contactNumber')?.enable();
+    this.isExistingFarmerLocked.set(false);
     this.recordForm.reset({
       farmerName: '',
       contactNumber: '',
-      date: new Date(),
+      date: this.getInitialDateTime(),
+      cuttingTime: this.getCurrentTimeString(),
       landInAcres: 0,
       ratePerAcre: this.getDefaultRate(),
       paidOnSight: 0,
       fullPaymentDate: '',
-      harvester: this.harvesterService.getDefaultHarvester()
+      harvester: this.harvesterService.getDefaultHarvester(),
+      seasonId: this.seasonService.getDefaultSeason()?.id || ''
     });
     this.isEditMode.set(false);
     this.editingRecordId.set(null);
+    this.updateCalculations();
   }
 
   /**

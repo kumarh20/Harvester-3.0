@@ -108,7 +108,7 @@
                         <mat-label>{{ translationService.get('auth.phoneLabel') }}</mat-label>
                         <input matInput type="tel" [ngModel]="loginPhone()" (ngModelChange)="loginPhone.set($event)" [placeholder]="translationService.get('auth.phonePlaceholder')" maxlength="10" inputmode="numeric" [readonly]="loginOtpSent()">
                         <mat-icon matPrefix>phone</mat-icon>
-                        <span matPrefix class="phone-prefix">+91&nbsp;</span>
+                        <span matPrefix class="phone-prefix">+91</span>
                     </mat-form-field>
 
                     <!-- STEP 1: Send OTP Button -->
@@ -191,7 +191,7 @@
                         <mat-label>{{ translationService.get('auth.phoneLabel') }}</mat-label>
                         <input matInput type="tel" formControlName="phone" [placeholder]="translationService.get('auth.phonePlaceholder')" maxlength="10" inputmode="numeric">
                         <mat-icon matPrefix>phone</mat-icon>
-                        <span matPrefix class="phone-prefix">+91&nbsp;</span>
+                        <span matPrefix class="phone-prefix">+91</span>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="auth-form-field">
@@ -255,7 +255,7 @@
                         <mat-label>{{ translationService.get('auth.phoneLabel') }}</mat-label>
                         <input matInput type="tel" [ngModel]="signupPhone()" (ngModelChange)="signupPhone.set($event)" [placeholder]="translationService.get('auth.phonePlaceholder')" maxlength="10" inputmode="numeric">
                         <mat-icon matPrefix>phone</mat-icon>
-                        <span matPrefix class="phone-prefix">+91&nbsp;</span>
+                        <span matPrefix class="phone-prefix">+91</span>
                     </mat-form-field>
 
                     <div class="form-checkbox">

@@ -1,0 +1,23 @@
+{
+  "name": "Harvester Cutting Tracker",
+  "short_name": "Harvester",
+  "description": "Smart Agriculture Cutting, Farmer Ledger & Acreage Calculator",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#234126",
+  "theme_color": "#447A44",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/icons/harvester.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

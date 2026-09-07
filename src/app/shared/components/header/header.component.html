@@ -1,11 +1,3 @@
-<!-- Full-screen Dismiss Backdrop for Profile Menu -->
-@if (isProfileMenuOpen()) {
-    <div 
-        class="profile-menu-backdrop" 
-        (click)="closeProfileMenu()" 
-        aria-hidden="true"></div>
-}
-
 <header class="modern-header" id="app-main-header">
     <div class="header-inner-container">
         <!-- 3D Brand Logo & Title -->
@@ -127,9 +119,15 @@
 
                     <!-- Dropdown Modal / Popover -->
                     @if (isProfileMenuOpen()) {
+                        <!-- Full-screen Dismiss Backdrop (Behind dropdown card) -->
+                        <div 
+                            class="profile-menu-backdrop" 
+                            (click)="closeProfileMenu()" 
+                            aria-hidden="true"></div>
+
                         <div class="profile-dropdown-card" id="header-profile-dropdown" role="menu">
-                            <!-- Top Profile Info & Avatar -->
-                            <div class="profile-card-top">
+                            <!-- Top Profile Info & Avatar (Clickable to open profile page) -->
+                            <div class="profile-card-top" (click)="navigateToProfile()" role="button" tabindex="0" title="Go to Profile Page">
                                 <div class="dropdown-avatar-wrapper">
                                     @if (userPhotoURL()) {
                                         <img 
@@ -167,6 +165,7 @@
                                         </p>
                                     }
                                 </div>
+                                <mat-icon class="dropdown-profile-arrow">chevron_right</mat-icon>
                             </div>
 
                             <!-- Upload / Change Photo CTA Strip -->
@@ -188,10 +187,10 @@
                                 <button 
                                     type="button" 
                                     class="dropdown-menu-item" 
-                                    (click)="openEditProfileDialog()"
+                                    (click)="navigateToProfile()"
                                     id="header-dropdown-edit-profile-btn">
-                                    <mat-icon class="item-icon">edit</mat-icon>
-                                    <span>{{ translationService.get('settings.profileEdit') }}</span>
+                                    <mat-icon class="item-icon">person</mat-icon>
+                                    <span>{{ translationService.get('nav.profile') }} ({{ translationService.get('settings.profileEdit') }})</span>
                                 </button>
 
                                 <button 

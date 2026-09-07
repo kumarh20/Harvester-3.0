@@ -7,13 +7,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { RecordsService, Record } from '../../core/services/records.service';
+import { SeasonService } from '../../core/services/season.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
 import { DashboardSkeletonComponent } from '../../shared/components/skeleton/dashboard-skeleton/dashboard-skeleton.component';
 
-type PeriodType = 'today' | 'week' | 'month' | 'all';
+export type DashboardDateFilter = 'all' | 'today' | 'yesterday' | 'week' | 'month' | 'custom' | 'dueToday';
 export type ChartMetricMode = 'revenue' | 'acres';
+export type ChartViewMode = 'daily' | 'season';
 
 export interface ChartDataPoint {
   id: string;
@@ -26,6 +28,26 @@ export interface ChartDataPoint {
   pending: number;
   jobsCount: number;
   barHeightPercent: number;
+  primaryBarHeightPercent: number;
+  secondaryBarHeightPercent: number;
+}
+
+export interface SeasonChartDataPoint {
+  id: string;
+  seasonId: string;
+  name: string;
+  year: number;
+  label: string;
+  fullLabel: string;
+  acres: number;
+  revenue: number;
+  collected: number;
+  pending: number;
+  jobsCount: number;
+  barHeightPercent: number;
+  primaryBarHeightPercent: number;
+  secondaryBarHeightPercent: number;
+  isSelected: boolean;
 }
 
 export interface HarvesterStat {
@@ -40,9 +62,22 @@ export interface RecoveryOverview {
   totalBilled: number;
   totalCollected: number;
   totalPending: number;
+  dueTodayAmount: number;
+  totalAcres: number;
   recoveryPercentage: number;
+  pendingPercentage: number;
+  dueTodayPercentage: number;
   circumference: number;
   strokeDashoffset: number;
+  dashArray1: string;
+  dashOffset1: number;
+  dashArray2: string;
+  dashOffset2: number;
+  dashArray3: string;
+  dashOffset3: number;
+  seg1Pct: number;
+  seg2Pct: number;
+  seg3Pct: number;
 }
 
 interface Stats {
@@ -73,9 +108,23 @@ interface Stats {
 })
 export class DashboardComponent implements OnInit {
 
-  selectedPeriod = signal<PeriodType>('all');
+  // Dual Filter State (Identical to Records screen)
+  selectedDateFilter = signal<DashboardDateFilter>('all');
+  selectedSeasonFilter = signal<string>('all');
+  isDateFilterOpen = signal<boolean>(false);
+  isSeasonFilterOpen = signal<boolean>(false);
+
+  // Custom date drawer state
+  customMode = signal<'single' | 'range'>('single');
+  customSingleDate = signal<string>(this.formatDateForInput(new Date()));
+  customStartDate = signal<string>('');
+  customEndDate = signal<string>('');
+
+  // Graph Controls State
+  chartViewMode = signal<ChartViewMode>('daily');
   chartMetric = signal<ChartMetricMode>('revenue');
   activeBar = signal<ChartDataPoint | null>(null);
+  activeSeasonBar = signal<SeasonChartDataPoint | null>(null);
 
   todayCount = signal(0);
   weekCount = signal(0);
@@ -83,10 +132,97 @@ export class DashboardComponent implements OnInit {
   allCount = signal(0);
   isLoading = signal(true);
 
+  // Count of promised settlement records due today
+  dueTodaySettlementCount = computed(() => {
+    const allRecords = this.recordsService.records();
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return allRecords.filter(r => {
+      if (r.markedAsPaid || (Number(r.pendingAmount) || 0) <= 0 || !r.fullPaymentDate) return false;
+      return this.normalizeDateToKey(r.fullPaymentDate) === todayKey;
+    }).length;
+  });
+
+  // Records filtered by the chosen date filter option
+  recordsByDate = computed(() => {
+    const filter = this.selectedDateFilter();
+    const allRecords = this.recordsService.records();
+
+    if (filter === 'all') {
+      return allRecords;
+    }
+
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const yesterdayStart = todayStart - oneDayMs;
+    const weekStart = todayStart - (7 * oneDayMs);
+    const monthStart = todayStart - (30 * oneDayMs);
+    const todayEnd = todayStart + oneDayMs - 1;
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    if (filter === 'dueToday') {
+      return allRecords.filter(r => {
+        if (r.markedAsPaid || (Number(r.pendingAmount) || 0) <= 0 || !r.fullPaymentDate) return false;
+        return this.normalizeDateToKey(r.fullPaymentDate) === todayKey;
+      });
+    }
+
+    return allRecords.filter(record => {
+      const parsed = this.parseDate(record.date);
+      if (!parsed) return false;
+      const recordDay = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()).getTime();
+
+      switch (filter) {
+        case 'today':
+          return recordDay === todayStart;
+        case 'yesterday':
+          return recordDay === yesterdayStart;
+        case 'week':
+          return recordDay >= weekStart && recordDay <= todayEnd;
+        case 'month':
+          return recordDay >= monthStart && recordDay <= todayEnd;
+        case 'custom': {
+          const mode = this.customMode();
+          if (mode === 'single') {
+            const single = this.customSingleDate();
+            if (!single) return true;
+            const target = this.parseDate(single);
+            if (!target) return true;
+            const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
+            return recordDay === targetDay;
+          } else {
+            const startStr = this.customStartDate();
+            const endStr = this.customEndDate();
+            if (!startStr && !endStr) return true;
+            const startParsed = startStr ? this.parseDate(startStr) : null;
+            const endParsed = endStr ? this.parseDate(endStr) : null;
+
+            const startDay = startParsed ? new Date(startParsed.getFullYear(), startParsed.getMonth(), startParsed.getDate()).getTime() : -Infinity;
+            const endDay = endParsed ? new Date(endParsed.getFullYear(), endParsed.getMonth(), endParsed.getDate()).getTime() + oneDayMs - 1 : Infinity;
+
+            return recordDay >= startDay && recordDay <= endDay;
+          }
+        }
+        default:
+          return true;
+      }
+    });
+  });
+
+  // Filtered records matching BOTH Date filter and Season filter
   filteredRecords = computed(() => {
-    const period = this.selectedPeriod();
-    const records = this.recordsService.records();
-    return this.getFilteredRecordsByPeriod(period, records);
+    const records = this.recordsByDate();
+    const seasonFilter = this.selectedSeasonFilter();
+
+    if (seasonFilter === 'all' || !seasonFilter) {
+      return records;
+    }
+
+    return records.filter(record => {
+      const s = this.seasonService.getSeasonForRecord(record);
+      return s?.id === seasonFilter || record.seasonId === seasonFilter;
+    });
   });
 
   stats = computed(() => {
@@ -98,7 +234,7 @@ export class DashboardComponent implements OnInit {
   });
 
   // ----------------------------------------------------
-  // Interactive Timeline Chart Computation
+  // Interactive Timeline Chart Computation (Daily view)
   // ----------------------------------------------------
   chartTimeline = computed<ChartDataPoint[]>(() => {
     const records = this.filteredRecords();
@@ -136,16 +272,31 @@ export class DashboardComponent implements OnInit {
     const displayEntries = sortedEntries.length > 8 ? sortedEntries.slice(-8) : sortedEntries;
 
     const metric = this.chartMetric();
-    const maxValue = Math.max(
-      ...displayEntries.map(e => metric === 'revenue' ? e[1].revenue : e[1].acres),
-      metric === 'revenue' ? 1000 : 1
-    );
-
     const isHindi = this.languageService.getCurrentLanguage() === 'hi';
 
+    // Calculate maximums for dual-bar proportional scaling
+    let maxPrimary = 1;
+    let maxSecondary = 1;
+
+    if (metric === 'revenue') {
+      maxPrimary = Math.max(...displayEntries.map(e => Math.max(e[1].revenue, e[1].collected)), 1000);
+      maxSecondary = maxPrimary; // Shared axis scale so Revenue vs Collected can be directly compared!
+    } else {
+      maxPrimary = Math.max(...displayEntries.map(e => e[1].acres), 1);
+      maxSecondary = Math.max(...displayEntries.map(e => e[1].count), 1);
+    }
+
     return displayEntries.map(([key, data]) => {
-      const val = metric === 'revenue' ? data.revenue : data.acres;
-      const pct = Math.max(8, Math.round((val / maxValue) * 100));
+      let pPct = 0;
+      let sPct = 0;
+
+      if (metric === 'revenue') {
+        pPct = data.revenue > 0 ? Math.min(100, Math.max(4, Math.round((data.revenue / maxPrimary) * 100))) : 0;
+        sPct = data.collected > 0 ? Math.min(100, Math.max(4, Math.round((data.collected / maxSecondary) * 100))) : 0;
+      } else {
+        pPct = data.acres > 0 ? Math.min(100, Math.max(4, Math.round((data.acres / maxPrimary) * 100))) : 0;
+        sPct = data.count > 0 ? Math.min(100, Math.max(4, Math.round((data.count / maxSecondary) * 100))) : 0;
+      }
 
       const dayMonth = data.date.toLocaleDateString(isHindi ? 'hi-IN' : 'en-IN', {
         day: 'numeric',
@@ -166,7 +317,130 @@ export class DashboardComponent implements OnInit {
         collected: Math.round(data.collected),
         pending: Math.round(data.pending),
         jobsCount: data.count,
-        barHeightPercent: pct
+        barHeightPercent: pPct,
+        primaryBarHeightPercent: pPct,
+        secondaryBarHeightPercent: sPct
+      };
+    });
+  });
+
+  // ----------------------------------------------------
+  // Interactive Season Breakdown Computation (Season-wise view)
+  // ----------------------------------------------------
+  chartSeasonBreakdown = computed<SeasonChartDataPoint[]>(() => {
+    const records = this.recordsByDate();
+    const seasons = this.seasonService.seasons();
+    if (!seasons || seasons.length === 0) return [];
+
+    const activeSeason = this.selectedSeasonFilter();
+    const metric = this.chartMetric();
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+
+    const list: SeasonChartDataPoint[] = [];
+
+    for (const s of seasons) {
+      const seasonId = s.id || '';
+      const matchingRecords = records.filter(r => {
+        const recSeason = this.seasonService.getSeasonForRecord(r);
+        return recSeason?.id === seasonId || r.seasonId === seasonId;
+      });
+
+      let acres = 0;
+      let revenue = 0;
+      let pending = 0;
+      const count = matchingRecords.length;
+
+      for (const r of matchingRecords) {
+        const a = Number(r.landInAcres) || 0;
+        const rev = Number(r.totalPayment) || 0;
+        const p = r.markedAsPaid ? 0 : (Number(r.pendingAmount) || 0);
+        acres += a;
+        revenue += rev;
+        pending += p;
+      }
+
+      const collected = Math.max(0, revenue - pending);
+      const shortName = s.name.split(' ')[0] || s.name;
+      const label = `${shortName} '${String(s.year).slice(-2)}`;
+      const fullLabel = `${s.name} ${s.year}`;
+
+      list.push({
+        id: seasonId,
+        seasonId,
+        name: s.name,
+        year: s.year,
+        label,
+        fullLabel,
+        acres: Math.round(acres * 100) / 100,
+        revenue: Math.round(revenue),
+        collected: Math.round(collected),
+        pending: Math.round(pending),
+        jobsCount: count,
+        barHeightPercent: 8,
+        primaryBarHeightPercent: 8,
+        secondaryBarHeightPercent: 8,
+        isSelected: activeSeason === seasonId
+      });
+    }
+
+    // Check if there are records not mapped to any defined season
+    const unassignedRecords = records.filter(r => !this.seasonService.getSeasonForRecord(r));
+    if (unassignedRecords.length > 0) {
+      let uAcres = 0;
+      let uRev = 0;
+      let uPending = 0;
+      for (const r of unassignedRecords) {
+        uAcres += Number(r.landInAcres) || 0;
+        uRev += Number(r.totalPayment) || 0;
+        uPending += r.markedAsPaid ? 0 : (Number(r.pendingAmount) || 0);
+      }
+      list.push({
+        id: 'unassigned',
+        seasonId: 'unassigned',
+        name: isHi ? 'अन्य / पुराना' : 'Other / Legacy',
+        year: new Date().getFullYear(),
+        label: isHi ? 'अन्य' : 'Other',
+        fullLabel: isHi ? 'बिना सीज़न / पुराना रिकॉर्ड्स' : 'Unassigned Records',
+        acres: Math.round(uAcres * 100) / 100,
+        revenue: Math.round(uRev),
+        collected: Math.max(0, Math.round(uRev - uPending)),
+        pending: Math.round(uPending),
+        jobsCount: unassignedRecords.length,
+        barHeightPercent: 8,
+        primaryBarHeightPercent: 8,
+        secondaryBarHeightPercent: 8,
+        isSelected: activeSeason === 'unassigned'
+      });
+    }
+
+    let maxPrimary = 1;
+    let maxSecondary = 1;
+
+    if (metric === 'revenue') {
+      maxPrimary = Math.max(...list.map(e => Math.max(e.revenue, e.collected)), 1000);
+      maxSecondary = maxPrimary;
+    } else {
+      maxPrimary = Math.max(...list.map(e => e.acres), 1);
+      maxSecondary = Math.max(...list.map(e => e.jobsCount), 1);
+    }
+
+    return list.map(item => {
+      let pPct = 0;
+      let sPct = 0;
+
+      if (metric === 'revenue') {
+        pPct = item.revenue > 0 ? Math.min(100, Math.max(4, Math.round((item.revenue / maxPrimary) * 100))) : 0;
+        sPct = item.collected > 0 ? Math.min(100, Math.max(4, Math.round((item.collected / maxSecondary) * 100))) : 0;
+      } else {
+        pPct = item.acres > 0 ? Math.min(100, Math.max(4, Math.round((item.acres / maxPrimary) * 100))) : 0;
+        sPct = item.jobsCount > 0 ? Math.min(100, Math.max(4, Math.round((item.jobsCount / maxSecondary) * 100))) : 0;
+      }
+
+      return {
+        ...item,
+        barHeightPercent: pPct,
+        primaryBarHeightPercent: pPct,
+        secondaryBarHeightPercent: sPct
       };
     });
   });
@@ -176,25 +450,98 @@ export class DashboardComponent implements OnInit {
   // ----------------------------------------------------
   recoveryOverview = computed<RecoveryOverview>(() => {
     const s = this.stats();
+    const records = this.filteredRecords();
     const totalBilled = s.totalPayment;
     const totalPending = s.totalPending;
     const totalCollected = Math.max(0, totalBilled - totalPending);
+    const totalAcres = s.totalLand;
+
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    let dueTodayAmount = 0;
+    for (const r of records) {
+      if (!r.markedAsPaid && (Number(r.pendingAmount) || 0) > 0 && r.fullPaymentDate) {
+        if (this.normalizeDateToKey(r.fullPaymentDate) === todayKey) {
+          dueTodayAmount += Number(r.pendingAmount) || 0;
+        }
+      }
+    }
 
     const recoveryPercentage = totalBilled > 0
       ? Math.min(100, Math.round((totalCollected / totalBilled) * 100))
-      : 100;
+      : (totalCollected > 0 ? 100 : 0);
 
-    const radius = 54;
-    const circumference = 2 * Math.PI * radius; // ~339.29
+    const pendingPercentage = totalBilled > 0
+      ? Math.min(100, Math.round((totalPending / totalBilled) * 100))
+      : (totalPending > 0 ? 100 : 0);
+
+    const dueTodayPercentage = totalBilled > 0
+      ? Math.min(100, Math.round((dueTodayAmount / totalBilled) * 100))
+      : 0;
+
+    const radius = 52;
+    const circumference = 2 * Math.PI * radius; // ~326.726
+
+    // Slices for the 3-color donut:
+    // Seg 1 (Blue): Collected (वसूल राशि)
+    // Seg 2 (Pink/Magenta): Pending Due (बकाया राशि)
+    // Seg 3 (Emerald Green): Due Today / Upcoming / Target (आज देय या सक्रिय कटाई)
+    let seg1Pct = 0;
+    let seg2Pct = 0;
+    let seg3Pct = 0;
+
+    if (totalBilled > 0) {
+      seg1Pct = (totalCollected / totalBilled) * 100;
+      if (dueTodayAmount > 0) {
+        const dPct = (dueTodayAmount / totalBilled) * 100;
+        const otherPendPct = Math.max(0, ((totalPending - dueTodayAmount) / totalBilled) * 100);
+        seg2Pct = otherPendPct;
+        seg3Pct = dPct;
+      } else {
+        seg2Pct = (totalPending / totalBilled) * 100;
+        seg3Pct = 0;
+      }
+    } else {
+      seg1Pct = 0;
+      seg2Pct = 0;
+      seg3Pct = 0;
+    }
+
+    const l1 = (circumference * seg1Pct) / 100;
+    const l2 = (circumference * seg2Pct) / 100;
+    const l3 = (circumference * seg3Pct) / 100;
+
+    const dashArray1 = `${l1} ${circumference}`;
+    const dashOffset1 = 0;
+
+    const dashArray2 = `${l2} ${circumference}`;
+    const dashOffset2 = -l1;
+
+    const dashArray3 = `${l3} ${circumference}`;
+    const dashOffset3 = -(l1 + l2);
+
     const strokeDashoffset = circumference - (circumference * recoveryPercentage) / 100;
 
     return {
       totalBilled,
       totalCollected,
       totalPending,
+      dueTodayAmount,
+      totalAcres,
       recoveryPercentage,
+      pendingPercentage,
+      dueTodayPercentage,
       circumference,
-      strokeDashoffset
+      strokeDashoffset,
+      dashArray1,
+      dashOffset1,
+      dashArray2,
+      dashOffset2,
+      dashArray3,
+      dashOffset3,
+      seg1Pct: Math.round(seg1Pct),
+      seg2Pct: Math.round(seg2Pct),
+      seg3Pct: Math.round(seg3Pct)
     };
   });
 
@@ -237,6 +584,7 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     public recordsService: RecordsService,
+    public seasonService: SeasonService,
     public notificationService: NotificationService,
     public translationService: TranslationService,
     private languageService: LanguageService,
@@ -249,7 +597,10 @@ export class DashboardComponent implements OnInit {
     this.isLoading.set(true);
 
     try {
-      await this.recordsService.loadRecords();
+      await Promise.all([
+        this.seasonService.loadSeasons(),
+        this.recordsService.loadRecords()
+      ]);
       this.updatePeriodCounts();
       // Check promised settlement dates due today and trigger system notification
       this.notificationService.evaluateTodaySettlements();
@@ -269,10 +620,22 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/records']);
   }
 
+  goToFarmerRecord(record: Record): void {
+    this.router.navigate(['/records'], {
+      queryParams: {
+        farmer: record.contactNumber || record.farmerName,
+        recordId: record.id
+      }
+    });
+  }
+
   async refreshData(): Promise<void> {
     this.isLoading.set(true);
     try {
-      await this.recordsService.loadRecords();
+      await Promise.all([
+        this.seasonService.loadSeasons(),
+        this.recordsService.loadRecords()
+      ]);
       this.updatePeriodCounts();
       this.notificationService.evaluateTodaySettlements();
       await this.notificationService.triggerSettlementNotification(false);
@@ -285,8 +648,131 @@ export class DashboardComponent implements OnInit {
     await this.notificationService.triggerSettlementNotification(true);
   }
 
-  selectPeriod(period: PeriodType): void {
-    this.selectedPeriod.set(period);
+  // ----------------------------------------------------
+  // Dropdown Filter Interactions (Identical to Records)
+  // ----------------------------------------------------
+  toggleDateDropdown(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.isDateFilterOpen.update(v => !v);
+    this.isSeasonFilterOpen.set(false);
+  }
+
+  toggleSeasonDropdown(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.isSeasonFilterOpen.update(v => !v);
+    this.isDateFilterOpen.set(false);
+  }
+
+  closeAllFilterDropdowns(): void {
+    this.isDateFilterOpen.set(false);
+    this.isSeasonFilterOpen.set(false);
+  }
+
+  selectDateOption(filter: DashboardDateFilter): void {
+    this.selectedDateFilter.set(filter);
+    this.isDateFilterOpen.set(false);
+    this.activeBar.set(null);
+  }
+
+  selectSeasonOption(seasonId: string): void {
+    this.selectedSeasonFilter.set(seasonId);
+    this.isSeasonFilterOpen.set(false);
+    this.activeBar.set(null);
+    this.activeSeasonBar.set(null);
+  }
+
+  resetAllFilters(): void {
+    this.selectedDateFilter.set('all');
+    this.selectedSeasonFilter.set('all');
+    this.customStartDate.set('');
+    this.customEndDate.set('');
+    this.isDateFilterOpen.set(false);
+    this.isSeasonFilterOpen.set(false);
+    this.activeBar.set(null);
+    this.activeSeasonBar.set(null);
+  }
+
+  getSelectedDateFilterLabel(): string {
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    switch (this.selectedDateFilter()) {
+      case 'today':
+        return isHi ? 'आज' : 'Today';
+      case 'yesterday':
+        return isHi ? 'कल' : 'Yesterday';
+      case 'week':
+        return isHi ? 'इस सप्ताह' : 'This Week';
+      case 'month':
+        return isHi ? 'इस माह' : 'This Month';
+      case 'custom':
+        return isHi ? 'कस्टम तारीख' : 'Custom Date';
+      case 'dueToday':
+        return isHi ? `आज देय (${this.dueTodaySettlementCount()})` : `Due Today (${this.dueTodaySettlementCount()})`;
+      case 'all':
+      default:
+        return isHi ? 'सभी तारीख' : 'All Dates';
+    }
+  }
+
+  getSelectedSeasonFilterLabel(): string {
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    const filter = this.selectedSeasonFilter();
+    if (filter === 'all' || !filter) {
+      return isHi ? 'सभी सीज़न' : 'All Seasons';
+    }
+    const season = this.seasonService.getSeasonById(filter);
+    if (!season) {
+      return isHi ? 'सभी सीज़न' : 'All Seasons';
+    }
+    return `${season.name} ${season.year}`;
+  }
+
+  setCustomMode(mode: 'single' | 'range'): void {
+    this.customMode.set(mode);
+  }
+
+  shiftCustomSingleDate(days: number): void {
+    const current = this.parseDate(this.customSingleDate()) || new Date();
+    const shifted = new Date(current.getTime() + days * 24 * 60 * 60 * 1000);
+    this.customSingleDate.set(this.formatDateForInput(shifted));
+  }
+
+  setCustomSingleDateToday(): void {
+    this.customSingleDate.set(this.formatDateForInput(new Date()));
+  }
+
+  formatDateForInput(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  normalizeDateToKey(dateVal: any): string | null {
+    if (!dateVal) return null;
+    if (typeof dateVal === 'string') {
+      const trimmed = dateVal.trim();
+      if (!trimmed) return null;
+      if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(trimmed)) {
+        const parts = trimmed.split(/[\/\-]/);
+        const day = parts[0].padStart(2, '0');
+        const month = parts[1].padStart(2, '0');
+        const year = parts[2];
+        return `${year}-${month}-${day}`;
+      }
+      const dateObj = new Date(trimmed);
+      if (!isNaN(dateObj.getTime())) {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+    } else if (dateVal instanceof Date && !isNaN(dateVal.getTime())) {
+      const year = dateVal.getFullYear();
+      const month = String(dateVal.getMonth() + 1).padStart(2, '0');
+      const day = String(dateVal.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    return null;
   }
 
   /**
@@ -332,74 +818,32 @@ export class DashboardComponent implements OnInit {
     return isNaN(d.getTime()) ? null : d;
   }
 
-  /** Start of today (local) for comparison */
-  private getTodayStart(): Date {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  }
-
-  /** Start of N days ago (local) for inclusive range */
-  private getDaysAgoStart(days: number): Date {
-    const today = this.getTodayStart();
-    return new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
-  }
-
-  private getFilteredRecordsByPeriod(period: PeriodType, records: Record[]): Record[] {
-    if (period === 'all') return records;
-
-    const todayStart = this.getTodayStart();
-    const weekStart = this.getDaysAgoStart(7);   // 7 days ago 00:00
-    const monthStart = this.getDaysAgoStart(30); // 30 days ago 00:00
-
-    return records.filter(record => {
-      const recordDate = this.parseDate(record.date);
-      if (!recordDate) return false;
-      const recordDayStart = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
-
-      switch (period) {
-        case 'today':
-          return recordDayStart.getTime() === todayStart.getTime();
-        case 'week':
-          return recordDayStart.getTime() >= weekStart.getTime() && recordDayStart.getTime() <= todayStart.getTime();
-        case 'month':
-          return recordDayStart.getTime() >= monthStart.getTime() && recordDayStart.getTime() <= todayStart.getTime();
-        default:
-          return true;
-      }
-    });
-  }
-
   private updatePeriodCounts(): void {
-    const todayStart = this.getTodayStart();
-    const weekStart = this.getDaysAgoStart(7);
-    const monthStart = this.getDaysAgoStart(30);
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const weekStart = todayStart - (7 * oneDayMs);
+    const monthStart = todayStart - (30 * oneDayMs);
+    const todayEnd = todayStart + oneDayMs - 1;
 
     const records = this.recordsService.records();
 
-    const todayRecords = records.filter(record => {
-      const recordDate = this.parseDate(record.date);
-      if (!recordDate) return false;
-      const recordDayStart = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
-      return recordDayStart.getTime() === todayStart.getTime();
-    }).length;
+    let today = 0;
+    let week = 0;
+    let month = 0;
 
-    const weekRecords = records.filter(record => {
-      const recordDate = this.parseDate(record.date);
-      if (!recordDate) return false;
-      const recordDayStart = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
-      return recordDayStart.getTime() >= weekStart.getTime() && recordDayStart.getTime() <= todayStart.getTime();
-    }).length;
+    for (const record of records) {
+      const parsed = this.parseDate(record.date);
+      if (!parsed) continue;
+      const time = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()).getTime();
+      if (time === todayStart) today++;
+      if (time >= weekStart && time <= todayEnd) week++;
+      if (time >= monthStart && time <= todayEnd) month++;
+    }
 
-    const monthRecords = records.filter(record => {
-      const recordDate = this.parseDate(record.date);
-      if (!recordDate) return false;
-      const recordDayStart = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
-      return recordDayStart.getTime() >= monthStart.getTime() && recordDayStart.getTime() <= todayStart.getTime();
-    }).length;
-
-    this.todayCount.set(todayRecords);
-    this.weekCount.set(weekRecords);
-    this.monthCount.set(monthRecords);
+    this.todayCount.set(today);
+    this.weekCount.set(week);
+    this.monthCount.set(month);
     this.allCount.set(records.length);
   }
 
@@ -457,9 +901,19 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/settings']);
   }
 
+  // ----------------------------------------------------
+  // Chart Controls
+  // ----------------------------------------------------
+  setChartViewMode(mode: ChartViewMode): void {
+    this.chartViewMode.set(mode);
+    this.activeBar.set(null);
+    this.activeSeasonBar.set(null);
+  }
+
   setChartMetric(metric: ChartMetricMode): void {
     this.chartMetric.set(metric);
     this.activeBar.set(null);
+    this.activeSeasonBar.set(null);
   }
 
   selectBar(bar: ChartDataPoint | null): void {
@@ -471,6 +925,18 @@ export class DashboardComponent implements OnInit {
       this.activeBar.set(null);
     } else {
       this.activeBar.set(bar);
+    }
+  }
+
+  selectSeasonBar(bar: SeasonChartDataPoint | null): void {
+    this.activeSeasonBar.set(bar);
+  }
+
+  toggleSeasonBar(bar: SeasonChartDataPoint): void {
+    if (this.activeSeasonBar()?.id === bar.id) {
+      this.activeSeasonBar.set(null);
+    } else {
+      this.activeSeasonBar.set(bar);
     }
   }
 }

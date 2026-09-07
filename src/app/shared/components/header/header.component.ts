@@ -18,7 +18,7 @@ import { ProfileDialogComponent, ProfileDialogData } from '../profile-dialog/pro
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
   host: {
-    '(document:pointerdown)': 'onDocumentPointerDown($event)',
+    '[class.menu-open]': 'isProfileMenuOpen()',
     '(document:keydown.escape)': 'closeProfileMenu()'
   }
 })
@@ -156,24 +156,6 @@ export class HeaderComponent implements OnInit {
     this.isProfileMenuOpen.set(false);
   }
 
-  onDocumentPointerDown(event: Event): void {
-    if (!this.isProfileMenuOpen()) return;
-
-    const target = event.target as HTMLElement | null;
-    if (!target) return;
-
-    const profileCard = this.elementRef.nativeElement.querySelector('#header-profile-dropdown');
-    const profileBtn = this.elementRef.nativeElement.querySelector('#header-user-profile-btn');
-
-    // If clicked inside the dropdown card or the toggle button, do not close here
-    if (profileCard?.contains(target) || profileBtn?.contains(target)) {
-      return;
-    }
-
-    // Otherwise, user clicked outside (on page content, bottom navigation, margins, etc.)
-    this.closeProfileMenu();
-  }
-
   triggerPhotoUpload(event?: Event): void {
     if (event) {
       event.stopPropagation();
@@ -223,43 +205,13 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-  openEditProfileDialog(): void {
+  navigateToProfile(): void {
     this.closeProfileMenu();
-    const currentName = this.displayName();
-    const currentPhone = this.userPhone();
-    const currentBusiness = this.userBusinessName();
+    this.router.navigate(['/profile']);
+  }
 
-    const dialogData: ProfileDialogData = {
-      name: currentName === 'Operator' || currentName === 'ऑपरेटर' ? '' : currentName,
-      phone: currentPhone,
-      businessName: currentBusiness
-    };
-
-    const dialogRef = this.matDialog.open(ProfileDialogComponent, {
-      width: '440px',
-      data: dialogData,
-      panelClass: 'custom-dialog-container'
-    });
-
-    dialogRef.afterClosed().subscribe(async (result) => {
-      if (result) {
-        const user = this.currentUser();
-        if (user) {
-          try {
-            await this.userService.updateUserProfile(user.uid, result.name, result.phone, {
-              businessName: result.businessName
-            });
-            this.toastService.success(
-              this.translationService.getCurrentLanguage() === 'hi'
-                ? 'प्रोफाइल सफलतापूर्वक अपडेट हुई!'
-                : 'Profile updated successfully!'
-            );
-          } catch (error) {
-            this.toastService.error('Failed to update profile');
-          }
-        }
-      }
-    });
+  openEditProfileDialog(): void {
+    this.navigateToProfile();
   }
 
   navigateToSettings(): void {

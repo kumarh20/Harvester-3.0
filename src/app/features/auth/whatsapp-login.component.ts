@@ -244,6 +244,14 @@ import { AuthService } from '../../services/auth/auth-service';
       font-weight: 600;
       color: #374151;
       font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
+      padding-right: 8px;
+      margin-right: 8px;
+      border-right: 1.5px solid #e5e7eb;
+      height: 18px;
+      vertical-align: middle;
     }
 
     .error-banner {

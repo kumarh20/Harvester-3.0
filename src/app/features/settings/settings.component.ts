@@ -18,10 +18,12 @@ import { UserService } from '../../services/user/user-service';
 import { HarvesterService } from '../../core/services/harvester.service';
 import { RecordsService } from '../../core/services/records.service';
 import { DataImportExportService } from '../../core/services/data-import-export.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ToastService } from '../../shared/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { UiPreferencesService, DefaultRecordFilterSetting } from '../../core/services/ui-preferences.service';
+import { SeasonService } from '../../core/services/season.service';
+import { Season, HINDI_MONTHS, getSeasonDisplayLabel } from '../../core/models/season.model';
 import { HarvesterDialogComponent, HarvesterDialogData } from '../../shared/components/harvester-dialog/harvester-dialog.component';
 import { ProfileDialogComponent, ProfileDialogData } from '../../shared/components/profile-dialog/profile-dialog.component';
 
@@ -45,6 +47,19 @@ import { ProfileDialogComponent, ProfileDialogData } from '../../shared/componen
   encapsulation: ViewEncapsulation.None
 })
 export class SettingsComponent implements OnInit {
+  // Active Modal Signal ('harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about' | null)
+  activeModal = signal<'harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about' | null>(null);
+
+  // Season management state
+  isSeasonFormOpen = signal<boolean>(false);
+  editingSeasonId = signal<string | null>(null);
+  seasonNameInput = signal<string>('');
+  seasonStartMonthInput = signal<number>(10); // default October
+  seasonEndMonthInput = signal<number>(12); // default December
+  seasonYearInput = signal<number>(new Date().getFullYear());
+  isSavingSeason = signal<boolean>(false);
+  hindiMonths = HINDI_MONTHS;
+
   // Operator profile
   currentUser = signal<User | null>(null);
   userName = signal<string>('Harvester Operator');
@@ -107,12 +122,14 @@ export class SettingsComponent implements OnInit {
     private userService: UserService,
     private auth: Auth,
     private router: Router,
+    private route: ActivatedRoute,
     public harvesterService: HarvesterService,
     private recordsService: RecordsService,
     private dataImportExportService: DataImportExportService,
     private toastService: ToastService,
     public notificationService: NotificationService,
-    private uiPreferencesService: UiPreferencesService
+    private uiPreferencesService: UiPreferencesService,
+    public seasonService: SeasonService
   ) {
     this.loadSettings();
   }
@@ -122,11 +139,18 @@ export class SettingsComponent implements OnInit {
     try {
       await Promise.all([
         this.harvesterService.loadHarvesters(),
-        this.recordsService.loadRecords()
+        this.recordsService.loadRecords(),
+        this.seasonService.loadSeasons()
       ]);
     } finally {
       this.harvestersLoading.set(false);
     }
+
+    this.route.queryParams.subscribe(params => {
+      if (params['open'] === 'seasons') {
+        this.openModal('seasons');
+      }
+    });
 
     onAuthStateChanged(this.auth, async (user) => {
       this.currentUser.set(user);
@@ -629,6 +653,190 @@ export class SettingsComponent implements OnInit {
 
   navigateToLandMeasurement(): void {
     this.router.navigate(['/measure']);
+  }
+
+  // --- Modal Management ---
+  openModal(modal: 'harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about'): void {
+    this.activeModal.set(modal);
+    if (modal === 'seasons') {
+      this.closeSeasonForm();
+      this.seasonService.loadSeasons();
+    }
+  }
+
+  closeModal(): void {
+    this.activeModal.set(null);
+    this.closeSeasonForm();
+  }
+
+  getHarvesterSummary(): string {
+    const count = this.harvesterService.harvesters().length;
+    const def = this.harvesterService.defaultHarvester() || this.harvesterService.harvesters()[0] || 'Vardhman Chayan';
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    return `${count} ${isHi ? 'मशीनें' : 'Machines'} • ${def}`;
+  }
+
+  getRateSummary(): string {
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    const unitLabel = this.preferredUnit() === 'acre' 
+      ? (isHi ? 'एकड़' : 'Acre') 
+      : this.preferredUnit() === 'bigha' 
+        ? (isHi ? 'बीघा' : 'Bigha') 
+        : (isHi ? 'हेक्टेयर' : 'Hectare');
+    return `₹${this.defaultRate().toLocaleString('en-IN')} / ${unitLabel}`;
+  }
+
+  getSeasonSummary(): string {
+    const list = this.seasonService.seasons();
+    const count = list.length;
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    if (count === 0) {
+      return isHi ? 'कोई सीज़न नहीं' : 'No seasons';
+    }
+    const def = this.seasonService.defaultSeason();
+    const defLabel = def ? `${def.name} ${def.year}` : (isHi ? 'डिफ़ॉल्ट सेट नहीं' : 'No default');
+    return `${count} ${isHi ? 'सीज़न' : 'Seasons'} • ${defLabel}`;
+  }
+
+  openAddSeasonForm(): void {
+    this.editingSeasonId.set(null);
+    this.seasonNameInput.set('');
+    this.seasonStartMonthInput.set(10);
+    this.seasonEndMonthInput.set(12);
+    this.seasonYearInput.set(new Date().getFullYear());
+    this.isSeasonFormOpen.set(true);
+  }
+
+  openEditSeasonForm(season: Season): void {
+    this.editingSeasonId.set(season.id || null);
+    this.seasonNameInput.set(season.name);
+    this.seasonStartMonthInput.set(Number(season.startMonth) || 1);
+    this.seasonEndMonthInput.set(Number(season.endMonth) || 12);
+    this.seasonYearInput.set(Number(season.year) || new Date().getFullYear());
+    this.isSeasonFormOpen.set(true);
+  }
+
+  duplicateSeason(season: Season): void {
+    this.editingSeasonId.set(null);
+    this.seasonNameInput.set(season.name);
+    this.seasonStartMonthInput.set(Number(season.startMonth) || 1);
+    this.seasonEndMonthInput.set(Number(season.endMonth) || 12);
+    const nextYear = (Number(season.year) || new Date().getFullYear()) + 1;
+    this.seasonYearInput.set(nextYear);
+    this.isSeasonFormOpen.set(true);
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    this.toastService.info(
+      isHi 
+        ? `सीज़न "${season.name}" वर्ष ${nextYear} के लिए डुप्लिकेट किया गया। विवरण जांचें और सहेजें।`
+        : `Duplicated "${season.name}" for year ${nextYear}. Review and save.`
+    );
+  }
+
+  closeSeasonForm(): void {
+    this.isSeasonFormOpen.set(false);
+    this.editingSeasonId.set(null);
+  }
+
+  async saveSeason(): Promise<void> {
+    const name = this.seasonNameInput().trim();
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    if (!name) {
+      this.toastService.error(isHi ? 'कृपया सीज़न का नाम दर्ज करें' : 'Please enter season name');
+      return;
+    }
+    const year = Number(this.seasonYearInput());
+    if (isNaN(year) || year < 2000 || year > 2100) {
+      this.toastService.error(isHi ? 'कृपया मान्य वर्ष दर्ज करें (उदा. 2027)' : 'Please enter a valid year');
+      return;
+    }
+
+    this.isSavingSeason.set(true);
+    try {
+      if (this.editingSeasonId()) {
+        await this.seasonService.updateSeason(this.editingSeasonId()!, {
+          name,
+          startMonth: Number(this.seasonStartMonthInput()),
+          endMonth: Number(this.seasonEndMonthInput()),
+          year
+        });
+        this.toastService.success(isHi ? 'सीज़न सफलतापूर्वक अपडेट किया गया!' : 'Season updated successfully!');
+      } else {
+        await this.seasonService.addSeason({
+          name,
+          startMonth: Number(this.seasonStartMonthInput()),
+          endMonth: Number(this.seasonEndMonthInput()),
+          year
+        });
+        this.toastService.success(isHi ? 'नया सीज़न सफलतापूर्वक जोड़ा गया!' : 'New season added successfully!');
+      }
+      this.closeSeasonForm();
+    } catch (err) {
+      console.error('Error saving season:', err);
+      this.toastService.error(isHi ? 'सीज़न सहेजने में त्रुटि' : 'Error saving season');
+    } finally {
+      this.isSavingSeason.set(false);
+    }
+  }
+
+  async setAsDefaultSeason(season: Season): Promise<void> {
+    if (!season.id || season.isDefault) return;
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    try {
+      await this.seasonService.setDefaultSeason(season.id);
+      this.toastService.success(
+        isHi 
+          ? `"${season.name} ${season.year}" को डिफ़ॉल्ट सीज़न सेट किया गया!` 
+          : `"${season.name} ${season.year}" set as default season!`
+      );
+    } catch (err) {
+      console.error('Error setting default season:', err);
+      this.toastService.error(isHi ? 'डिफ़ॉल्ट सेट करने में त्रुटि' : 'Failed to set default season');
+    }
+  }
+
+  deleteSeason(season: Season): void {
+    if (!season.id) return;
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    const label = getSeasonDisplayLabel(season);
+    this.dialogService.confirm(
+      isHi 
+        ? `क्या आप वाकई सीज़न "${label}" को हटाना चाहते हैं?` 
+        : `Are you sure you want to delete season "${label}"?`,
+      isHi ? 'सीज़न हटाएं' : 'Delete Season',
+      isHi ? 'हटाएं' : 'Delete',
+      isHi ? 'रद्द करें' : 'Cancel',
+      'warning'
+    ).subscribe(async (confirmed) => {
+      if (confirmed) {
+        try {
+          await this.seasonService.deleteSeason(season.id!);
+          this.toastService.success(isHi ? 'सीज़न हटा दिया गया' : 'Season deleted');
+        } catch (err) {
+          console.error('Error deleting season:', err);
+          this.toastService.error(isHi ? 'हटाने में त्रुटि' : 'Failed to delete season');
+        }
+      }
+    });
+  }
+
+  getPreferencesSummary(): string {
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    const themeTxt = this.isDarkMode() ? (isHi ? 'डार्क' : 'Dark') : (isHi ? 'लाइट' : 'Light');
+    const langTxt = this.language() === 'hi' ? 'हिन्दी' : 'English';
+    return `${themeTxt} • ${langTxt}`;
+  }
+
+  getLandSummary(): string {
+    return 'GPS Walk & Map Boundary';
+  }
+
+  getDataSummary(): string {
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    return isHi ? 'बैकअप, एक्सपोर्ट व इम्पोर्ट' : 'Backup, Export & Import';
+  }
+
+  getAboutSummary(): string {
+    return 'v2.4.0 • PRO';
   }
 
   logout(): void {

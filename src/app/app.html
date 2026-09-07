@@ -5,14 +5,16 @@
     <!-- Toast Notifications -->
     <app-toast />
 
-    <!-- Header Component -->
+    <!-- Header Component (Hidden when Kisan Detail Page is open) -->
+    @if (!recordsService.isKisanDetailPageOpen()) {
     <app-header 
         (themeToggle)="toggleTheme()" 
         (languageToggle)="toggleLanguage()" 
     />
+    }
 
     <!-- Main Content Area -->
-    <main class="main-content">
+    <main class="main-content" [class.kisan-detail-main]="recordsService.isKisanDetailPageOpen()">
         <router-outlet />
     </main>
 

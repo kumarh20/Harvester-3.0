@@ -1,4 +1,4 @@
-<div class="records-container" id="records-main-view">
+<div class="records-container" id="records-main-view" [class.in-farmer-detail]="!!selectedFarmer()">
     <!-- Skeleton Loading -->
     @if (isLoading()) {
         <app-record-skeleton [count]="4" id="records-skeleton-loader"></app-record-skeleton>
@@ -6,229 +6,572 @@
 
     <!-- Content -->
     @if (!isLoading()) {
-        <div class="records-content-wrapper" id="records-content-wrapper">
-            
-            <!-- Header Section -->
-            <div class="records-header-card" id="records-header-card">
-                <div class="records-header-top-row">
-                    <div class="header-text-group">
-                        <h1 class="records-title">{{ translationService.get('records.title') }}</h1>
-                        <p class="records-subtitle">{{ translationService.getWithParams('records.subtitle', { count: recordCount() }) }}</p>
-                    </div>
-                    
-                    <!-- Quick Search Field -->
-                    <div class="records-search-bar" id="records-search-bar">
-                        <mat-icon class="search-icon">search</mat-icon>
-                        <input 
-                            type="text" 
-                            id="records-search-input"
-                            [(ngModel)]="searchQuery" 
-                            (ngModelChange)="onSearch()" 
-                            [placeholder]="translationService.get('records.searchPlaceholder')" 
-                            aria-label="Search records" />
-                        @if (searchQuery()) {
-                            <button 
-                                type="button" 
-                                class="search-clear-btn" 
-                                (click)="searchQuery.set(''); onSearch()"
-                                title="Clear search">
-                                <mat-icon>close</mat-icon>
+        @if (selectedFarmer()) {
+            <!-- Dedicated Kisan Records Detail Page View Matching Screenshot -->
+            <div class="kisan-records-page" id="kisan-records-page">
+                <!-- Forest Green Header Section -->
+                <div class="kisan-header-hero" id="kisan-header-hero">
+                    <!-- Top Navigation Bar -->
+                    <div class="kisan-nav-bar">
+                        <button type="button" class="kisan-round-btn" (click)="closeKisanRecords()" title="Back to Records" id="btn-kisan-back">
+                            <mat-icon>chevron_left</mat-icon>
+                        </button>
+                        <h1 class="kisan-header-title">Kisan Record</h1>
+                        <button type="button" class="kisan-round-btn" [matMenuTriggerFor]="kisanMenu" title="Options" id="btn-kisan-menu">
+                            <mat-icon>more_vert</mat-icon>
+                        </button>
+                        <mat-menu #kisanMenu="matMenu">
+                            <button mat-menu-item (click)="shareFarmerStatement()">
+                                <mat-icon>share</mat-icon>
+                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'खाता शेयर करें' : 'Share Statement' }}</span>
                             </button>
+                            @if (selectedFarmer()?.phone) {
+                                <button mat-menu-item (click)="openWhatsApp(selectedFarmer()!.phone)">
+                                    <mat-icon>chat</mat-icon>
+                                    <span>WhatsApp</span>
+                                </button>
+                            }
+                            <button mat-menu-item (click)="addRecordForSelectedFarmer()">
+                                <mat-icon>add_circle</mat-icon>
+                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'नई कटाई जोड़ें' : '+ Add Record' }}</span>
+                            </button>
+                        </mat-menu>
+                    </div>
+
+                    <!-- Farmer Profile Row -->
+                    <div class="kisan-profile-row">
+                        <div class="kisan-avatar-circle">
+                            {{ getInitial(selectedFarmer()?.name || 'L') }}
+                        </div>
+                        <div class="kisan-profile-meta">
+                            <h2 class="kisan-farmer-name">{{ selectedFarmer()?.name }}</h2>
+                            <p class="kisan-farmer-summary-line">
+                                {{ selectedFarmerSummary().count }} {{ translationService.getCurrentLanguage() === 'hi' ? 'कटाई रिकॉर्ड' : 'Cutting Records' }} · {{ selectedFarmerSummary().totalAcres }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़ कुल' : 'Acres Total' }}
+                            </p>
+                        </div>
+                        @if (selectedFarmer()?.phone) {
+                            <a [href]="'tel:' + selectedFarmer()?.phone" class="kisan-call-pill" title="Call" id="btn-kisan-call">
+                                <mat-icon>call</mat-icon>
+                                <span>Call</span>
+                            </a>
                         }
+                    </div>
+
+                    <!-- 3 Stat Boxes Row -->
+                    <div class="kisan-stats-trio">
+                        <div class="kisan-stat-box stat-total">
+                            <span class="stat-box-label">TOTAL</span>
+                            <span class="stat-box-val">{{ formatCurrency(selectedFarmerSummary().totalAmount) }}</span>
+                        </div>
+                        <div class="kisan-stat-box stat-paid">
+                            <span class="stat-box-label">PAID</span>
+                            <span class="stat-box-val">{{ formatCurrency(selectedFarmerSummary().paidAmount) }}</span>
+                        </div>
+                        <div class="kisan-stat-box stat-pending">
+                            <span class="stat-box-label">PENDING</span>
+                            <span class="stat-box-val">{{ formatCurrency(selectedFarmerSummary().pendingAmount) }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Date Period Filter Section -->
-                <div class="records-date-filter-box" id="records-date-filter-box">
-                    <div class="date-filter-scroll-track" id="records-filter-chips">
-                        <button 
-                            type="button" 
-                            class="date-chip-btn" 
-                            [class.active]="selectedDateFilter() === 'today'"
-                            (click)="setDateFilter('today')"
-                            id="filter-chip-today">
-                            <mat-icon>today</mat-icon>
-                            <span>{{ translationService.get('records.filterToday') }}</span>
-                            @if (todayRecordsCount() > 0) {
-                                <span class="chip-count-badge">{{ todayRecordsCount() }}</span>
+                <!-- Main Content Body Below Green Header -->
+                <div class="kisan-body-content">
+                    <!-- Optional Machine Filter Tabs if multiple harvesters -->
+                    @if (farmerHarvestersList().length > 1) {
+                        <div class="kisan-harvester-tabs" id="kisan-harvester-tabs">
+                            <button 
+                                type="button" 
+                                class="harvester-tab-pill" 
+                                [class.active]="selectedHarvesterFilter() === 'all'"
+                                (click)="setHarvesterFilter('all')">
+                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी' : 'All' }} ({{ selectedFarmerRecords().length }})</span>
+                            </button>
+                            @for (machine of farmerHarvestersList(); track machine) {
+                                <button 
+                                    type="button" 
+                                    class="harvester-tab-pill" 
+                                    [class.active]="selectedHarvesterFilter() === machine"
+                                    (click)="setHarvesterFilter(machine)">
+                                    <span>{{ machine }}</span>
+                                </button>
                             }
-                        </button>
+                        </div>
+                    }
 
-                        <button 
-                            type="button" 
-                            class="date-chip-btn" 
-                            [class.active]="selectedDateFilter() === 'yesterday'"
-                            (click)="setDateFilter('yesterday')"
-                            id="filter-chip-yesterday">
-                            <mat-icon>history</mat-icon>
-                            <span>{{ translationService.get('records.filterYesterday') }}</span>
-                        </button>
-
-                        <button 
-                            type="button" 
-                            class="date-chip-btn" 
-                            [class.active]="selectedDateFilter() === 'week'"
-                            (click)="setDateFilter('week')"
-                            id="filter-chip-week">
-                            <mat-icon>date_range</mat-icon>
-                            <span>{{ translationService.get('records.filterWeek') }}</span>
-                        </button>
-
-                        <button 
-                            type="button" 
-                            class="date-chip-btn" 
-                            [class.active]="selectedDateFilter() === 'month'"
-                            (click)="setDateFilter('month')"
-                            id="filter-chip-month">
-                            <mat-icon>calendar_view_month</mat-icon>
-                            <span>{{ translationService.get('records.filterMonth') }}</span>
-                        </button>
-
-                        <button 
-                            type="button" 
-                            class="date-chip-btn" 
-                            [class.active]="selectedDateFilter() === 'custom'"
-                            (click)="setDateFilter('custom')"
-                            id="filter-chip-custom">
-                            <mat-icon>edit_calendar</mat-icon>
-                            <span>{{ translationService.get('records.filterCustom') }}</span>
-                        </button>
-
-                        <button 
-                            type="button" 
-                            class="date-chip-btn due-chip-btn" 
-                            [class.active]="selectedDateFilter() === 'dueToday'"
-                            (click)="setDateFilter('dueToday')"
-                            id="filter-chip-due-today">
-                            <mat-icon>notifications_active</mat-icon>
-                            <span>{{ translationService.get('records.filterDueToday') }}</span>
-                            @if (dueTodaySettlementCount() > 0) {
-                                <span class="chip-count-badge due-badge">{{ dueTodaySettlementCount() }}</span>
-                            }
-                        </button>
-
-                        <button 
-                            type="button" 
-                            class="date-chip-btn" 
-                            [class.active]="selectedDateFilter() === 'all'"
-                            (click)="setDateFilter('all')"
-                            id="filter-chip-all">
-                            <mat-icon>all_inclusive</mat-icon>
-                            <span>{{ translationService.get('records.filterAll') }}</span>
-                            <span class="chip-count-badge">{{ totalAllRecordsCount() }}</span>
-                        </button>
+                    <!-- Records Subbar with count, "+ Reminder", and "+ Add Record" button -->
+                    <div class="kisan-records-subbar">
+                        <span class="kisan-records-count-heading">
+                            {{ farmerFilteredCuttings().length }} {{ translationService.getCurrentLanguage() === 'hi' ? 'कटाई रिकॉर्ड' : 'CUTTING RECORDS' }}
+                        </span>
+                        <div class="kisan-subbar-btns">
+                            <button type="button" class="kisan-add-reminder-text-btn" (click)="addReminderForSelectedFarmer()" id="btn-kisan-add-reminder">
+                                <mat-icon>alarm_add</mat-icon>
+                                <span>+ {{ translationService.get('nav.reminders') || 'रिमाइंडर' }}</span>
+                            </button>
+                            <button type="button" class="kisan-add-record-text-btn" (click)="addRecordForSelectedFarmer()" id="btn-kisan-add-record">
+                                + Add Record
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Custom Date Drawer (Single Date or Range) -->
-                    @if (selectedDateFilter() === 'custom') {
-                        <div class="custom-date-container" id="custom-date-container">
-                            <div class="custom-mode-switcher">
-                                <button 
-                                    type="button" 
-                                    class="custom-mode-pill" 
-                                    [class.active]="customMode() === 'single'"
-                                    (click)="setCustomMode('single')">
-                                    <mat-icon>event</mat-icon>
-                                    <span>{{ translationService.get('records.customSingleDate') }}</span>
-                                </button>
-                                <button 
-                                    type="button" 
-                                    class="custom-mode-pill" 
-                                    [class.active]="customMode() === 'range'"
-                                    (click)="setCustomMode('range')">
-                                    <mat-icon>date_range</mat-icon>
-                                    <span>{{ translationService.get('records.customDateRange') }}</span>
-                                </button>
+                    <!-- Upcoming Reminders for this farmer if any exist -->
+                    @if (selectedFarmerReminders().length > 0) {
+                        <div class="kisan-farmer-reminders-section" id="kisan-farmer-reminders">
+                            <div class="reminders-section-header">
+                                <div class="rem-header-left">
+                                    <mat-icon class="rem-header-icon">event_available</mat-icon>
+                                    <h4 class="rem-header-title">
+                                        {{ translationService.get('reminders.title') || 'आगामी कटाई बुकिंग' }}
+                                        <span class="rem-badge-count">({{ selectedFarmerReminders().length }})</span>
+                                    </h4>
+                                </div>
                             </div>
 
-                            @if (customMode() === 'single') {
-                                <div class="single-picker-row">
-                                    <div class="date-input-wrap">
-                                        <mat-icon class="date-wrap-icon">calendar_today</mat-icon>
-                                        <input 
-                                            type="date" 
-                                            class="styled-date-input" 
-                                            [ngModel]="customSingleDate()"
-                                            (ngModelChange)="customSingleDate.set($event)"
-                                            id="custom-single-date-field" />
-                                    </div>
-                                    <div class="single-quick-steppers">
-                                        <button type="button" class="stepper-arrow-btn" (click)="shiftCustomSingleDate(-1)" title="Previous day">
-                                            <mat-icon>chevron_left</mat-icon>
-                                        </button>
-                                        <button type="button" class="stepper-today-btn" (click)="setCustomSingleDateToday()">
-                                            {{ translationService.get('records.today') }}
-                                        </button>
-                                        <button type="button" class="stepper-arrow-btn" (click)="shiftCustomSingleDate(1)" title="Next day">
-                                            <mat-icon>chevron_right</mat-icon>
-                                        </button>
-                                    </div>
-                                </div>
-                            }
+                            <div class="farmer-reminders-list">
+                                @for (rem of selectedFarmerReminders(); track rem.id) {
+                                    <div class="farmer-reminder-card" [id]="'kisan-rem-' + rem.id">
+                                        <div class="rem-info-left">
+                                            <div class="rem-date-tag">
+                                                <mat-icon>schedule</mat-icon>
+                                                <span>{{ rem.scheduledDate }} ({{ formatDisplayTime(rem.scheduledTime) }})</span>
+                                            </div>
+                                            <div class="rem-acres-rate">
+                                                <strong>{{ rem.landInAcres }} एकड़</strong> • ₹{{ rem.ratePerAcre }}/एकड़ (अनुमानित: ₹{{ rem.estimatedTotal }})
+                                            </div>
+                                            @if (rem.notes) {
+                                                <div class="rem-notes-text">📝 {{ rem.notes }}</div>
+                                            }
+                                        </div>
 
-                            @if (customMode() === 'range') {
-                                <div class="range-picker-row">
-                                    <div class="range-date-col">
-                                        <label for="custom-start-date" class="date-col-label">{{ translationService.get('records.fromDate') }}</label>
-                                        <div class="date-input-wrap">
-                                            <mat-icon class="date-wrap-icon">event</mat-icon>
-                                            <input 
-                                                type="date" 
-                                                id="custom-start-date"
-                                                class="styled-date-input" 
-                                                [ngModel]="customStartDate()"
-                                                (ngModelChange)="customStartDate.set($event)" />
+                                        <button 
+                                            type="button" 
+                                            class="btn-kisan-convert-rem" 
+                                            (click)="promptMoveReminderToRecord(rem)"
+                                            [id]="'btn-kisan-convert-' + rem.id">
+                                            <mat-icon>check_circle</mat-icon>
+                                            <span>{{ translationService.get('reminders.moveToRecords') || 'रिकॉर्ड में बदलें' }}</span>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @if (farmerFilteredCuttings().length === 0) {
+                        <div class="kisan-empty-cuttings">
+                            <mat-icon>content_cut</mat-icon>
+                            <p>{{ translationService.getCurrentLanguage() === 'hi' ? 'इस फ़िल्टर के लिए कोई कटाई रिकॉर्ड नहीं मिला।' : 'No cuttings found for this filter.' }}</p>
+                        </div>
+                    }
+
+                    <!-- Timeline List of Cutting Cards -->
+                    <div class="kisan-cuttings-timeline">
+                        @for (cutting of farmerFilteredCuttings(); track cutting.id; let idx = $index) {
+                            <div class="kisan-timeline-item" [class.is-expanded]="expandedCuttingId() === cutting.id">
+                                <!-- Status Indicator Dot on Timeline -->
+                                <div class="timeline-dot-wrapper">
+                                    <span 
+                                        class="timeline-dot" 
+                                        [class.dot-paid]="cutting.markedAsPaid || cutting.pendingAmount <= 0"
+                                        [class.dot-pending]="!cutting.markedAsPaid && cutting.pendingAmount > 0">
+                                    </span>
+                                </div>
+
+                                <!-- The Card -->
+                                <div 
+                                    class="kisan-cutting-card" 
+                                    [id]="'kisan-cutting-' + cutting.id"
+                                    [class.expanded]="expandedCuttingId() === cutting.id"
+                                    (click)="toggleCuttingExpand(cutting.id)">
+                                    
+                                    <div class="cutting-card-main">
+                                        <!-- Date Badge: Month + Day -->
+                                        <div class="cutting-date-badge">
+                                            <span class="date-month">{{ getDateMonth(cutting.date) }}</span>
+                                            <span class="date-day">{{ getDateDay(cutting.date) }}</span>
+                                            @if (cutting.cuttingTime) {
+                                                <span class="date-time-chip">{{ formatDisplayTime(cutting.cuttingTime) }}</span>
+                                            }
+                                        </div>
+
+                                        <!-- Center Info -->
+                                        <div class="cutting-center-info">
+                                            <div class="cutting-acres-title">
+                                                {{ cutting.landInAcres }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Acres' }}
+                                            </div>
+                                            <div class="cutting-harvester-row">
+                                                <span class="harvester-icon-emoji">🚜</span>
+                                                <span class="harvester-name-text">{{ cutting.harvester || 'Harvester 1' }}</span>
+                                                @if (getRecordSeasonName(cutting); as sName) {
+                                                    <span class="rate-bullet">•</span>
+                                                    <span class="cutting-season-badge">
+                                                        <mat-icon class="season-badge-icon">grass</mat-icon>
+                                                        {{ sName }}
+                                                    </span>
+                                                }
+                                                <span class="rate-bullet">•</span>
+                                                <span class="cutting-full-date-text">{{ formatDisplayDate(cutting.date) }}</span>
+                                                @if (cutting.cuttingTime) {
+                                                    <span class="cutting-time-text">, {{ formatDisplayTime(cutting.cuttingTime) }}</span>
+                                                }
+                                            </div>
+                                            <div class="cutting-rates-row">
+                                                <span class="rate-per-ac">{{ formatCurrency(cutting.ratePerAcre) }}/Ac</span>
+                                                <span class="rate-bullet">•</span>
+                                                <span class="rate-total-ac">{{ formatCurrency(cutting.totalPayment) }} Total</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right Status Pill & Chevron -->
+                                        <div class="cutting-status-col">
+                                            @if (cutting.markedAsPaid || cutting.pendingAmount <= 0) {
+                                                <span class="status-pill-ss pill-paid">
+                                                    Paid ✓
+                                                </span>
+                                            } @else {
+                                                <span class="status-pill-ss pill-pending">
+                                                    {{ formatCurrency(cutting.pendingAmount) }}
+                                                </span>
+                                            }
+                                            <mat-icon class="chevron-icon">
+                                                {{ expandedCuttingId() === cutting.id ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}
+                                            </mat-icon>
                                         </div>
                                     </div>
-                                    <div class="range-date-col">
-                                        <label for="custom-end-date" class="date-col-label">{{ translationService.get('records.toDate') }}</label>
-                                        <div class="date-input-wrap">
-                                            <mat-icon class="date-wrap-icon">event_available</mat-icon>
-                                            <input 
-                                                type="date" 
-                                                id="custom-end-date"
-                                                class="styled-date-input" 
-                                                [ngModel]="customEndDate()"
-                                                (ngModelChange)="customEndDate.set($event)" />
+
+                                    <!-- Expanded Breakdown & Quick Actions -->
+                                    @if (expandedCuttingId() === cutting.id) {
+                                        <div class="cutting-expanded-body" (click)="$event.stopPropagation()">
+                                            <div class="cutting-spec-breakdown">
+                                                <div class="breakdown-item">
+                                                    <span class="b-label">{{ translationService.get('records.totalAmount') }}</span>
+                                                    <span class="b-value highlight">{{ formatCurrency(cutting.totalPayment) }}</span>
+                                                </div>
+                                                <div class="breakdown-item">
+                                                    <span class="b-label">{{ translationService.get('records.cashPaid') }}</span>
+                                                    <span class="b-value">{{ formatCurrency(cutting.paidOnSight || 0) }}</span>
+                                                </div>
+                                                <div class="breakdown-item">
+                                                    <span class="b-label">{{ translationService.get('records.pendingAmount') }}</span>
+                                                    <span class="b-value" [class.due-val]="cutting.pendingAmount > 0">{{ formatCurrency(cutting.pendingAmount) }}</span>
+                                                </div>
+                                                @if (cutting.fullPaymentDate && cutting.pendingAmount > 0) {
+                                                    <div class="breakdown-item">
+                                                        <span class="b-label">{{ translationService.get('records.paymentDate') }}</span>
+                                                        <span class="b-value">{{ formatDisplayDate(cutting.fullPaymentDate) }}</span>
+                                                    </div>
+                                                }
+                                                @if (getRecordSeasonName(cutting); as sName) {
+                                                    <div class="breakdown-item">
+                                                        <span class="b-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Season' }}</span>
+                                                        <span class="b-value">{{ sName }}</span>
+                                                    </div>
+                                                }
+                                            </div>
+
+                                            <div class="cutting-action-buttons">
+                                                <button type="button" class="c-action-btn edit-btn" (click)="editRecord(cutting)">
+                                                    <mat-icon>edit</mat-icon>
+                                                    <span>{{ translationService.get('records.editRecord') }}</span>
+                                                </button>
+                                                <button type="button" class="c-action-btn share-btn" (click)="shareRecord(cutting)">
+                                                    <mat-icon>share</mat-icon>
+                                                    <span>{{ translationService.get('records.shareRecord') }}</span>
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    class="c-action-btn paid-btn" 
+                                                    [class.is-paid]="cutting.markedAsPaid"
+                                                    (click)="markRecordAsPaid(cutting.id)">
+                                                    <mat-icon>{{ cutting.markedAsPaid ? 'check_circle' : 'task_alt' }}</mat-icon>
+                                                    <span>{{ cutting.markedAsPaid ? translationService.get('messages.paidStatus') : translationService.get('messages.markAsPaidButton') }}</span>
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                    @if (customStartDate() || customEndDate()) {
-                                        <button type="button" class="range-reset-btn" (click)="customStartDate.set(''); customEndDate.set('')">
-                                            <mat-icon>restart_alt</mat-icon>
-                                            <span>{{ translationService.get('records.clearFilter') }}</span>
+                                    }
+
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        } @else {
+            <div class="records-content-wrapper" id="records-content-wrapper">
+            
+            <!-- Header Section matching Figma Screenshot 100% -->
+            <div class="figma-records-header" id="figma-records-header">
+                <div class="figma-header-top-row">
+                    <div class="figma-title-group">
+                        <h1 class="figma-page-title">{{ translationService.get('records.title') || 'सभी कटाई रिकॉर्ड' }}</h1>
+                        <p class="figma-page-subtitle">
+                            {{ translationService.getCurrentLanguage() === 'hi' ? 'कुल ' + recordCount() + ' रिकॉर्ड उपलब्ध' : 'Total ' + recordCount() + ' records available' }}
+                        </p>
+                    </div>
+                    
+                    <div class="figma-top-badges-row">
+                        <span class="figma-top-badge badge-acres">
+                            {{ filterSummary().acres }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Acres' }}
+                        </span>
+                        <span class="figma-top-badge badge-due" [class.badge-due-zero]="filterSummary().pending <= 0">
+                            {{ filterSummary().pending > 0 
+                                ? (formatCurrency(filterSummary().pending) + (translationService.getCurrentLanguage() === 'hi' ? ' बकाया' : ' Due'))
+                                : (translationService.getCurrentLanguage() === 'hi' ? 'पूर्ण भुगतान' : 'Paid') 
+                            }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Clean Full-Width Search Bar -->
+                <div class="figma-search-bar" id="records-search-bar">
+                    <mat-icon class="figma-search-icon">search</mat-icon>
+                    <input 
+                        type="text" 
+                        id="records-search-input"
+                        [(ngModel)]="searchQuery" 
+                        (ngModelChange)="onSearch()" 
+                        [placeholder]="translationService.getCurrentLanguage() === 'hi' ? 'किसान, नंबर या तारीख से खोजें...' : 'Search by farmer, number or date...'" 
+                        aria-label="Search records" />
+                    @if (searchQuery()) {
+                        <button 
+                            type="button" 
+                            class="figma-search-clear-btn" 
+                            (click)="searchQuery.set(''); onSearch()"
+                            title="Clear search">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    }
+                </div>
+
+                <!-- Date & Season Filters in One Single Row (Mobile-Optimized) -->
+                <div class="records-filter-bar-row" id="records-filter-bar-row">
+                    <!-- Date Filter Dropdown -->
+                    <div class="filter-dropdown-container" id="date-filter-dropdown-container">
+                        <button 
+                            type="button" 
+                            class="filter-select-btn" 
+                            [class.is-active]="selectedDateFilter() !== 'all'"
+                            [class.is-open]="isDateFilterOpen()"
+                            (click)="toggleDateDropdown($event)"
+                            id="btn-date-filter-dropdown"
+                            aria-label="Filter by date">
+                            <mat-icon class="filter-btn-icon">calendar_today</mat-icon>
+                            <span class="filter-btn-label">{{ getSelectedDateFilterLabel() }}</span>
+                            <mat-icon class="filter-btn-chevron" [class.rotated]="isDateFilterOpen()">expand_more</mat-icon>
+                        </button>
+
+                        @if (isDateFilterOpen()) {
+                            <div class="filter-dropdown-backdrop" (click)="closeAllFilterDropdowns()"></div>
+                            <div class="filter-dropdown-menu" role="listbox" id="date-filter-dropdown-menu">
+                                <button type="button" 
+                                        class="filter-dropdown-item" 
+                                        [class.selected]="selectedDateFilter() === 'all'"
+                                        (click)="selectDateOption('all')"
+                                        id="date-opt-all">
+                                    <span>{{ translationService.get('records.filterAll') || 'सभी (All)' }}</span>
+                                    @if (selectedDateFilter() === 'all') {
+                                        <mat-icon class="check-icon">check</mat-icon>
+                                    }
+                                </button>
+                                <button type="button" 
+                                        class="filter-dropdown-item" 
+                                        [class.selected]="selectedDateFilter() === 'today'"
+                                        (click)="selectDateOption('today')"
+                                        id="date-opt-today">
+                                    <span>{{ translationService.get('records.filterToday') || 'आज' }}</span>
+                                    @if (selectedDateFilter() === 'today') {
+                                        <mat-icon class="check-icon">check</mat-icon>
+                                    }
+                                </button>
+                                <button type="button" 
+                                        class="filter-dropdown-item" 
+                                        [class.selected]="selectedDateFilter() === 'yesterday'"
+                                        (click)="selectDateOption('yesterday')"
+                                        id="date-opt-yesterday">
+                                    <span>{{ translationService.get('records.filterYesterday') || 'कल' }}</span>
+                                    @if (selectedDateFilter() === 'yesterday') {
+                                        <mat-icon class="check-icon">check</mat-icon>
+                                    }
+                                </button>
+                                <button type="button" 
+                                        class="filter-dropdown-item" 
+                                        [class.selected]="selectedDateFilter() === 'week'"
+                                        (click)="selectDateOption('week')"
+                                        id="date-opt-week">
+                                    <span>{{ translationService.get('records.filterWeek') || 'इस सप्ताह' }}</span>
+                                    @if (selectedDateFilter() === 'week') {
+                                        <mat-icon class="check-icon">check</mat-icon>
+                                    }
+                                </button>
+                                <button type="button" 
+                                        class="filter-dropdown-item" 
+                                        [class.selected]="selectedDateFilter() === 'month'"
+                                        (click)="selectDateOption('month')"
+                                        id="date-opt-month">
+                                    <span>{{ translationService.get('records.filterMonth') || 'इस माह' }}</span>
+                                    @if (selectedDateFilter() === 'month') {
+                                        <mat-icon class="check-icon">check</mat-icon>
+                                    }
+                                </button>
+                                <button type="button" 
+                                        class="filter-dropdown-item" 
+                                        [class.selected]="selectedDateFilter() === 'custom'"
+                                        (click)="selectDateOption('custom')"
+                                        id="date-opt-custom">
+                                    <span>{{ translationService.get('records.filterCustom') || 'कस्टम' }}</span>
+                                    @if (selectedDateFilter() === 'custom') {
+                                        <mat-icon class="check-icon">check</mat-icon>
+                                    }
+                                </button>
+                                @if (dueTodaySettlementCount() > 0) {
+                                    <button type="button" 
+                                            class="filter-dropdown-item item-due" 
+                                            [class.selected]="selectedDateFilter() === 'dueToday'"
+                                            (click)="selectDateOption('dueToday')"
+                                            id="date-opt-due">
+                                        <span>{{ translationService.get('records.filterDueToday') || 'आज देय' }} ({{ dueTodaySettlementCount() }})</span>
+                                        @if (selectedDateFilter() === 'dueToday') {
+                                            <mat-icon class="check-icon">check</mat-icon>
+                                        }
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Season Filter Dropdown -->
+                    @if (seasonService.seasons().length > 0) {
+                        <div class="filter-dropdown-container" id="season-filter-dropdown-container">
+                            <button 
+                                type="button" 
+                                class="filter-select-btn" 
+                                [class.is-active]="selectedSeasonFilter() !== 'all'"
+                                [class.is-open]="isSeasonFilterOpen()"
+                                (click)="toggleSeasonDropdown($event)"
+                                id="btn-season-filter-dropdown"
+                                aria-label="Filter by season">
+                                <mat-icon class="filter-btn-icon">grass</mat-icon>
+                                <span class="filter-btn-label">{{ getSelectedSeasonFilterLabel() }}</span>
+                                <mat-icon class="filter-btn-chevron" [class.rotated]="isSeasonFilterOpen()">expand_more</mat-icon>
+                            </button>
+
+                            @if (isSeasonFilterOpen()) {
+                                <div class="filter-dropdown-backdrop" (click)="closeAllFilterDropdowns()"></div>
+                                <div class="filter-dropdown-menu filter-dropdown-menu-right" role="listbox" id="season-filter-dropdown-menu">
+                                    <!-- Option: All Seasons -->
+                                    <button type="button" 
+                                            class="filter-dropdown-item" 
+                                            [class.selected]="selectedSeasonFilter() === 'all'"
+                                            (click)="selectSeasonOption('all')"
+                                            id="season-opt-all">
+                                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी सीज़न' : 'All Seasons' }}</span>
+                                        @if (selectedSeasonFilter() === 'all') {
+                                            <mat-icon class="check-icon">check</mat-icon>
+                                        }
+                                    </button>
+
+                                    <!-- Simple Season Options (No extra add/remove, no clutter) -->
+                                    @for (season of seasonService.seasons(); track (season.id || season.name)) {
+                                        <button type="button" 
+                                                class="filter-dropdown-item" 
+                                                [class.selected]="selectedSeasonFilter() === (season.id || '')"
+                                                (click)="selectSeasonOption(season.id || '')"
+                                                [id]="'season-opt-' + (season.id || '')">
+                                            <span>{{ season.name }} {{ season.year }}</span>
+                                            @if (selectedSeasonFilter() === (season.id || '')) {
+                                                <mat-icon class="check-icon">check</mat-icon>
+                                            }
                                         </button>
                                     }
                                 </div>
                             }
                         </div>
                     }
-
-                    <!-- Summary Stats Capsule for filtered slice -->
-                    @if (filteredRecords().length > 0) {
-                        <div class="filter-slice-summary" id="records-filter-slice-summary">
-                            <span class="slice-stat">
-                                <mat-icon>receipt</mat-icon>
-                                <strong>{{ filterSummary().count }}</strong> {{ translationService.get('dashboard.totalRecords') }}
-                            </span>
-                            <span class="slice-divider">•</span>
-                            <span class="slice-stat">
-                                <mat-icon>landscape</mat-icon>
-                                <strong>{{ filterSummary().acres }}</strong> {{ translationService.get('records.acresUnit') }}
-                            </span>
-                            <span class="slice-divider">•</span>
-                            <span class="slice-stat">
-                                <mat-icon>payments</mat-icon>
-                                <strong>{{ formatCurrency(filterSummary().total) }}</strong>
-                            </span>
-                            @if (filterSummary().pending > 0) {
-                                <span class="slice-stat pending-highlight">
-                                    <mat-icon>schedule</mat-icon>
-                                    <span>{{ formatCurrency(filterSummary().pending) }}</span>
-                                </span>
-                            }
-                        </div>
-                    }
                 </div>
+
+                <!-- Custom Date Drawer (Single Date or Range) -->
+                @if (selectedDateFilter() === 'custom') {
+                    <div class="custom-date-container" id="custom-date-container">
+                        <div class="custom-mode-switcher">
+                            <button 
+                                type="button" 
+                                class="custom-mode-pill" 
+                                [class.active]="customMode() === 'single'"
+                                (click)="setCustomMode('single')">
+                                <mat-icon>event</mat-icon>
+                                <span>{{ translationService.get('records.customSingleDate') }}</span>
+                            </button>
+                            <button 
+                                type="button" 
+                                class="custom-mode-pill" 
+                                [class.active]="customMode() === 'range'"
+                                (click)="setCustomMode('range')">
+                                <mat-icon>date_range</mat-icon>
+                                <span>{{ translationService.get('records.customDateRange') }}</span>
+                            </button>
+                        </div>
+
+                        @if (customMode() === 'single') {
+                            <div class="single-picker-row">
+                                <div class="date-input-wrap">
+                                    <mat-icon class="date-wrap-icon">calendar_today</mat-icon>
+                                    <input 
+                                        type="date" 
+                                        class="styled-date-input" 
+                                        [ngModel]="customSingleDate()"
+                                        (ngModelChange)="customSingleDate.set($event)"
+                                        id="custom-single-date-field" />
+                                </div>
+                                <div class="single-quick-steppers">
+                                    <button type="button" class="stepper-arrow-btn" (click)="shiftCustomSingleDate(-1)" title="Previous day">
+                                        <mat-icon>chevron_left</mat-icon>
+                                    </button>
+                                    <button type="button" class="stepper-today-btn" (click)="setCustomSingleDateToday()">
+                                        {{ translationService.get('records.today') }}
+                                    </button>
+                                    <button type="button" class="stepper-arrow-btn" (click)="shiftCustomSingleDate(1)" title="Next day">
+                                        <mat-icon>chevron_right</mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+
+                        @if (customMode() === 'range') {
+                            <div class="range-picker-row">
+                                <div class="range-date-col">
+                                    <label for="custom-start-date" class="date-col-label">{{ translationService.get('records.fromDate') }}</label>
+                                    <div class="date-input-wrap">
+                                        <mat-icon class="date-wrap-icon">event</mat-icon>
+                                        <input 
+                                            type="date" 
+                                            id="custom-start-date"
+                                            class="styled-date-input" 
+                                            [ngModel]="customStartDate()"
+                                            (ngModelChange)="customStartDate.set($event)" />
+                                    </div>
+                                </div>
+                                <div class="range-date-col">
+                                    <label for="custom-end-date" class="date-col-label">{{ translationService.get('records.toDate') }}</label>
+                                    <div class="date-input-wrap">
+                                        <mat-icon class="date-wrap-icon">event_available</mat-icon>
+                                        <input 
+                                            type="date" 
+                                            id="custom-end-date"
+                                            class="styled-date-input" 
+                                            [ngModel]="customEndDate()"
+                                            (ngModelChange)="customEndDate.set($event)" />
+                                    </div>
+                                </div>
+                                @if (customStartDate() || customEndDate()) {
+                                    <button type="button" class="range-reset-btn" (click)="customStartDate.set(''); customEndDate.set('')">
+                                        <mat-icon>restart_alt</mat-icon>
+                                        <span>{{ translationService.get('records.clearFilter') }}</span>
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
             </div>
 
             <!-- Records List Container -->
@@ -246,8 +589,8 @@
                             {{ searchQuery() ? translationService.get('records.changeSearch') : translationService.get('records.addNewRecord') }}
                         </p>
                         <div class="empty-actions-row">
-                            @if (selectedDateFilter() !== 'all' && totalAllRecordsCount() > 0) {
-                                <button type="button" class="empty-cta-btn secondary" (click)="setDateFilter('all')" id="btn-view-all-records">
+                            @if ((selectedDateFilter() !== 'all' || selectedSeasonFilter() !== 'all') && totalAllRecordsCount() > 0) {
+                                <button type="button" class="empty-cta-btn secondary" (click)="setDateFilter('all'); setSeasonFilter('all')" id="btn-view-all-records">
                                     <mat-icon>all_inclusive</mat-icon>
                                     <span>{{ translationService.get('records.viewAllRecords') }} ({{ totalAllRecordsCount() }})</span>
                                 </button>
@@ -260,169 +603,82 @@
                     </div>
                 }
 
-                <!-- Grouped Records by Date -->
+                <!-- Grouped Records by Date matching Figma layout -->
                 @for (group of groupedRecords(); track group.date) {
-                    <div class="date-group-block" [id]="'group-' + group.date">
-                        <!-- Date Sticky Pill -->
-                        <div class="date-header-pill">
-                            <mat-icon>calendar_today</mat-icon>
-                            <span>{{ group.dateLabel }}</span>
+                    <div class="figma-date-group" [id]="'group-' + group.date">
+                        <!-- Date Sticky Bar with Divider and Count Badge -->
+                        <div class="figma-date-header-row">
+                            <div class="figma-date-left">
+                                <mat-icon class="figma-calendar-icon">event</mat-icon>
+                                <span class="figma-date-title">{{ getFigmaDateLabel(group.date) }}</span>
+                            </div>
+                            <div class="figma-header-line"></div>
+                            <div class="figma-count-badge">
+                                {{ group.records.length }} {{ translationService.getCurrentLanguage() === 'hi' ? 'रिकॉर्ड' : 'Records' }}
+                            </div>
                         </div>
 
                         <!-- Record Cards in Group -->
-                        <div class="group-cards-list">
+                        <div class="figma-cards-list">
                             @for (record of group.records; track record.id) {
                                 <div 
-                                    class="farmer-record-card" 
+                                    class="figma-record-card" 
                                     [id]="'record-card-' + record.id"
-                                    [class.is-expanded]="isExpanded(record.id)"
                                     [class.marked-as-paid]="record.markedAsPaid"
-                                    [class.settlement-due-today]="isSettlementDueToday(record)"
-                                    (click)="toggleExpand(record.id)">
+                                    (click)="openKisanRecords(record)">
                                     
-                                    <!-- Main Header Row (Always Visible) -->
-                                    <div class="record-main-row">
-                                        <!-- Avatar with Initial -->
-                                        <div class="farmer-avatar-badge" [class.avatar-due-alert]="isSettlementDueToday(record)">
+                                    <!-- Main Header Row (100% Matching Screenshot) -->
+                                    <div class="figma-card-main-row">
+                                        <!-- Avatar with Initial: Squircle Pale Green with Dark Green Letter -->
+                                        <div class="figma-avatar-squircle">
                                             {{ getInitial(record.farmerName) }}
                                         </div>
 
-                                        <!-- Farmer & Machine Info -->
-                                        <div class="farmer-primary-details">
-                                            <div class="farmer-name-line">
-                                                <span class="farmer-name-text" [class.line-through]="record.markedAsPaid">{{ record.farmerName }}</span>
-                                                @if (isSettlementDueToday(record)) {
-                                                    <span class="today-due-inline-pill">
-                                                        <mat-icon>alarm</mat-icon>
-                                                        <span>{{ translationService.get('records.filterDueToday') }}</span>
+                                        <!-- Farmer Name & Sub-details -->
+                                        <div class="figma-card-details">
+                                            <div class="figma-farmer-name-row">
+                                                <span class="figma-farmer-name" [class.line-through]="record.markedAsPaid">
+                                                    {{ record.farmerName }}
+                                                </span>
+                                                @if (record.harvester) {
+                                                    <span class="figma-harvester-pill">{{ record.harvester }}</span>
+                                                }
+                                                @if (getRecordSeasonName(record); as seasonName) {
+                                                    <span class="figma-season-badge" [title]="seasonName">
+                                                        <mat-icon class="season-badge-icon">grass</mat-icon>
+                                                        {{ seasonName }}
                                                     </span>
                                                 }
                                             </div>
-                                            <div class="farmer-sub-line">
-                                                <span class="acres-text">{{ record.landInAcres }} {{ translationService.get('records.acresUnit') }}</span>
-                                                <span class="meta-separator">•</span>
-                                                <span class="harvester-sub-pill" [title]="record.harvester || 'Harvester 1'">
-                                                    <mat-icon class="harvester-sub-icon">agriculture</mat-icon>
-                                                    <span class="harvester-sub-name">{{ record.harvester || 'Harvester 1' }}</span>
-                                                </span>
-                                                @if (record.contactNumber) {
-                                                    <span class="meta-separator meta-phone-item">•</span>
-                                                    <a 
-                                                        class="farmer-phone-link meta-phone-item" 
-                                                        [href]="'tel:' + record.contactNumber" 
-                                                        (click)="$event.stopPropagation()"
-                                                        title="Call farmer">
-                                                        <mat-icon>phone</mat-icon>
-                                                        <span>{{ record.contactNumber }}</span>
-                                                    </a>
-                                                }
+                                            <div class="figma-farmer-sub-line">
+                                                <span>{{ record.date }}</span>
+                                                <span class="figma-dot-sep">•</span>
+                                                <span class="figma-acres-text">{{ record.landInAcres }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Acres' }}</span>
+                                                <span class="figma-dot-sep">•</span>
+                                                <span class="figma-rate-text">@ {{ formatCurrency(record.ratePerAcre) }}/{{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Ac' }}</span>
                                             </div>
                                         </div>
 
-                                        <!-- Financial Status & Controls -->
-                                        <div class="record-status-group">
-                                            <div class="payment-badge" [class.badge-paid]="record.pendingAmount <= 0 || record.markedAsPaid" [class.badge-due]="record.pendingAmount > 0 && !record.markedAsPaid">
-                                                {{ (record.pendingAmount <= 0 || record.markedAsPaid) ? translationService.get('records.fullPayment') : formatCurrency(record.pendingAmount) }}
+                                        <!-- Financial Status & Chevron (Matching Screenshot) -->
+                                        <div class="figma-card-right">
+                                            <div class="figma-amount-status-col">
+                                                <span class="figma-total-payment">{{ formatCurrency(record.totalPayment) }}</span>
+                                                @if (record.pendingAmount <= 0 || record.markedAsPaid) {
+                                                    <span class="figma-badge-paid">
+                                                        {{ translationService.getCurrentLanguage() === 'hi' ? 'चुक्ता' : 'Paid' }}
+                                                    </span>
+                                                } @else {
+                                                    <span class="figma-badge-due">
+                                                        {{ translationService.getCurrentLanguage() === 'hi' ? 'बकाया: ' + formatCurrency(record.pendingAmount) : 'Due: ' + formatCurrency(record.pendingAmount) }}
+                                                    </span>
+                                                }
                                             </div>
 
-                                            <button 
-                                                type="button" 
-                                                class="edit-icon-btn" 
-                                                (click)="editRecord(record); $event.stopPropagation()"
-                                                [title]="translationService.get('records.editRecord')"
-                                                [attr.aria-label]="translationService.get('records.editRecord')">
-                                                <mat-icon>edit</mat-icon>
-                                            </button>
-
-                                            <div class="expand-chevron">
-                                                <mat-icon>{{ isExpanded(record.id) ? 'expand_less' : 'expand_more' }}</mat-icon>
-                                            </div>
+                                            <mat-icon class="figma-chevron-arrow">
+                                                chevron_right
+                                            </mat-icon>
                                         </div>
                                     </div>
-
-                                    <!-- Expanded Breakdown Details -->
-                                    @if (isExpanded(record.id)) {
-                                        <div class="record-details-expanded" (click)="$event.stopPropagation()">
-                                            <div class="details-spec-grid">
-                                                <div class="spec-cell">
-                                                    <span class="spec-label">{{ translationService.get('records.date') }}</span>
-                                                    <span class="spec-value">{{ record.date }}</span>
-                                                </div>
-                                                <div class="spec-cell harvester-spec-cell">
-                                                    <span class="spec-label">{{ translationService.get('records.harvester') }}</span>
-                                                    <span class="spec-value harvester-spec-value">
-                                                        <mat-icon class="harvester-cell-icon">agriculture</mat-icon>
-                                                        <span class="harvester-name-txt">{{ record.harvester || 'Harvester 1' }}</span>
-                                                    </span>
-                                                </div>
-                                                <div class="spec-cell">
-                                                    <span class="spec-label">{{ translationService.get('records.land') }}</span>
-                                                    <span class="spec-value">{{ record.landInAcres }} {{ translationService.get('records.acresUnit') }}</span>
-                                                </div>
-                                                <div class="spec-cell">
-                                                    <span class="spec-label">{{ translationService.get('records.rate') }}</span>
-                                                    <span class="spec-value">{{ formatCurrency(record.ratePerAcre) }}/{{ translationService.get('records.acresUnit') }}</span>
-                                                </div>
-                                                <div class="spec-cell highlight-cell">
-                                                    <span class="spec-label">{{ translationService.get('records.totalAmount') }}</span>
-                                                    <span class="spec-value text-emerald">{{ formatCurrency(record.totalPayment) }}</span>
-                                                </div>
-                                                <div class="spec-cell">
-                                                    <span class="spec-label">{{ translationService.get('records.cashPaid') }}</span>
-                                                    <span class="spec-value">{{ formatCurrency(record.paidOnSight) }}</span>
-                                                </div>
-                                                <div class="spec-cell" [class.due-cell]="record.pendingAmount > 0">
-                                                    <span class="spec-label">{{ translationService.get('records.pendingAmount') }}</span>
-                                                    <span class="spec-value">{{ formatCurrency(record.pendingAmount) }}</span>
-                                                </div>
-                                                @if (record.fullPaymentDate) {
-                                                    <div class="spec-cell full-width-cell">
-                                                        <span class="spec-label">{{ translationService.get('records.paymentDate') }}</span>
-                                                        <span class="spec-value">{{ record.fullPaymentDate }}</span>
-                                                    </div>
-                                                }
-                                            </div>
-
-                                            <!-- Expanded Action Buttons -->
-                                            <div class="expanded-actions-row">
-                                                @if (record.contactNumber) {
-                                                    <a 
-                                                        [href]="'tel:' + record.contactNumber" 
-                                                        class="detail-action-btn call-action"
-                                                        title="Call farmer">
-                                                        <mat-icon>phone</mat-icon>
-                                                        <span>{{ translationService.get('records.callFarmer') }}</span>
-                                                    </a>
-                                                }
-
-                                                <button 
-                                                    type="button" 
-                                                    class="detail-action-btn primary-action" 
-                                                    (click)="editRecord(record)">
-                                                    <mat-icon>edit</mat-icon>
-                                                    <span>{{ translationService.get('records.editRecord') }}</span>
-                                                </button>
-
-                                                <button 
-                                                    type="button" 
-                                                    class="detail-action-btn share-action" 
-                                                    (click)="shareRecord(record)">
-                                                    <mat-icon>share</mat-icon>
-                                                    <span>{{ translationService.get('records.shareRecord') }}</span>
-                                                </button>
-
-                                                <button 
-                                                    type="button" 
-                                                    class="detail-action-btn paid-toggle-action" 
-                                                    [class.is-paid-btn]="record.markedAsPaid"
-                                                    (click)="markRecordAsPaid(record.id)">
-                                                    <mat-icon>{{ record.markedAsPaid ? 'check_circle' : 'task_alt' }}</mat-icon>
-                                                    <span>{{ record.markedAsPaid ? translationService.get('messages.paidStatus') : translationService.get('messages.markAsPaidButton') }}</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    }
-
                                 </div>
                             }
                         </div>
@@ -430,6 +686,58 @@
                 }
             </div>
 
+        </div>
+        }
+    }
+
+    <!-- Move Reminder to Record Modal Prompt -->
+    @if (pendingMoveReminder(); as rem) {
+        <div class="move-prompt-backdrop" (click)="closeMovePrompt()" id="modal-kisan-move-reminder">
+            <div class="move-prompt-dialog" (click)="$event.stopPropagation()">
+                <div class="dialog-icon-badge">
+                    <mat-icon>transform</mat-icon>
+                </div>
+                <h3 class="dialog-title">{{ translationService.get('reminders.moveConfirmTitle') || 'कटाई रिकॉर्ड में बदलें' }}</h3>
+                <p class="dialog-desc">
+                    {{ translationService.getCurrentLanguage() === 'hi' 
+                        ? 'क्या आप "' + rem.farmerName + '" की बुकिंग को कटाई रिकॉर्ड में बदलना चाहते हैं? क्या आपको कोई डिटेल एडिट करनी है?'
+                        : 'Do you want to convert booking for "' + rem.farmerName + '" into cutting record? Would you like to edit details first?' 
+                    }}
+                </p>
+
+                <div class="rem-summary-box">
+                    <div class="rem-sum-row">
+                        <span>{{ translationService.get('reminders.farmerName') || 'किसान' }}:</span>
+                        <strong>{{ rem.farmerName }}</strong>
+                    </div>
+                    <div class="rem-sum-row">
+                        <span>{{ translationService.get('reminders.acres') || 'रकबा' }}:</span>
+                        <strong>{{ rem.landInAcres }} एकड़ (₹{{ rem.estimatedTotal }})</strong>
+                    </div>
+                </div>
+
+                <div class="dialog-actions-vertical">
+                    <button type="button" class="btn-action btn-edit-add" (click)="moveToRecordWithEdit(rem)" id="btn-kisan-move-edit">
+                        <mat-icon>edit_note</mat-icon>
+                        <div class="btn-text-block">
+                            <span class="btn-main-label">{{ translationService.get('reminders.editAndAdd') || 'डिटेल्स एडिट करके जोड़ें' }}</span>
+                            <span class="btn-sub-label">{{ translationService.get('reminders.editAndAddDesc') || 'नकद, बाकी या समय बदलें' }}</span>
+                        </div>
+                    </button>
+                    
+                    <button type="button" class="btn-action btn-direct-add" (click)="directMoveToRecord(rem)" id="btn-kisan-move-direct">
+                        <mat-icon>flash_on</mat-icon>
+                        <div class="btn-text-block">
+                            <span class="btn-main-label">{{ translationService.get('reminders.directMove') || 'सीधे रिकॉर्ड में जोड़ें' }}</span>
+                            <span class="btn-sub-label">{{ translationService.get('reminders.directMoveDesc') || 'बिना बदलाव के तुरंत सेव करें' }}</span>
+                        </div>
+                    </button>
+
+                    <button type="button" class="btn-cancel" (click)="closeMovePrompt()" id="btn-kisan-move-cancel">
+                        {{ translationService.get('common.cancel') || 'रद्द करें' }}
+                    </button>
+                </div>
+            </div>
         </div>
     }
 </div>

@@ -22,24 +22,48 @@
                         <h2 class="section-heading">{{ translationService.get('form.farmerInfo') }}</h2>
                     </div>
 
+                    @if (isExistingFarmerLocked()) {
+                        <div class="existing-farmer-banner" id="existing-farmer-lock-banner">
+                            <div class="banner-icon">
+                                <mat-icon>verified</mat-icon>
+                            </div>
+                            <div class="banner-info">
+                                <div class="banner-title">
+                                    {{ translationService.getCurrentLanguage() === 'hi' ? 'मौजूदा किसान के लिए नई कटाई' : 'Adding New Cutting for Existing Farmer' }}
+                                </div>
+                                <div class="banner-sub">
+                                    {{ recordForm.getRawValue().farmerName }} • {{ recordForm.getRawValue().contactNumber }}
+                                </div>
+                            </div>
+                            <button type="button" class="banner-unlock-btn" (click)="unlockFarmerFields()" [title]="'Change farmer'">
+                                <mat-icon>edit</mat-icon>
+                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'बदलें' : 'Change' }}</span>
+                            </button>
+                        </div>
+                    }
+
                     <div class="form-grid-2">
                         <!-- Farmer Name -->
-                        <mat-form-field appearance="outline" class="custom-mat-field" id="field-farmer-name">
+                        <mat-form-field appearance="outline" class="custom-mat-field" [class.is-locked-field]="isExistingFarmerLocked()" id="field-farmer-name">
                             <mat-label>{{ translationService.get('form.farmerName') }}</mat-label>
                             <input 
                                 matInput 
                                 type="text" 
                                 [placeholder]="translationService.get('form.farmerNamePlaceholder')" 
                                 formControlName="farmerName" 
+                                [readonly]="isExistingFarmerLocked()"
                                 required />
                             <mat-icon matPrefix class="field-icon">person</mat-icon>
+                            @if (isExistingFarmerLocked()) {
+                                <mat-icon matSuffix class="lock-suffix-icon" title="Locked for existing farmer">lock</mat-icon>
+                            }
                             @if (recordForm.get('farmerName')?.invalid && recordForm.get('farmerName')?.touched) {
                                 <mat-error>{{ translationService.get('errors.farmerNameRequired') }}</mat-error>
                             }
                         </mat-form-field>
 
                         <!-- Contact Number -->
-                        <mat-form-field appearance="outline" class="custom-mat-field" id="field-contact-number">
+                        <mat-form-field appearance="outline" class="custom-mat-field" [class.is-locked-field]="isExistingFarmerLocked()" id="field-contact-number">
                             <mat-label>{{ translationService.get('form.contactNumber') }}</mat-label>
                             <input 
                                 matInput 
@@ -47,8 +71,12 @@
                                 [placeholder]="translationService.get('form.contactNumberPlaceholder')" 
                                 formControlName="contactNumber" 
                                 maxlength="10" 
+                                [readonly]="isExistingFarmerLocked()"
                                 required />
                             <mat-icon matPrefix class="field-icon">phone</mat-icon>
+                            @if (isExistingFarmerLocked()) {
+                                <mat-icon matSuffix class="lock-suffix-icon" title="Locked for existing farmer">lock</mat-icon>
+                            }
                             @if (recordForm.get('contactNumber')?.invalid && recordForm.get('contactNumber')?.touched) {
                                 <mat-error>{{ translationService.get('errors.contactNumberInvalid') }}</mat-error>
                             }
@@ -84,18 +112,82 @@
                     </div>
 
                     <div class="form-grid-2">
-                        <!-- Cutting Date -->
-                        <mat-form-field appearance="outline" class="custom-mat-field" id="field-cutting-date">
-                            <mat-label>{{ translationService.get('form.date') }}</mat-label>
+                        <!-- Cutting Date & Time (Combined single field) -->
+                        <mat-form-field appearance="outline" class="custom-mat-field unified-datetime-field" id="field-cutting-date">
+                            <mat-label>{{ translationService.get('form.dateTime') }} (DD/MM/YYYY, Time)</mat-label>
                             <input 
                                 matInput 
-                                [matDatepicker]="datePicker" 
+                                [matDatepicker]="dateTimePicker" 
                                 formControlName="date" 
+                                placeholder="DD/MM/YYYY, hh:mm AM/PM"
+                                (click)="dateTimePicker.open()"
                                 [max]="currentDate" 
                                 required />
-                            <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
-                            <mat-datepicker #datePicker></mat-datepicker>
-                            <mat-icon matPrefix class="field-icon">event</mat-icon>
+                            <mat-datepicker-toggle matSuffix [for]="dateTimePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #dateTimePicker panelClass="datetime-picker-panel" (opened)="onPickerOpened()">
+                                <mat-datepicker-actions>
+                                    <div class="datetime-picker-actions-container">
+                                        <!-- Time Selection Header & Input -->
+                                        <div class="time-picker-section">
+                                            <div class="time-picker-label-row">
+                                                <div class="clock-title-group">
+                                                    <mat-icon class="picker-clock-icon">schedule</mat-icon>
+                                                    <span class="picker-time-title">{{ isHindi() ? 'कटाई का समय' : 'Cutting Time' }}:</span>
+                                                </div>
+                                                <span class="picker-time-preview">{{ getFormattedTimePreview() }}</span>
+                                            </div>
+
+                                            <div class="time-picker-input-row">
+                                                <div class="time-input-wrap">
+                                                    <input 
+                                                        type="time" 
+                                                        class="time-picker-native-control" 
+                                                        [value]="tempSelectedTime()" 
+                                                        (input)="onTempTimeChange($event)"
+                                                        (change)="onTempTimeChange($event)" />
+                                                </div>
+
+                                                <button type="button" class="quick-time-btn now-btn" (click)="setTempTimeToNow()" [title]="isHindi() ? 'वर्तमान समय सेट करें' : 'Set to current time'">
+                                                    <mat-icon class="quick-btn-icon">update</mat-icon>
+                                                    <span>{{ isHindi() ? 'अभी' : 'Now' }}</span>
+                                                </button>
+                                            </div>
+
+                                            <!-- Quick Shift Presets -->
+                                            <div class="quick-time-chips-row">
+                                                <button type="button" class="preset-chip" (click)="setTempTimePreset('08:00')">
+                                                    ☀️ 08:00 AM
+                                                </button>
+                                                <button type="button" class="preset-chip" (click)="setTempTimePreset('12:00')">
+                                                    🌤️ 12:00 PM
+                                                </button>
+                                                <button type="button" class="preset-chip" (click)="setTempTimePreset('16:00')">
+                                                    ⛅ 04:00 PM
+                                                </button>
+                                                <button type="button" class="preset-chip" (click)="setTempTimePreset('19:00')">
+                                                    🌙 07:00 PM
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Footer Action Buttons -->
+                                        <div class="picker-footer-buttons">
+                                            <button mat-button matDatepickerCancel class="picker-cancel-action">
+                                                {{ translationService.get('common.cancel') }}
+                                            </button>
+                                            <button 
+                                                mat-flat-button 
+                                                color="primary" 
+                                                class="picker-confirm-action" 
+                                                (click)="confirmDateTimeSelection(dateTimePicker)">
+                                                <mat-icon>done</mat-icon>
+                                                <span>{{ isHindi() ? 'तारीख व समय लागू करें' : 'Set Date & Time' }}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </mat-datepicker-actions>
+                            </mat-datepicker>
+                            <mat-icon matPrefix class="field-icon">event_available</mat-icon>
                             @if (recordForm.get('date')?.invalid && recordForm.get('date')?.touched) {
                                 <mat-error>{{ translationService.get('errors.dateRequired') }}</mat-error>
                             }
@@ -154,14 +246,35 @@
                             }
                         </mat-form-field>
 
-                        <!-- Calculated Total -->
-                        <div class="calculated-highlight-box" id="calc-highlight-box">
-                            <div class="calc-label-row">
-                                <mat-icon class="calc-icon">calculate</mat-icon>
-                                <span class="calc-label">{{ translationService.get('form.totalAmount') }}</span>
-                            </div>
-                            <div class="calc-amount-value">₹{{ totalPayment() | number: '1.0-0' }}</div>
+                        <!-- Season Selector -->
+                        <mat-form-field appearance="outline" class="custom-mat-field" id="field-season-select">
+                            <mat-label>{{ isHindi() ? 'सीज़न' : 'Season' }}</mat-label>
+                            <mat-select formControlName="seasonId">
+                                <mat-option value="">
+                                    <span class="text-slate-400">{{ isHindi() ? '-- कोई सीज़न नहीं --' : '-- No Season --' }}</span>
+                                </mat-option>
+                                @for (season of seasonService.seasons(); track season.id) {
+                                    <mat-option [value]="season.id">
+                                        <div class="season-option-item">
+                                            <span>{{ seasonService.formatLabel(season) }}</span>
+                                            @if (season.isDefault) {
+                                                <span class="default-pill-indicator">★ {{ translationService.get('settings.isDefaultBadge') || (isHindi() ? 'डिफ़ॉल्ट' : 'Default') }}</span>
+                                            }
+                                        </div>
+                                    </mat-option>
+                                }
+                            </mat-select>
+                            <mat-icon matPrefix class="field-icon">calendar_month</mat-icon>
+                        </mat-form-field>
+                    </div>
+
+                    <!-- Calculated Total -->
+                    <div class="calculated-highlight-box" id="calc-highlight-box">
+                        <div class="calc-label-row">
+                            <mat-icon class="calc-icon">calculate</mat-icon>
+                            <span class="calc-label">{{ translationService.get('form.totalAmount') }}</span>
                         </div>
+                        <div class="calc-amount-value">₹{{ totalPayment() | number: '1.0-0' }}</div>
                     </div>
                 </div>
 
@@ -192,6 +305,7 @@
                                 matInput 
                                 [matDatepicker]="paymentDatePicker" 
                                 formControlName="fullPaymentDate" 
+                                placeholder="DD/MM/YYYY"
                                 [min]="minPaymentDate()" />
                             <mat-datepicker-toggle matSuffix [for]="paymentDatePicker"></mat-datepicker-toggle>
                             <mat-datepicker #paymentDatePicker></mat-datepicker>

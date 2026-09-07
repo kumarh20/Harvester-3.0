@@ -1,7 +1,7 @@
-import { Component, OnInit, signal, computed, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -9,7 +9,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatMenuModule } from '@angular/material/menu';
 import { RecordsService } from '../../core/services/records.service';
+import { RemindersService, Reminder } from '../../core/services/reminders.service';
+import { HarvesterService } from '../../core/services/harvester.service';
+import { SeasonService } from '../../core/services/season.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { DialogService } from '../../shared/services/dialog.service';
 import { TranslationService } from '../../shared/services/translation.service';
@@ -24,6 +28,7 @@ interface Record {
   farmerName: string;
   contactNumber: string;
   date: string;
+  cuttingTime?: string;
   landInAcres: number;
   ratePerAcre: number;
   totalPayment: number;
@@ -32,6 +37,7 @@ interface Record {
   fullPaymentDate?: string;
   harvester?: string;
   markedAsPaid?: boolean;
+  seasonId?: string;
 }
 
 interface GroupedRecords {
@@ -54,15 +60,22 @@ interface GroupedRecords {
     MatButtonModule,
     MatListModule,
     MatExpansionModule,
+    MatMenuModule,
+    RouterModule,
     RecordSkeletonComponent
   ],
   templateUrl: './records.component.html',
   styleUrl: './records.component.scss'
 })
-export class RecordsComponent implements OnInit {
+export class RecordsComponent implements OnInit, OnDestroy {
   searchQuery = signal('');
   expandedId = signal<string | null>(null);
   isLoading = signal(true);
+
+  // Kisan Records Page State
+  selectedFarmer = signal<{ name: string; phone: string } | null>(null);
+  expandedCuttingId = signal<string | null>(null);
+  selectedHarvesterFilter = signal<string>('all');
 
   // Date Filtering State
   selectedDateFilter = signal<RecordDateFilterOption>('today');
@@ -71,8 +84,21 @@ export class RecordsComponent implements OnInit {
   customStartDate = signal<string>('');
   customEndDate = signal<string>('');
 
+  // Season Filtering State (default 'all')
+  selectedSeasonFilter = signal<string>('all');
+
+  // Filter Dropdown Open State
+  isDateFilterOpen = signal<boolean>(false);
+  isSeasonFilterOpen = signal<boolean>(false);
+
+  // Move reminder to record prompt state
+  pendingMoveReminder = signal<Reminder | null>(null);
+
   constructor(
     public recordsService: RecordsService,
+    public remindersService: RemindersService,
+    public harvesterService: HarvesterService,
+    public seasonService: SeasonService,
     private toastService: ToastService,
     private dialogService: DialogService,
     public router: Router,
@@ -80,7 +106,16 @@ export class RecordsComponent implements OnInit {
     public translationService: TranslationService,
     private languageService: LanguageService,
     private uiPreferencesService: UiPreferencesService
-  ) {}
+  ) {
+    effect(() => {
+      const isFarmerDetailOpen = !!this.selectedFarmer();
+      this.recordsService.isKisanDetailPageOpen.set(isFarmerDetailOpen);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.recordsService.isKisanDetailPageOpen.set(false);
+  }
 
   async ngOnInit(): Promise<void> {
     // Initialize default filter from user preference setting (defaults to 'today')
@@ -90,22 +125,48 @@ export class RecordsComponent implements OnInit {
     this.isLoading.set(true);
 
     try {
-      await this.recordsService.loadRecords();
+      await Promise.all([
+        this.harvesterService.loadHarvesters(),
+        this.seasonService.loadSeasons(),
+        this.recordsService.loadRecords()
+      ]);
       
-      // Check query params for notification deep links
+      // Check query params for notification deep links and farmer detail view
       this.route.queryParams.subscribe(params => {
         if (params['filter'] === 'dueToday' || params['filter'] === 'promisedDateToday' || params['filter'] === 'settlementDue') {
           this.selectedDateFilter.set('dueToday');
         }
-        if (params['recordId']) {
-          const targetId = params['recordId'];
-          this.expandedId.set(targetId);
-          setTimeout(() => {
-            const el = document.getElementById('record-card-' + targetId);
-            if (el) {
-              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-          }, 350);
+        if (params['farmer']) {
+          const fParam = params['farmer'];
+          const all = this.recordsService.getAllRecords();
+          const cleanFParam = this.cleanPhone(fParam);
+          const match = all.find(r => 
+            (cleanFParam && this.cleanPhone(r.contactNumber) === cleanFParam) ||
+            r.farmerName.trim().toLowerCase() === fParam.trim().toLowerCase()
+          );
+          if (match) {
+            this.selectedFarmer.set({
+              name: match.farmerName,
+              phone: match.contactNumber || ''
+            });
+          } else {
+            this.selectedFarmer.set({
+              name: fParam,
+              phone: cleanFParam || ''
+            });
+          }
+          if (params['recordId']) {
+            const targetId = params['recordId'];
+            this.expandedCuttingId.set(targetId);
+            setTimeout(() => {
+              const el = document.getElementById('kisan-cutting-' + targetId);
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }, 300);
+          }
+        } else {
+          this.selectedFarmer.set(null);
         }
       });
     } finally {
@@ -159,6 +220,154 @@ export class RecordsComponent implements OnInit {
 
   setDateFilter(filter: RecordDateFilterOption): void {
     this.selectedDateFilter.set(filter);
+  }
+
+  setSeasonFilter(seasonId: string): void {
+    this.selectedSeasonFilter.set(seasonId);
+  }
+
+  toggleDateDropdown(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.isDateFilterOpen.update(v => !v);
+    this.isSeasonFilterOpen.set(false);
+  }
+
+  toggleSeasonDropdown(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.isSeasonFilterOpen.update(v => !v);
+    this.isDateFilterOpen.set(false);
+  }
+
+  closeAllFilterDropdowns(): void {
+    this.isDateFilterOpen.set(false);
+    this.isSeasonFilterOpen.set(false);
+  }
+
+  selectDateOption(filter: RecordDateFilterOption): void {
+    this.setDateFilter(filter);
+    this.isDateFilterOpen.set(false);
+  }
+
+  selectSeasonOption(seasonId: string): void {
+    this.setSeasonFilter(seasonId);
+    this.isSeasonFilterOpen.set(false);
+  }
+
+  getSelectedDateFilterLabel(): string {
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+    switch (this.selectedDateFilter()) {
+      case 'today':
+        return isHi ? 'आज' : 'Today';
+      case 'yesterday':
+        return isHi ? 'कल' : 'Yesterday';
+      case 'week':
+        return isHi ? 'इस सप्ताह' : 'This Week';
+      case 'month':
+        return isHi ? 'इस माह' : 'This Month';
+      case 'custom':
+        return isHi ? 'कस्टम' : 'Custom';
+      case 'dueToday':
+        return isHi ? `आज देय (${this.dueTodaySettlementCount()})` : `Due Today (${this.dueTodaySettlementCount()})`;
+      case 'all':
+      default:
+        return isHi ? 'सभी तारीख' : 'All Dates';
+    }
+  }
+
+  getSelectedSeasonFilterLabel(): string {
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+    const filter = this.selectedSeasonFilter();
+    if (filter === 'all' || !filter) {
+      return isHi ? 'सभी सीज़न' : 'All Seasons';
+    }
+    const season = this.seasonService.getSeasonById(filter);
+    if (!season) {
+      return isHi ? 'सभी सीज़न' : 'All Seasons';
+    }
+    return `${season.name} ${season.year}`;
+  }
+
+  clearSeasonFilter(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.selectedSeasonFilter.set('all');
+  }
+
+  getActiveSeasonDisplay(): { name: string; subtitle: string; isDefault: boolean } {
+    const filter = this.selectedSeasonFilter();
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+    if (filter === 'all') {
+      return {
+        name: isHi ? 'सभी सीज़न' : 'All Seasons',
+        subtitle: isHi ? 'सभी रिकॉर्ड्स' : 'All records',
+        isDefault: false
+      };
+    }
+    const season = this.seasonService.getSeasonById(filter);
+    if (!season) {
+      return {
+        name: isHi ? 'सभी सीज़न' : 'All Seasons',
+        subtitle: isHi ? 'सभी रिकॉर्ड्स' : 'All records',
+        isDefault: false
+      };
+    }
+    return {
+      name: `${season.name} ${season.year}`,
+      subtitle: this.getSeasonMonthsLabel(season),
+      isDefault: Boolean(season.isDefault)
+    };
+  }
+
+  getSeasonMonthsLabel(season: any): string {
+    if (!season) return '';
+    const monthNamesHi = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+    const monthNamesEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+    const months = isHi ? monthNamesHi : monthNamesEn;
+    const sMonth = months[(Number(season.startMonth) || 1) - 1] || '';
+    const eMonth = months[(Number(season.endMonth) || 12) - 1] || '';
+    return sMonth === eMonth ? sMonth : `${sMonth} - ${eMonth}`;
+  }
+
+  getSeasonRecordCount(seasonId?: string): number {
+    const all = this.recordsService.records();
+    if (!seasonId || seasonId === 'all') {
+      return all.length;
+    }
+    return all.filter(r => {
+      const s = this.seasonService.getSeasonForRecord(r);
+      return s?.id === seasonId || r.seasonId === seasonId;
+    }).length;
+  }
+
+  navigateToManageSeasons(): void {
+    this.router.navigate(['/settings'], { queryParams: { open: 'seasons' } });
+  }
+
+  onSeasonSelectChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    if (target) {
+      this.selectedSeasonFilter.set(target.value);
+    }
+  }
+
+  /**
+   * Get resolved season display name for any record card
+   */
+  getRecordSeasonName(record: Record): string {
+    const season = this.seasonService.getSeasonForRecord(record);
+    return season ? this.seasonService.getSeasonBadgeLabel(season) : '';
+  }
+
+  getSeasonLabel(seasonId?: string): string {
+    if (!seasonId) return '';
+    const season = this.seasonService.getSeasonById(seasonId);
+    return season ? this.seasonService.getSeasonBadgeLabel(season) : '';
   }
 
   setCustomMode(mode: 'single' | 'range'): void {
@@ -271,19 +480,30 @@ export class RecordsComponent implements OnInit {
     });
   });
 
-  // Computed filtered records based on date and search query
+  // Computed filtered records based on date, season, and search query
   filteredRecords = computed(() => {
     const records = this.recordsByDate();
-    const query = this.searchQuery().toLowerCase().trim();
-    if (!query) {
-      return records;
+    const seasonFilter = this.selectedSeasonFilter();
+
+    let result = records;
+    if (seasonFilter !== 'all') {
+      result = result.filter(record => {
+        const s = this.seasonService.getSeasonForRecord(record);
+        return s?.id === seasonFilter || record.seasonId === seasonFilter;
+      });
     }
 
-    return records.filter(record =>
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) {
+      return result;
+    }
+
+    return result.filter(record =>
       record.farmerName.toLowerCase().includes(query) ||
       record.contactNumber.includes(query) ||
       record.date.includes(query) ||
-      (record.harvester && record.harvester.toLowerCase().includes(query))
+      (record.harvester && record.harvester.toLowerCase().includes(query)) ||
+      (this.getRecordSeasonName(record).toLowerCase().includes(query))
     );
   });
 
@@ -416,17 +636,23 @@ export class RecordsComponent implements OnInit {
   buildShareText(data: Record): string {
     const isHi = this.translationService.getCurrentLanguage() === 'hi';
     const harvesterName = data.harvester?.trim() || 'Harvester 1';
+    const formattedDate = this.formatDisplayDate(data.date);
+    const timeText = data.cuttingTime ? ` (${this.formatDisplayTime(data.cuttingTime)})` : '';
+    const paymentDateText = data.fullPaymentDate ? this.formatDisplayDate(data.fullPaymentDate) : '-';
+    const seasonName = this.getRecordSeasonName(data);
+
     if (isHi) {
       return `🌾 *किसान कटाई पर्ची* 🌾\n` +
         `किसान का नाम   : ${data.farmerName}\n` +
         `मोबाइल नंबर   : ${data.contactNumber || '-'}\n` +
+        (seasonName ? `सीज़न          : ${seasonName}\n` : '') +
         `हार्वेस्टर      : ${harvesterName}\n` +
-        `दिनांक         : ${data.date}\n` +
+        `कटाई दिनांक    : ${formattedDate}${timeText}\n` +
         `रकबा (एकड़)    : ${data.landInAcres} एकड़\n` +
         `कटाई दर        : ₹${data.ratePerAcre}/एकड़\n` +
         `कुल राशि       : ₹${data.totalPayment}\n` +
         `नकद भुगतान     : ₹${data.paidOnSight || 0}\n` +
-        `भुगतान तिथि    : ${data.fullPaymentDate || '-'}\n` +
+        `भुगतान तिथि    : ${paymentDateText}\n` +
         `----------------------------------------\n` +
         `बाकी रकम       : ₹${data.pendingAmount}\n` +
         `हार्वेस्टर कटिंग लेजर`;
@@ -434,20 +660,57 @@ export class RecordsComponent implements OnInit {
     return `🌾 *Farmer Cutting Receipt* 🌾\n` +
       `Farmer Name    : ${data.farmerName}\n` +
       `Contact Number : ${data.contactNumber || '-'}\n` +
+      (seasonName ? `Season         : ${seasonName}\n` : '') +
       `Harvester      : ${harvesterName}\n` +
-      `Date           : ${data.date}\n` +
+      `Cutting Date   : ${formattedDate}${timeText}\n` +
       `Land In Acres  : ${data.landInAcres} Acres\n` +
       `Rate Per Acre  : ₹${data.ratePerAcre}\n` +
       `Total Payment  : ₹${data.totalPayment}\n` +
       `Paid On Sight  : ₹${data.paidOnSight || 0}\n` +
-      `Payment Date   : ${data.fullPaymentDate || '-'}\n` +
+      `Payment Date   : ${paymentDateText}\n` +
       `----------------------------------------\n` +
       `Pending Due    : ₹${data.pendingAmount}\n` +
       `Harvester Cutting Tracker`;
   }
 
+  formatDisplayDate(dateStr?: string | null): string {
+    if (!dateStr) return '-';
+    const d = this.parseDate(dateStr);
+    if (!d || isNaN(d.getTime())) return dateStr;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  formatDisplayTime(timeStr?: string | null): string {
+    if (!timeStr) return '';
+    const trimmed = timeStr.trim();
+    if (!trimmed) return '';
+    if (/am|pm/i.test(trimmed)) return trimmed;
+    const parts = trimmed.split(':');
+    if (parts.length >= 2) {
+      let h = parseInt(parts[0], 10);
+      const m = parts[1].slice(0, 2);
+      if (isNaN(h)) return trimmed;
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      h = h ? h : 12;
+      const formattedH = String(h).padStart(2, '0');
+      return `${formattedH}:${m} ${ampm}`;
+    }
+    return trimmed;
+  }
+
   callNumber(contactNumber: string): void {
     window.open(`tel:${contactNumber}`, '_system');
+  }
+
+  openWhatsApp(contactNumber: string): void {
+    const clean = this.cleanPhone(contactNumber);
+    if (clean) {
+      window.open(`https://wa.me/91${clean}`, '_blank');
+    }
   }
 
   /**
@@ -476,6 +739,32 @@ export class RecordsComponent implements OnInit {
     const month = parseInt(parts[1], 10) - 1;
     const year = parseInt(parts[2], 10);
     return new Date(year, month, day);
+  }
+
+  /**
+   * Get date label matching Figma design (e.g., "4 सित°", "3 सित°", "2 सित°" or "4 Sep")
+   */
+  getFigmaDateLabel(dateString: string): string {
+    const recordDate = this.parseDate(dateString);
+    if (!recordDate) return dateString;
+
+    const day = recordDate.getDate();
+    const month = recordDate.getMonth(); // 0 - 11
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+
+    if (isHi) {
+      const hindiMonths = [
+        'जन°', 'फ़र°', 'मार्च', 'अप्रैल', 'मई', 'जून',
+        'जुला°', 'अग°', 'सित°', 'अक्तू°', 'नव°', 'दिस°'
+      ];
+      return `${day} ${hindiMonths[month] || ''}`;
+    } else {
+      const engMonths = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      ];
+      return `${day} ${engMonths[month] || ''}`;
+    }
   }
 
   /**
@@ -517,4 +806,352 @@ export class RecordsComponent implements OnInit {
     return recordDate.toLocaleDateString(locale, options);
   }
 
+  // --- Farmer Multiple Cuttings Detail & Management Methods ---
+
+  cleanPhone(phone: string | undefined): string {
+    return (phone || '').toString().replace(/\D/g, '').slice(-10);
+  }
+
+  /**
+   * Count total cuttings for a given farmer (by phone match, fallback to exact name)
+   */
+  getFarmerCuttingCount(record: Record): number {
+    const phone = this.cleanPhone(record.contactNumber);
+    const all = this.recordsService.records();
+    if (phone) {
+      return all.filter(r => this.cleanPhone(r.contactNumber) === phone).length;
+    }
+    return all.filter(r => r.farmerName.trim().toLowerCase() === record.farmerName.trim().toLowerCase()).length;
+  }
+
+  /**
+   * Computed list of all cuttings for the currently selected farmer
+   */
+  selectedFarmerRecords = computed(() => {
+    const farmer = this.selectedFarmer();
+    if (!farmer) return [];
+    const all = this.recordsService.records();
+    const farmerPhone = this.cleanPhone(farmer.phone);
+
+    const matches = all.filter(r => {
+      if (farmerPhone && r.contactNumber) {
+        return this.cleanPhone(r.contactNumber) === farmerPhone;
+      }
+      return r.farmerName.trim().toLowerCase() === farmer.name.trim().toLowerCase();
+    });
+
+    return [...matches].sort((a, b) => {
+      const dateA = this.parseDate(a.date)?.getTime() || 0;
+      const dateB = this.parseDate(b.date)?.getTime() || 0;
+      if (dateB !== dateA) return dateB - dateA;
+      return (b.cuttingTime || '').localeCompare(a.cuttingTime || '');
+    });
+  });
+
+  /**
+   * Computed list of pending reminders/bookings for the currently selected farmer
+   */
+  selectedFarmerReminders = computed(() => {
+    const farmer = this.selectedFarmer();
+    if (!farmer) return [];
+    const allReminders = this.remindersService.reminders();
+    const farmerPhone = this.cleanPhone(farmer.phone);
+
+    return allReminders.filter(r => {
+      if (r.status !== 'pending') return false;
+      if (farmerPhone && r.contactNumber) {
+        return this.cleanPhone(r.contactNumber) === farmerPhone;
+      }
+      return r.farmerName.trim().toLowerCase() === farmer.name.trim().toLowerCase();
+    });
+  });
+
+  /**
+   * Distinct list of harvesters that have worked for this farmer
+   */
+  farmerHarvestersList = computed(() => {
+    const records = this.selectedFarmerRecords();
+    const set = new Set<string>();
+    records.forEach(r => {
+      const h = r.harvester?.trim();
+      if (h) set.add(h);
+    });
+    return Array.from(set);
+  });
+
+  /**
+   * Cuttings filtered by harvester selector tab on farmer detail view
+   */
+  farmerFilteredCuttings = computed(() => {
+    const records = this.selectedFarmerRecords();
+    const filter = this.selectedHarvesterFilter();
+    if (filter === 'all') return records;
+    return records.filter(r => (r.harvester || 'Harvester 1').trim().toLowerCase() === filter.trim().toLowerCase());
+  });
+
+  /**
+   * Aggregate financial & land summary for the selected farmer
+   */
+  selectedFarmerSummary = computed(() => {
+    const records = this.selectedFarmerRecords();
+    let totalAmount = 0;
+    let paidAmount = 0;
+    let pendingAmount = 0;
+    let totalAcres = 0;
+
+    for (const r of records) {
+      const total = Number(r.totalPayment) || 0;
+      const paid = Number(r.paidOnSight) || 0;
+      const pending = Number(r.pendingAmount) || 0;
+      const acres = Number(r.landInAcres) || 0;
+
+      totalAmount += total;
+      totalAcres += acres;
+
+      if (r.markedAsPaid) {
+        paidAmount += total;
+      } else {
+        paidAmount += paid;
+        pendingAmount += pending;
+      }
+    }
+
+    return {
+      count: records.length,
+      totalAcres: Math.round(totalAcres * 100) / 100,
+      totalAmount: Math.round(totalAmount),
+      paidAmount: Math.round(paidAmount),
+      pendingAmount: Math.round(pendingAmount)
+    };
+  });
+
+  /**
+   * Open the detailed Kisan Records view for a clicked record
+   */
+  openKisanRecords(record: Record): void {
+    this.selectedFarmer.set({
+      name: record.farmerName,
+      phone: record.contactNumber || ''
+    });
+    this.selectedHarvesterFilter.set('all');
+    this.expandedCuttingId.set(record.id);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { 
+        farmer: record.contactNumber || record.farmerName,
+        recordId: record.id
+      },
+      queryParamsHandling: 'merge'
+    });
+    setTimeout(() => {
+      const el = document.getElementById('kisan-cutting-' + record.id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 150);
+  }
+
+  /**
+   * Close the Kisan Records view and return to main Records feed
+   */
+  closeKisanRecords(): void {
+    this.selectedFarmer.set(null);
+    this.expandedCuttingId.set(null);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { farmer: null, recordId: null },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  /**
+   * Set harvester filter tab inside farmer detail page
+   */
+  setHarvesterFilter(harvester: string): void {
+    this.selectedHarvesterFilter.set(harvester);
+  }
+
+  /**
+   * Toggle cutting item expansion inside farmer detail page
+   */
+  toggleCuttingExpand(id: string): void {
+    this.expandedCuttingId.set(this.expandedCuttingId() === id ? null : id);
+  }
+
+  /**
+   * Add a new cutting record for this farmer
+   * Pre-fills farmerName and contactNumber and locks them in add-new form
+   */
+  addRecordForSelectedFarmer(): void {
+    const farmer = this.selectedFarmer();
+    if (farmer) {
+      this.recordsService.prefillFarmerData.set({
+        name: farmer.name,
+        phone: farmer.phone
+      });
+      this.router.navigate(['/add-new'], {
+        queryParams: {
+          prefillPhone: farmer.phone,
+          prefillName: farmer.name
+        }
+      });
+    }
+  }
+
+  /**
+   * Add a new future reminder / booking for this farmer
+   */
+  addReminderForSelectedFarmer(): void {
+    const farmer = this.selectedFarmer();
+    if (farmer) {
+      this.router.navigate(['/reminders'], {
+        queryParams: {
+          prefillPhone: farmer.phone,
+          prefillName: farmer.name,
+          new: 'true'
+        }
+      });
+    }
+  }
+
+  /**
+   * Move reminder to record prompt
+   */
+  promptMoveReminderToRecord(reminder: Reminder): void {
+    this.pendingMoveReminder.set(reminder);
+  }
+
+  closeMovePrompt(): void {
+    this.pendingMoveReminder.set(null);
+  }
+
+  moveToRecordWithEdit(reminder: Reminder): void {
+    this.closeMovePrompt();
+    this.router.navigate(['/add-new'], {
+      queryParams: {
+        prefillName: reminder.farmerName,
+        prefillPhone: reminder.contactNumber,
+        acres: reminder.landInAcres,
+        rate: reminder.ratePerAcre,
+        date: reminder.scheduledDate,
+        time: reminder.scheduledTime || '08:00',
+        harvester: reminder.harvester || '',
+        fromReminderId: reminder.id
+      }
+    });
+  }
+
+  async directMoveToRecord(reminder: Reminder): Promise<void> {
+    this.closeMovePrompt();
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+
+    try {
+      const acres = Number(reminder.landInAcres) || 0;
+      const rate = Number(reminder.ratePerAcre) || 0;
+      const total = reminder.estimatedTotal || Math.round(acres * rate);
+
+      const resolvedSeason = this.seasonService.getSeasonForDate(reminder.scheduledDate);
+      const recordData = {
+        farmerName: reminder.farmerName,
+        contactNumber: reminder.contactNumber,
+        date: reminder.scheduledDate,
+        cuttingTime: reminder.scheduledTime || '08:00',
+        landInAcres: acres,
+        ratePerAcre: rate,
+        totalPayment: total,
+        paidOnSight: 0,
+        pendingAmount: total,
+        harvester: reminder.harvester || this.harvesterService.getDefaultHarvester(),
+        markedAsPaid: false,
+        ...(resolvedSeason?.id ? { seasonId: resolvedSeason.id } : {})
+      };
+
+      const res = await this.recordsService.addRecord(recordData as any);
+      const recordId = (res as any)?.id || '';
+
+      await this.remindersService.markAsCompleted(reminder.id, recordId);
+      this.toastService.success(
+        isHi 
+          ? `सफलतापूर्वक "${reminder.farmerName}" का कटाई रिकॉर्ड बन गया!` 
+          : `Successfully converted to cutting record!`
+      );
+    } catch (err: any) {
+      console.error('Error converting reminder to record:', err);
+      this.toastService.error(err.message || 'Failed to convert');
+    }
+  }
+
+  /**
+   * Add a new cutting record from individual card action
+   */
+  addCuttingForRecord(record: Record): void {
+    this.recordsService.prefillFarmerData.set({
+      name: record.farmerName,
+      phone: record.contactNumber || ''
+    });
+    this.router.navigate(['/add-new'], {
+      queryParams: {
+        prefillPhone: record.contactNumber,
+        prefillName: record.farmerName
+      }
+    });
+  }
+
+  /**
+   * Share full ledger/statement for the selected farmer
+   */
+  shareFarmerStatement(): void {
+    const farmer = this.selectedFarmer();
+    const records = this.selectedFarmerRecords();
+    const summary = this.selectedFarmerSummary();
+    if (!farmer || records.length === 0) return;
+
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+    let text = `🌾 *${isHi ? 'किसान कटाई खाता विवरण' : 'Farmer Cutting Statement'}* 🌾\n` +
+      `किसान का नाम : ${farmer.name}\n` +
+      `मोबाइल नंबर  : ${farmer.phone || '-'}\n` +
+      `कुल कटाई    : ${summary.count} बार (${summary.totalAcres} एकड़)\n` +
+      `कुल रकम     : ₹${summary.totalAmount}\n` +
+      `जमा रकम     : ₹${summary.paidAmount}\n` +
+      `बाकी रकम    : ₹${summary.pendingAmount}\n` +
+      `----------------------------------------\n`;
+
+    records.forEach((r, idx) => {
+      const timeStr = r.cuttingTime ? ` (${this.formatDisplayTime(r.cuttingTime)})` : '';
+      const seasonName = this.getRecordSeasonName(r);
+      const seasonPart = seasonName ? ` | ${seasonName}` : '';
+      text += `${idx + 1}. ${this.formatDisplayDate(r.date)}${timeStr}${seasonPart} | ${r.landInAcres} एकड़ | दर: ₹${r.ratePerAcre} | कुल: ₹${r.totalPayment} | बाकी: ₹${r.pendingAmount} (${r.harvester || 'Harvester 1'})\n`;
+    });
+    text += `----------------------------------------\nहार्वेस्टर कटिंग लेजर`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: isHi ? 'किसान कटाई खाता' : 'Farmer Cutting Statement',
+        text: text
+      }).catch(() => {
+        navigator.clipboard?.writeText(text);
+      });
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.toastService.success(isHi ? 'खाता विवरण क्लिपबोर्ड पर कॉपी हो गया' : 'Statement copied to clipboard');
+      });
+    }
+  }
+
+  getDateMonth(dateStr: string): string {
+    const d = this.parseDate(dateStr);
+    if (!d) return 'DATE';
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEPT', 'OCT', 'NOV', 'DEC'];
+    return months[d.getMonth()];
+  }
+
+  getDateDay(dateStr: string): string {
+    const d = this.parseDate(dateStr);
+    if (!d) return '-';
+    return d.getDate().toString();
+  }
+
+  getFormattedFullDate(dateStr: string): string {
+    return this.formatDisplayDate(dateStr);
+  }
 }

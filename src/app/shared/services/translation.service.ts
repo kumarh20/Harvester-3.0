@@ -30,6 +30,7 @@ export interface Translations {
     home: string;
     addNew: string;
     records: string;
+    reminders: string;
     settings: string;
     more: string;
     profile: string;
@@ -43,6 +44,8 @@ export interface Translations {
     contactNumber: string;
     contactNumberPlaceholder: string;
     date: string;
+    time: string;
+    dateTime: string;
     harvester: string;
     cuttingDetails: string;
     landInAcres: string;
@@ -69,6 +72,7 @@ export interface Translations {
     contactNumberRequired: string;
     contactNumberInvalid: string;
     dateRequired: string;
+    timeRequired: string;
     landRequired: string;
     rateRequired: string;
     cashExceedsTotal: string;
@@ -485,6 +489,55 @@ export interface Translations {
     verifyOtpSignIn: string;
     backToRegularLogin: string;
   };
+
+  // Reminders / Future Bookings
+  reminders: {
+    title: string;
+    subtitle: string;
+    newBooking: string;
+    editBooking: string;
+    scheduledDate: string;
+    scheduledTime: string;
+    filterAll: string;
+    filterToday: string;
+    filterTomorrow: string;
+    filterUpcoming: string;
+    filterCustom: string;
+    totalBookings: string;
+    todayBookings: string;
+    totalAcres: string;
+    moveToRecords: string;
+    moveToRecordsConfirm: string;
+    moveToRecordsPromptEdit: string;
+    editAndAdd: string;
+    directMove: string;
+    movedSuccess: string;
+    deleteBookingConfirm: string;
+    deleteBookingMessage: string;
+    noReminders: string;
+    noRemindersSub: string;
+    farmerName: string;
+    phone: string;
+    acres: string;
+    rate: string;
+    estimatedTotal: string;
+    harvester: string;
+    notes: string;
+    notesPlaceholder: string;
+    saveBooking: string;
+    updateBooking: string;
+    bookingSaved: string;
+    bookingUpdated: string;
+    bookingDeleted: string;
+    futureDateValidation: string;
+    pastDateNotAllowed: string;
+    kisanBookingsTitle: string;
+    upcomingBookings: string;
+    callFarmer: string;
+    whatsappFarmer: string;
+    dayEndPromptTitle: string;
+    dayEndPromptMessage: string;
+  };
 }
 
 const HINDI_TRANSLATIONS: Translations = {
@@ -513,6 +566,7 @@ const HINDI_TRANSLATIONS: Translations = {
     home: 'होम',
     addNew: 'नया जोड़ें',
     records: 'रिकॉर्ड्स',
+    reminders: 'रिमाइंडर',
     settings: 'सेटिंग्स',
     more: 'अधिक',
     profile: 'प्रोफाइल'
@@ -524,6 +578,8 @@ const HINDI_TRANSLATIONS: Translations = {
     contactNumber: 'मोबाइल नंबर',
     contactNumberPlaceholder: '10 अंकों का मोबाइल नंबर',
     date: 'कटाई की तारीख',
+    time: 'कटाई का समय',
+    dateTime: 'कटाई दिनांक और समय',
     harvester: 'हार्वेस्टर मशीन',
     cuttingDetails: 'कटाई व खेत का विवरण',
     landInAcres: 'जमीन (एकड़ में)',
@@ -548,6 +604,7 @@ const HINDI_TRANSLATIONS: Translations = {
     contactNumberRequired: 'कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें',
     contactNumberInvalid: 'कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें',
     dateRequired: 'कृपया कटाई की तारीख चुनें',
+    timeRequired: 'कृपया कटाई का समय दर्ज करें',
     landRequired: 'कृपया खेत का रकबा दर्ज करें (0 से अधिक)',
     rateRequired: 'कृपया प्रति एकड़ वैध दर दर्ज करें',
     cashExceedsTotal: 'नकद राशि कुल राशि से अधिक नहीं हो सकती',
@@ -727,7 +784,7 @@ const HINDI_TRANSLATIONS: Translations = {
     light: 'लाइट',
     dark: 'डार्क',
     bottomNavLabels: 'बॉटम नेविगेशन लेबल',
-    bottomNavLabelsDesc: 'नेविगेशन बार में आइकन्स के नीचे नाम दिखाएं (बंद करने पर नेविगेशन बार स्लिम और कॉम्पैक्ट रहेगा)',
+    bottomNavLabelsDesc: 'नेविगेशन बार में आइकन्स के नीचे नाम दिखाएं',
     defaultRecordFilter: 'डिफ़ॉल्ट रिकॉर्ड फ़िल्टर',
     defaultRecordFilterDesc: 'रिकॉर्ड पेज खोलते समय पहले कौन सा फ़िल्टर दिखेगा',
     filterTodayOption: 'आज (Today)',
@@ -939,6 +996,53 @@ const HINDI_TRANSLATIONS: Translations = {
     resendIn: 'पुनः भेजें',
     verifyOtpSignIn: 'ओटीपी सत्यापित करें व लॉगिन करें',
     backToRegularLogin: 'पासवर्ड से लॉगिन पर वापस'
+  },
+  reminders: {
+    title: 'कटाई रिमाइंडर व बुकिंग',
+    subtitle: 'आगामी कटाई बुकिंग व रिमाइंडर प्रबंधित करें',
+    newBooking: '+ नया रिमाइंडर',
+    editBooking: 'रिमाइंडर संपादित करें',
+    scheduledDate: 'कटाई की निर्धारित तारीख',
+    scheduledTime: 'कटाई का समय',
+    filterAll: 'सभी',
+    filterToday: 'आज',
+    filterTomorrow: 'कल',
+    filterUpcoming: 'आगामी',
+    filterCustom: 'दिनांक फ़िल्टर',
+    totalBookings: 'कुल बुकिंग',
+    todayBookings: 'आज की कटाई',
+    totalAcres: 'कुल निर्धारित एकड़',
+    moveToRecords: 'कटाई रिकॉर्ड में बदलें',
+    moveToRecordsConfirm: 'क्या आप इस बुकिंग को कटाई रिकॉर्ड में स्थानांतरित करना चाहते हैं?',
+    moveToRecordsPromptEdit: 'क्या आप विवरण (जैसे नकद भुगतान, वास्तविक एकड़) एडिट करके रिकॉर्ड जोड़ना चाहते हैं?',
+    editAndAdd: 'हाँ, विवरण एडिट करें',
+    directMove: 'सीधे रिकॉर्ड में जोड़ें',
+    movedSuccess: 'रिकॉर्ड सफलतापूर्वक कटाई सूची में स्थानांतरित हो गया!',
+    deleteBookingConfirm: 'रिमाइंडर हटाएं',
+    deleteBookingMessage: 'क्या आप इस आगामी कटाई बुकिंग को हटाना चाहते हैं?',
+    noReminders: 'कोई रिमाइंडर या बुकिंग नहीं मिली',
+    noRemindersSub: 'भविष्य की कटाई के लिए ऊपर "+ नया रिमाइंडर" बटन से बुकिंग जोड़ें।',
+    farmerName: 'किसान का नाम',
+    phone: 'मोबाइल नंबर',
+    acres: 'एकड़',
+    rate: 'दर (₹/एकड़)',
+    estimatedTotal: 'अनुमानित कुल राशि',
+    harvester: 'हार्वेस्टर',
+    notes: 'विशेष निर्देश / विवरण',
+    notesPlaceholder: 'जैसे: खेत का स्थान, समय आदि (वैकल्पिक)',
+    saveBooking: 'रिमाइंडर सहेजें',
+    updateBooking: 'रिमाइंडर अपडेट करें',
+    bookingSaved: 'कटाई रिमाइंडर सफलतापूर्वक सुरक्षित हो गया!',
+    bookingUpdated: 'रिमाइंडर अपडेट हो गया!',
+    bookingDeleted: 'रिमाइंडर हटा दिया गया!',
+    futureDateValidation: 'रिमाइंडर के लिए कृपया आज या भविष्य की तारीख चुनें',
+    pastDateNotAllowed: 'बुकिंग में पिछली तारीख की अनुमति नहीं है',
+    kisanBookingsTitle: 'आगामी कटाई बुकिंग',
+    upcomingBookings: 'आगामी बुकिंग',
+    callFarmer: 'कॉल करें',
+    whatsappFarmer: 'व्हाट्सएप',
+    dayEndPromptTitle: '🌙 आज की कटाई स्थिति जांच',
+    dayEndPromptMessage: 'क्या आज की निर्धारित कटाई पूरी हो गई है? इन्हें कटाई रिकॉर्ड में ले जाएं।'
   }
 };
 
@@ -968,6 +1072,7 @@ const ENGLISH_TRANSLATIONS: Translations = {
     home: 'Home',
     addNew: 'Add New',
     records: 'Records',
+    reminders: 'Reminders',
     settings: 'Settings',
     more: 'More',
     profile: 'Profile'
@@ -979,6 +1084,8 @@ const ENGLISH_TRANSLATIONS: Translations = {
     contactNumber: 'Mobile Number',
     contactNumberPlaceholder: '10-digit mobile number',
     date: 'Cutting Date',
+    time: 'Cutting Time',
+    dateTime: 'Cutting Date & Time',
     harvester: 'Harvester Machine',
     cuttingDetails: 'Cutting Details & Land Area',
     landInAcres: 'Land in Acres',
@@ -1003,6 +1110,7 @@ const ENGLISH_TRANSLATIONS: Translations = {
     contactNumberRequired: 'Please enter a valid 10-digit mobile number',
     contactNumberInvalid: 'Please enter a valid 10-digit mobile number',
     dateRequired: 'Please select cutting date',
+    timeRequired: 'Please enter cutting time',
     landRequired: 'Please enter land area (greater than 0)',
     rateRequired: 'Please enter a valid rate per acre',
     cashExceedsTotal: 'Cash payment cannot exceed total amount',
@@ -1182,7 +1290,7 @@ const ENGLISH_TRANSLATIONS: Translations = {
     light: 'Light',
     dark: 'Dark',
     bottomNavLabels: 'Bottom Navigation Labels',
-    bottomNavLabelsDesc: 'Show text labels below icons (turn off for a compact, ultra-slim dock)',
+    bottomNavLabelsDesc: 'Show text labels below navigation icons',
     defaultRecordFilter: 'Default Record Filter',
     defaultRecordFilterDesc: 'Choose which date period opens by default on Records page',
     filterTodayOption: 'Today',
@@ -1394,6 +1502,53 @@ const ENGLISH_TRANSLATIONS: Translations = {
     resendIn: 'Resend in',
     verifyOtpSignIn: 'Verify OTP & Sign In',
     backToRegularLogin: 'Sign in with password'
+  },
+  reminders: {
+    title: 'Cutting Reminders & Bookings',
+    subtitle: 'Manage upcoming harvester cutting bookings and reminders',
+    newBooking: '+ New Reminder',
+    editBooking: 'Edit Reminder',
+    scheduledDate: 'Scheduled Cutting Date',
+    scheduledTime: 'Cutting Time',
+    filterAll: 'All',
+    filterToday: 'Today',
+    filterTomorrow: 'Tomorrow',
+    filterUpcoming: 'Upcoming',
+    filterCustom: 'Date Filter',
+    totalBookings: 'Total Bookings',
+    todayBookings: 'Today Bookings',
+    totalAcres: 'Total Acres',
+    moveToRecords: 'Convert to Cutting Record',
+    moveToRecordsConfirm: 'Do you want to convert this booking to a completed cutting record?',
+    moveToRecordsPromptEdit: 'Would you like to edit details (such as cash received, actual acres) before adding to cutting records?',
+    editAndAdd: 'Yes, Edit Details',
+    directMove: 'Add Directly to Records',
+    movedSuccess: 'Booking successfully converted into a cutting record!',
+    deleteBookingConfirm: 'Delete Reminder',
+    deleteBookingMessage: 'Are you sure you want to delete this scheduled cutting booking?',
+    noReminders: 'No bookings or reminders found',
+    noRemindersSub: 'Book upcoming cutting jobs using "+ New Reminder" button above.',
+    farmerName: 'Farmer Name',
+    phone: 'Mobile Number',
+    acres: 'Acres',
+    rate: 'Rate (₹/Acre)',
+    estimatedTotal: 'Estimated Total',
+    harvester: 'Harvester',
+    notes: 'Special Notes / Details',
+    notesPlaceholder: 'E.g. Field landmark, specific time, etc. (optional)',
+    saveBooking: 'Save Reminder',
+    updateBooking: 'Update Reminder',
+    bookingSaved: 'Cutting reminder booked successfully!',
+    bookingUpdated: 'Reminder updated successfully!',
+    bookingDeleted: 'Reminder deleted!',
+    futureDateValidation: 'Please select today or a future date for reminder bookings',
+    pastDateNotAllowed: 'Past dates are not allowed for scheduled reminders',
+    kisanBookingsTitle: 'Upcoming Cutting Bookings',
+    upcomingBookings: 'Upcoming Bookings',
+    callFarmer: 'Call',
+    whatsappFarmer: 'WhatsApp',
+    dayEndPromptTitle: '🌙 Day-End Cutting Status Check',
+    dayEndPromptMessage: 'Were today scheduled cuttings completed? Move them to cutting records.'
   }
 };
 

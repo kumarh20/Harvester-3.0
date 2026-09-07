@@ -387,7 +387,20 @@ body,
 
 /* Material Dialog Styles */
 
+.cdk-overlay-container {
+    z-index: 100000 !important;
+}
+
+.cdk-overlay-backdrop {
+    z-index: 100000 !important;
+}
+
+.cdk-global-overlay-wrapper {
+    z-index: 100001 !important;
+}
+
 .custom-dialog-container {
+    z-index: 100002 !important;
     .mat-mdc-dialog-container {
         border-radius: 16px !important;
         padding: 0 !important;

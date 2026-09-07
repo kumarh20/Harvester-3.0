@@ -115,199 +115,7 @@
 }
 
 // ============================================
-// 2. COMPACT MODERN HEADER STYLES
-// ============================================
-.modern-header {
-    background: linear-gradient(135deg, #064E3B 0%, #047857 100%);
-    padding: var(--space-4) var(--space-6);
-    position: relative;
-    z-index: 100;
-    transition: all 0.3s ease;
-    height: 72px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    // border-bottom-left-radius: 24px;
-    // border-bottom-right-radius: 24px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    [data-theme="dark"] & {
-        background: linear-gradient(180deg, #0D47A1 0%, #1565C0 100%);
-    }
-    @media screen and (max-width: 600px) {
-        box-shadow: none;
-    }
-}
-
-// Title and Toggle on Same Line
-.header-top-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-4);
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-}
-
-// Language Toggle - White pill
-.language-toggle {
-    background: #FFFFFF;
-    border: none;
-    border-radius: 20px; // Rounded capsule
-    padding: var(--space-2) var(--space-3);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    min-width: 50px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    &:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    [data-theme="dark"] & {
-        background: rgba(255, 255, 255, 0.95);
-        &:hover {
-            background: #FFFFFF;
-        }
-    }
-}
-
-.language-code {
-    font-size: var(--font-size-sm);
-    font-weight: 700;
-    color: #1E6FD9;
-    letter-spacing: 0.5px;
-    [data-theme="dark"] & {
-        color: #1E6FD9;
-    }
-}
-
-.user-name {
-    font-size: var(--font-size-xl);
-    font-weight: 600;
-    color: #FFFFFF;
-    letter-spacing: -0.3px;
-    display: flex;
-    align-items: center;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    [data-theme="dark"] & {
-        color: #FFFFFF;
-    }
-}
-
-// Compact Theme Toggle - Circular with subtle glow
-.theme-toggle {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: var(--radius-full);
-    padding: var(--space-2);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    width: 40px;
-    height: 40px;
-    position: relative;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    &:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2), 0 0 20px rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.3);
-    }
-    [data-theme="dark"] & {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: rgba(255, 255, 255, 0.25);
-        &:hover {
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15), 0 0 20px rgba(255, 255, 255, 0.08);
-        }
-    }
-}
-
-.toggle-track {
-    width: 100%;
-    height: 100%;
-    border-radius: var(--radius-full);
-    position: relative;
-    background: var(--bg-gradient);
-}
-
-.toggle-thumb {
-    width: 24px;
-    height: 24px;
-    border-radius: var(--radius-full);
-    background: var(--bg-card);
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: var(--shadow-sm);
-    [data-theme="dark"] & {
-        transform: translateX(26px);
-    }
-}
-
-.theme-icon {
-    width: 12px;
-    height: 12px;
-    position: absolute;
-    transition: all 0.3s ease;
-    &.light-icon {
-        color: #F59E0B;
-        opacity: 1;
-        transform: scale(1);
-        [data-theme="dark"] & {
-            opacity: 0;
-            transform: scale(0);
-        }
-    }
-    &.dark-icon {
-        color: #6366F1;
-        opacity: 0;
-        transform: scale(0);
-        [data-theme="dark"] & {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-}
-
-.balance-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-3);
-    position: relative;
-    z-index: 2;
-}
-
-.balance-label {
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.balance-amount {
-    font-size: var(--font-size-3xl);
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    position: relative;
-    z-index: 2;
-}
-
-// ============================================
-// 3. MAIN LAYOUT
+// 2. MAIN LAYOUT
 // ============================================
 .app-wrapper {
     display: flex;
@@ -345,6 +153,19 @@
     @media (max-width: 768px) {
         padding-top: 64px;
         padding-bottom: calc(88px + env(safe-area-inset-bottom, 16px)); // Safe margin for modern floating Instagram dock
+    }
+
+    &.kisan-detail-main {
+        padding-top: 0 !important;
+        background: #F8FAF8;
+
+        [data-theme="dark"] & {
+            background: #0F1C12;
+        }
+
+        @media (max-width: 768px) {
+            padding-top: 0 !important;
+        }
     }
 }
 
