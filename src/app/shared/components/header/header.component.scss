@@ -23,9 +23,10 @@
     position: relative;
     width: 100%;
     height: calc(64px + env(safe-area-inset-top, 0px));
-    padding-top: env(safe-area-inset-top, 0px);
+    padding-top: env(safe-area-inset-top);
     display: flex;
     align-items: center;
+    background-color: #447A44;
     transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 
     // Rich Organic Avocado Forest Glassmorphism (matching image.png)
