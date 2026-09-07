@@ -98,11 +98,17 @@
 
 // 2. Body Card
 .form-body-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 14px 12px;
-  box-shadow: 0 4px 16px -2px rgba(35, 65, 38, 0.05);
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border-color, #F1F5F9);
+  border-radius: 18px;
+  padding: 16px 14px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+
+  [data-theme="dark"] & {
+    background: #0F172A;
+    border-color: #1E293B;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+  }
 
   @media (min-width: 640px) {
     border-radius: 20px;
@@ -112,7 +118,7 @@
 
 // Form Sections
 .form-section-block {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -122,31 +128,27 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 4px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #F1F5F9;
-
-  [data-theme="dark"] & {
-    border-bottom-color: #334155;
-  }
+  margin-bottom: 2px;
+  padding-bottom: 6px;
 
   .section-icon-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: #059669;
+    flex-shrink: 0;
   }
 
   .section-heading {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
-    color: #334155;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: #1E293B;
+    letter-spacing: -0.2px;
     margin: 0;
+    white-space: nowrap;
 
     [data-theme="dark"] & {
-      color: #94A3B8;
+      color: #F1F5F9;
     }
   }
 }
@@ -166,16 +168,54 @@
   width: 100%;
 }
 
-// Custom Material Form Field
+// Custom Material Form Field (Smooth Borderless with Soft Shadow)
 .custom-mat-field {
   width: 100%;
 
+  .mat-mdc-text-field-wrapper {
+    background-color: #FFFFFF !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    transition: all 0.2s ease-in-out !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: rgba(226, 232, 240, 0.8) !important;
+    border-width: 1px !important;
+  }
+
+  &.mat-focused {
+    .mat-mdc-text-field-wrapper {
+      box-shadow: 0 4px 16px rgba(5, 150, 105, 0.12), 0 0 0 1.5px #10B981 !important;
+    }
+    .field-icon {
+      color: #059669 !important;
+    }
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: transparent !important;
+    }
+  }
+
   .field-icon {
     color: #64748B;
-    margin-right: 8px;
+    margin-right: 10px;
     font-size: 20px;
     width: 20px;
     height: 20px;
+    transition: color 0.2s ease;
+  }
+
+  input.mat-mdc-input-element,
+  .mat-mdc-select-value {
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #0F172A !important;
   }
 
   input[type="time"] {
@@ -189,12 +229,6 @@
       &:hover {
         opacity: 1;
       }
-    }
-  }
-
-  [data-theme="dark"] & {
-    input[type="time"]::-webkit-calendar-picker-indicator {
-      filter: invert(0.85);
     }
   }
 
@@ -221,8 +255,8 @@
     }
 
     .mat-mdc-text-field-wrapper {
-      background-color: rgba(240, 253, 244, 0.5) !important;
-      border-radius: 12px;
+      background-color: rgba(240, 253, 244, 0.7) !important;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08) !important;
     }
 
     .mdc-notched-outline__leading,
@@ -230,79 +264,48 @@
     .mdc-notched-outline__trailing {
       border-color: #86EFAC !important;
     }
-
-    [data-theme="dark"] & {
-      input[readonly] {
-        color: #F1F5F9 !important;
-        -webkit-text-fill-color: #F1F5F9 !important;
-      }
-      .mat-mdc-text-field-wrapper {
-        background-color: rgba(6, 78, 59, 0.22) !important;
-      }
-      .mdc-notched-outline__leading,
-      .mdc-notched-outline__notch,
-      .mdc-notched-outline__trailing {
-        border-color: #065F46 !important;
-      }
-    }
-  }
-
-  &.mat-form-field-disabled {
-    opacity: 0.88;
-
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-      border-color: #E2E8F0 !important;
-    }
-
-    [data-theme="dark"] & {
-      .mdc-notched-outline__leading,
-      .mdc-notched-outline__notch,
-      .mdc-notched-outline__trailing {
-        border-color: #1E293B !important;
-      }
-    }
-  }
-
-  .mat-mdc-form-field-subscript-wrapper {
-    margin-top: 2px;
-  }
-
-  // Border and focus refinement
-  .mdc-notched-outline__leading,
-  .mdc-notched-outline__notch,
-  .mdc-notched-outline__trailing {
-    border-color: #CBD5E1 !important;
-  }
-
-  &.mat-focused {
-    .field-icon {
-      color: #059669;
-    }
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-      border-color: #059669 !important;
-      border-width: 2px !important;
-    }
   }
 
   [data-theme="dark"] & {
-    .field-icon {
-      color: #94A3B8;
+    .mat-mdc-text-field-wrapper {
+      background-color: #1E293B !important;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3) !important;
     }
+
     .mdc-notched-outline__leading,
     .mdc-notched-outline__notch,
     .mdc-notched-outline__trailing {
-      border-color: #475569 !important;
+      border-color: #334155 !important;
     }
-    .mat-mdc-input-element,
+
+    &.mat-focused {
+      .mat-mdc-text-field-wrapper {
+        box-shadow: 0 4px 18px rgba(16, 185, 129, 0.2), 0 0 0 1.5px #34D399 !important;
+      }
+    }
+
+    .field-icon {
+      color: #94A3B8;
+    }
+
+    input.mat-mdc-input-element,
     .mat-mdc-select-value {
       color: #F8FAFC !important;
     }
+
     .mat-mdc-floating-label {
       color: #94A3B8 !important;
+    }
+
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.85);
+    }
+  }
+
+  .measure-suffix-icon-btn {
+    color: #059669 !important;
+    &:hover {
+      background: rgba(5, 150, 105, 0.08);
     }
   }
 }
