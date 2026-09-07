@@ -131,38 +131,52 @@ export class AddNewComponent implements OnInit {
   readonly hoursList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
   readonly minutesList = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
 
-  formattedCuttingDateTime = computed(() => {
-    const d = this.recordForm?.get('date')?.value;
-    const t = this.recordForm?.get('cuttingTime')?.value;
-    if (!d) return '';
-    const dateObj = d instanceof Date ? d : new Date(d);
-    if (isNaN(dateObj.getTime())) return '';
-    const dd = String(dateObj.getDate()).padStart(2, '0');
-    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const yyyy = dateObj.getFullYear();
-    
-    let timeFormatted = '';
-    if (t) {
-      const [hStr, mStr] = t.split(':');
-      let h = parseInt(hStr, 10) || 0;
-      const period = h >= 12 ? 'PM' : 'AM';
-      h = h % 12;
-      h = h ? h : 12;
-      timeFormatted = `, ${h}:${mStr || '00'} ${period}`;
-    }
-    return `${dd}/${mm}/${yyyy}${timeFormatted}`;
-  });
+  cuttingDateTimeDisplay = signal<string>('');
+  paymentDateDisplay = signal<string>('');
 
-  formattedPaymentDate = computed(() => {
-    const d = this.recordForm?.get('fullPaymentDate')?.value;
-    if (!d) return '';
-    const dateObj = d instanceof Date ? d : new Date(d);
-    if (isNaN(dateObj.getTime())) return '';
-    const dd = String(dateObj.getDate()).padStart(2, '0');
-    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const yyyy = dateObj.getFullYear();
-    return `${dd}/${mm}/${yyyy}`;
-  });
+  updateDateTimeDisplays(): void {
+    if (!this.recordForm) return;
+    const d = this.recordForm.get('date')?.value;
+    const t = this.recordForm.get('cuttingTime')?.value;
+    if (d) {
+      const dateObj = d instanceof Date ? d : new Date(d);
+      if (!isNaN(dateObj.getTime())) {
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const yyyy = dateObj.getFullYear();
+        
+        let timeFormatted = '';
+        if (t) {
+          const [hStr, mStr] = t.split(':');
+          let h = parseInt(hStr, 10) || 0;
+          const period = h >= 12 ? 'PM' : 'AM';
+          h = h % 12;
+          h = h ? h : 12;
+          timeFormatted = `, ${h}:${mStr || '00'} ${period}`;
+        }
+        this.cuttingDateTimeDisplay.set(`${dd}/${mm}/${yyyy}${timeFormatted}`);
+      } else {
+        this.cuttingDateTimeDisplay.set('');
+      }
+    } else {
+      this.cuttingDateTimeDisplay.set('');
+    }
+
+    const payD = this.recordForm.get('fullPaymentDate')?.value;
+    if (payD) {
+      const dateObj = payD instanceof Date ? payD : new Date(payD);
+      if (!isNaN(dateObj.getTime())) {
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const yyyy = dateObj.getFullYear();
+        this.paymentDateDisplay.set(`${dd}/${mm}/${yyyy}`);
+      } else {
+        this.paymentDateDisplay.set('');
+      }
+    } else {
+      this.paymentDateDisplay.set('');
+    }
+  }
 
   openCuttingDateTimePicker(): void {
     const currentDateVal = this.recordForm.get('date')?.value || new Date();
@@ -187,6 +201,9 @@ export class AddNewComponent implements OnInit {
         });
         this.recordForm.get('date')?.markAsDirty();
         this.recordForm.get('date')?.markAsTouched();
+        this.recordForm.get('cuttingTime')?.markAsDirty();
+        this.recordForm.get('cuttingTime')?.markAsTouched();
+        this.updateDateTimeDisplays();
       }
     });
   }
@@ -210,6 +227,7 @@ export class AddNewComponent implements OnInit {
         });
         this.recordForm.get('fullPaymentDate')?.markAsDirty();
         this.recordForm.get('fullPaymentDate')?.markAsTouched();
+        this.updateDateTimeDisplays();
       }
     });
   }
@@ -392,9 +410,10 @@ export class AddNewComponent implements OnInit {
       seasonId: ['']
     });
 
-    // Subscribe to value changes for automatic calculations
+    // Subscribe to value changes for automatic calculations & date displays
     this.recordForm.valueChanges.subscribe(() => {
       this.updateCalculations();
+      this.updateDateTimeDisplays();
     });
 
     // Listen to contactNumber changes to detect if farmer record already exists
@@ -406,8 +425,9 @@ export class AddNewComponent implements OnInit {
       }
     });
 
-    // Initial calculation
+    // Initial calculation & display sync
     this.updateCalculations();
+    this.updateDateTimeDisplays();
   }
 
   private cleanPhone(phone: string): string {
@@ -609,6 +629,8 @@ export class AddNewComponent implements OnInit {
         harvester: record.harvester || this.harvesterService.getDefaultHarvester(),
         seasonId: record.seasonId || ''
       });
+
+      this.updateDateTimeDisplays();
 
       console.log('✅ Form patched with values:', this.recordForm.value);
 

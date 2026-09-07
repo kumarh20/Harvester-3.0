@@ -109,12 +109,21 @@ export class RemindersComponent implements OnInit {
   readonly hoursList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
   readonly minutesList = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
 
-  formattedBookingDateTime = computed(() => {
-    const d = this.bookingForm?.get('scheduledDate')?.value;
-    const t = this.bookingForm?.get('scheduledTime')?.value;
-    if (!d) return '';
+  bookingDateTimeDisplay = signal<string>('');
+
+  updateBookingDateTimeDisplay(): void {
+    if (!this.bookingForm) return;
+    const d = this.bookingForm.get('scheduledDate')?.value;
+    const t = this.bookingForm.get('scheduledTime')?.value;
+    if (!d) {
+      this.bookingDateTimeDisplay.set('');
+      return;
+    }
     const dateObj = d instanceof Date ? d : new Date(d);
-    if (isNaN(dateObj.getTime())) return '';
+    if (isNaN(dateObj.getTime())) {
+      this.bookingDateTimeDisplay.set('');
+      return;
+    }
     const dd = String(dateObj.getDate()).padStart(2, '0');
     const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
     const yyyy = dateObj.getFullYear();
@@ -128,8 +137,8 @@ export class RemindersComponent implements OnInit {
       h = h ? h : 12;
       timeFormatted = `, ${h}:${mStr || '00'} ${period}`;
     }
-    return `${dd}/${mm}/${yyyy}${timeFormatted}`;
-  });
+    this.bookingDateTimeDisplay.set(`${dd}/${mm}/${yyyy}${timeFormatted}`);
+  }
 
   openBookingDateTimePicker(): void {
     const currentDateVal = this.bookingForm.get('scheduledDate')?.value || new Date();
@@ -154,6 +163,9 @@ export class RemindersComponent implements OnInit {
         });
         this.bookingForm.get('scheduledDate')?.markAsDirty();
         this.bookingForm.get('scheduledDate')?.markAsTouched();
+        this.bookingForm.get('scheduledTime')?.markAsDirty();
+        this.bookingForm.get('scheduledTime')?.markAsTouched();
+        this.updateBookingDateTimeDisplay();
       }
     });
   }
@@ -353,7 +365,11 @@ export class RemindersComponent implements OnInit {
       notes: ['']
     });
 
-    // Sync form control changes with calculation signals
+    // Sync form control changes with calculation signals & date time displays
+    this.bookingForm.valueChanges.subscribe(() => {
+      this.updateBookingDateTimeDisplay();
+    });
+
     this.bookingForm.get('landInAcres')?.valueChanges.subscribe(val => {
       const num = parseFloat(val);
       this.landInAcresVal.set(isNaN(num) ? 0 : num);
@@ -372,6 +388,8 @@ export class RemindersComponent implements OnInit {
         this.checkExistingFarmer(clean);
       }
     });
+
+    this.updateBookingDateTimeDisplay();
   }
 
   onLandChange(event: Event): void {
@@ -509,6 +527,8 @@ export class RemindersComponent implements OnInit {
       notes: ''
     });
 
+    this.updateBookingDateTimeDisplay();
+
     this.isFormOpen.set(true);
   }
 
@@ -535,6 +555,8 @@ export class RemindersComponent implements OnInit {
       harvester: reminder.harvester || this.harvesterService.getDefaultHarvester(),
       notes: reminder.notes || ''
     });
+
+    this.updateBookingDateTimeDisplay();
 
     this.isFormOpen.set(true);
   }

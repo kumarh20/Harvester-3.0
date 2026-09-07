@@ -116,7 +116,7 @@
                         <mat-label>{{ translationService.get('form.date') }}</mat-label>
                         <input 
                             matInput 
-                            [value]="formattedCuttingDateTime()" 
+                            [value]="cuttingDateTimeDisplay()" 
                             [placeholder]="translationService.get('form.date')"
                             readonly 
                             style="cursor: pointer;"
@@ -235,7 +235,7 @@
                             <mat-label>{{ translationService.get('form.paymentDate') }}</mat-label>
                             <input 
                                 matInput 
-                                [value]="formattedPaymentDate()"
+                                [value]="paymentDateDisplay()"
                                 placeholder="DD/MM/YYYY"
                                 readonly 
                                 style="cursor: pointer;" />

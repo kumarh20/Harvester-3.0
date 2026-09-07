@@ -335,7 +335,7 @@
               <mat-label>{{ isHindi() ? 'कटाई का दिनांक व समय' : 'Scheduled Date & Time' }}</mat-label>
               <input 
                 matInput 
-                [value]="formattedBookingDateTime()" 
+                [value]="bookingDateTimeDisplay()" 
                 placeholder="DD/MM/YYYY, hh:mm AM/PM" 
                 readonly 
                 style="cursor: pointer;" 
