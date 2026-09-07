@@ -837,12 +837,16 @@
 .chart-card-container {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  border-radius: 20px;
-  padding: 18px 20px;
+  border-radius: 16px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+
+  @media (min-width: 640px) {
+    padding: 18px 22px;
+  }
 
   [data-theme="dark"] & {
     background: #1E293B;
@@ -1788,12 +1792,16 @@
 .fleet-activity-card {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  border-radius: 20px;
-  padding: 18px 20px;
+  border-radius: 16px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+
+  @media (min-width: 640px) {
+    padding: 18px 22px;
+  }
 
   [data-theme="dark"] & {
     background: #1E293B;
@@ -1976,7 +1984,7 @@
 }
 
 // ==========================================
-// 6. METRICS GRID (4 COMPACT CARDS)
+// 6. METRICS GRID (4 COMPACT CARDS - SS3)
 // ==========================================
 .stats-metric-grid {
   display: grid;
@@ -1998,47 +2006,91 @@
 .metric-card {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  border-radius: 18px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 12px;
+  padding: 14px 14px 12px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease;
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
 
+  &.metric-card-vertical {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
   @media (min-width: 640px) {
-    padding: 14px;
+    padding: 16px 16px 14px;
     gap: 12px;
   }
 
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+    border-color: #CBD5E1;
   }
 
   [data-theme="dark"] & {
     background: #1E293B;
     border-color: #334155;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+
+    &:hover {
+      border-color: #475569;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    }
+  }
+}
+
+.metric-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.metric-accent-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.blue-dot {
+    background: #3B82F6;
+    box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
+  }
+
+  &.emerald-dot {
+    background: #10B981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+  }
+
+  &.purple-dot {
+    background: #A855F7;
+    box-shadow: 0 0 6px rgba(168, 85, 247, 0.6);
+  }
+
+  &.amber-dot {
+    background: #F59E0B;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
   }
 }
 
 .metric-icon-box {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 
   mat-icon {
-    font-size: 22px;
-    width: 22px;
-    height: 22px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
   }
 
   &.blue-accent {
@@ -2082,29 +2134,52 @@
   }
 }
 
-.metric-info {
+.metric-info-vertical {
   display: flex;
   flex-direction: column;
+  gap: 1px;
   min-width: 0;
 
-  .metric-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748B;
+  .metric-number-val {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-bottom: 2px;
 
-    [data-theme="dark"] & {
-      color: #94A3B8;
+    @media (min-width: 640px) {
+      font-size: 24px;
+    }
+
+    &.blue-text {
+      color: #2563EB;
+      [data-theme="dark"] & { color: #60A5FA; }
+    }
+
+    &.emerald-text {
+      color: #059669;
+      [data-theme="dark"] & { color: #34D399; }
+    }
+
+    &.purple-text {
+      color: #7C3AED;
+      [data-theme="dark"] & { color: #C084FC; }
+    }
+
+    &.amber-text {
+      color: #D97706;
+      [data-theme="dark"] & { color: #FBBF24; }
     }
   }
 
-  .metric-number {
-    font-size: 18px;
-    font-weight: 800;
-    color: #0F172A;
-    line-height: 1.2;
+  .metric-label-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #1E293B;
+    line-height: 1.3;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2114,12 +2189,68 @@
     }
   }
 
+  .metric-sub-trend {
+    font-size: 11px;
+    font-weight: 500;
+    color: #64748B;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    [data-theme="dark"] & {
+      color: #94A3B8;
+    }
+  }
+}
+
+.metric-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+
+  .metric-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748B;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+
+    [data-theme="dark"] & {
+      color: #94A3B8;
+    }
+  }
+
+  .metric-number {
+    font-size: 17px;
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.02em;
+
+    @media (min-width: 640px) {
+      font-size: 19px;
+    }
+
+    [data-theme="dark"] & {
+      color: #F8FAFC;
+    }
+  }
+
   .metric-trend {
     font-size: 10px;
+    font-weight: 500;
     color: #94A3B8;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.2;
 
     [data-theme="dark"] & {
       color: #64748B;
@@ -2128,17 +2259,21 @@
 }
 
 // ==========================================
-// 7. RECENT ACTIVITY LIST
+// 7. RECENT ACTIVITY LIST (SS4)
 // ==========================================
 .recent-activity-section {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  border-radius: 20px;
-  padding: 18px 20px;
+  border-radius: 16px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+
+  @media (min-width: 640px) {
+    padding: 18px 22px;
+  }
 
   [data-theme="dark"] & {
     background: #1E293B;
@@ -2162,6 +2297,7 @@
       font-weight: 700;
       color: #0F172A;
       margin: 0;
+      letter-spacing: -0.01em;
 
       [data-theme="dark"] & {
         color: #F8FAFC;
@@ -2169,16 +2305,18 @@
     }
 
     .section-badge {
-      font-size: 10px;
+      font-size: 10.5px;
       font-weight: 600;
       padding: 2px 8px;
       border-radius: 9999px;
       background: #F1F5F9;
-      color: #64748B;
+      color: #475569;
+      border: 1px solid #E2E8F0;
 
       [data-theme="dark"] & {
         background: #334155;
         color: #CBD5E1;
+        border-color: #475569;
       }
     }
   }
@@ -2190,21 +2328,27 @@
     border: none;
     background: transparent;
     color: #059669;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 12.5px;
+    font-weight: 700;
     cursor: pointer;
     padding: 4px 8px;
     border-radius: 8px;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
 
     mat-icon {
       font-size: 16px;
       width: 16px;
       height: 16px;
+      transition: transform 0.2s ease;
     }
 
     &:hover {
       background: #ECFDF5;
+      color: #047857;
+
+      mat-icon {
+        transform: translateX(2px);
+      }
     }
 
     [data-theme="dark"] & {
@@ -2212,6 +2356,7 @@
 
       &:hover {
         background: rgba(16, 185, 129, 0.15);
+        color: #6EE7B7;
       }
     }
   }
@@ -2220,44 +2365,53 @@
 .recent-records-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .recent-record-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
-  border-radius: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
   background: #F8FAFC;
-  border: 1px solid #F1F5F9;
+  border: 1px solid #E2E8F0;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+
+  @media (min-width: 640px) {
+    padding: 12px 14px;
+    gap: 14px;
+  }
 
   &:hover {
-    background: #F1F5F9;
-    border-color: #E2E8F0;
-    transform: translateX(2px);
+    background: #FFFFFF;
+    border-color: #10B981;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.06);
   }
 
   [data-theme="dark"] & {
     background: #0F172A;
-    border-color: #1E293B;
+    border-color: #334155;
 
     &:hover {
       background: #192338;
-      border-color: #334155;
+      border-color: #34D399;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
     }
   }
 }
 
 .record-item-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: #ECFDF5;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
   color: #059669;
-  font-size: 16px;
+  border: 1px solid #A7F3D0;
+  font-size: 15px;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -2265,8 +2419,9 @@
   flex-shrink: 0;
 
   [data-theme="dark"] & {
-    background: rgba(16, 185, 129, 0.2);
-    color: #34D399;
+    background: linear-gradient(135deg, rgba(6, 78, 59, 0.6) 0%, rgba(16, 185, 129, 0.2) 100%);
+    color: #6EE7B7;
+    border-color: rgba(16, 185, 129, 0.3);
   }
 }
 
@@ -2275,15 +2430,16 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 
   .farmer-name-row {
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-wrap: wrap;
 
     .farmer-name {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       color: #0F172A;
       white-space: nowrap;
@@ -2302,10 +2458,11 @@
       border-radius: 9999px;
       background: #E2E8F0;
       color: #475569;
+      white-space: nowrap;
 
       [data-theme="dark"] & {
         background: #334155;
-        color: #94A3B8;
+        color: #CBD5E1;
       }
     }
   }
@@ -2313,7 +2470,7 @@
   .record-meta-row {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     font-size: 11px;
     color: #64748B;
     white-space: nowrap;
@@ -2322,6 +2479,7 @@
 
     .meta-dot {
       color: #CBD5E1;
+      font-size: 8px;
     }
 
     [data-theme="dark"] & {
@@ -2342,9 +2500,14 @@
   flex-shrink: 0;
 
   .job-total-amount {
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 800;
     color: #0F172A;
+    letter-spacing: -0.01em;
+
+    @media (min-width: 640px) {
+      font-size: 14.5px;
+    }
 
     [data-theme="dark"] & {
       color: #F8FAFC;
@@ -2354,26 +2517,31 @@
   .status-pill {
     font-size: 10px;
     font-weight: 700;
-    padding: 2px 8px;
+    padding: 2px 7px;
     border-radius: 9999px;
+    line-height: 1.2;
 
     &.status-paid {
       background: #ECFDF5;
-      color: #059669;
+      color: #047857;
+      border: 1px solid #A7F3D0;
 
       [data-theme="dark"] & {
-        background: rgba(16, 185, 129, 0.2);
-        color: #34D399;
+        background: rgba(6, 78, 59, 0.4);
+        color: #6EE7B7;
+        border-color: rgba(16, 185, 129, 0.3);
       }
     }
 
     &.status-due {
       background: #FEF3C7;
-      color: #D97706;
+      color: #B45309;
+      border: 1px solid #FDE68A;
 
       [data-theme="dark"] & {
-        background: rgba(245, 158, 11, 0.2);
-        color: #FBBF24;
+        background: rgba(120, 53, 15, 0.4);
+        color: #FCD34D;
+        border-color: rgba(245, 158, 11, 0.3);
       }
     }
   }
@@ -3254,14 +3422,18 @@
 .season-performance-card {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  border-radius: 20px;
-  padding: 18px 20px;
+  border-radius: 16px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
+  gap: 14px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
   box-sizing: border-box;
   width: 100%;
+
+  @media (min-width: 640px) {
+    padding: 18px 22px;
+  }
 
   [data-theme="dark"] & {
     background: #1E293B;
@@ -3285,9 +3457,10 @@
     .season-perf-icon-badge {
       width: 38px;
       height: 38px;
-      border-radius: 12px;
-      background: #ECFDF5;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
       color: #059669;
+      border: 1px solid #A7F3D0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -3300,24 +3473,49 @@
       }
 
       [data-theme="dark"] & {
-        background: rgba(16, 185, 129, 0.2);
-        color: #34D399;
+        background: linear-gradient(135deg, rgba(6, 78, 59, 0.6) 0%, rgba(16, 185, 129, 0.2) 100%);
+        color: #6EE7B7;
+        border-color: rgba(16, 185, 129, 0.3);
       }
     }
 
-    .season-perf-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: #0F172A;
-      margin: 0;
+    .season-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
 
-      [data-theme="dark"] & {
-        color: #F8FAFC;
+      .season-perf-title {
+        font-size: 15.5px;
+        font-weight: 700;
+        color: #0F172A;
+        margin: 0;
+        letter-spacing: -0.01em;
+
+        [data-theme="dark"] & {
+          color: #F8FAFC;
+        }
+      }
+
+      .season-count-pill {
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 1px 7px;
+        border-radius: 9999px;
+        background: #F1F5F9;
+        color: #475569;
+        border: 1px solid #E2E8F0;
+
+        [data-theme="dark"] & {
+          background: #334155;
+          color: #CBD5E1;
+          border-color: #475569;
+        }
       }
     }
 
     .season-perf-subtitle {
-      font-size: 12px;
+      font-size: 11.5px;
       color: #64748B;
       margin: 2px 0 0 0;
 
@@ -3335,7 +3533,7 @@
     border-radius: 8px;
     border: 1px solid #E2E8F0;
     background: #F8FAFC;
-    color: #64748B;
+    color: #475569;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
@@ -3348,18 +3546,20 @@
     }
 
     &:hover {
-      background: #F1F5F9;
+      background: #ECFDF5;
       color: #059669;
+      border-color: #A7F3D0;
     }
 
     [data-theme="dark"] & {
       background: #0F172A;
       border-color: #334155;
-      color: #94A3B8;
+      color: #CBD5E1;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.08);
+        background: rgba(16, 185, 129, 0.15);
         color: #34D399;
+        border-color: rgba(52, 211, 153, 0.3);
       }
     }
   }
@@ -3374,6 +3574,7 @@
 
   @media (min-width: 640px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
   }
 
   @media (min-width: 1024px) {
@@ -3383,9 +3584,9 @@
 
 .season-perf-item-card {
   background: #F8FAFC;
-  border: 1.5px solid #E2E8F0;
-  border-radius: 16px;
-  padding: 14px;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -3397,7 +3598,7 @@
     background: #FFFFFF;
     border-color: #10B981;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px -2px rgba(16, 185, 129, 0.12);
+    box-shadow: 0 4px 14px -2px rgba(16, 185, 129, 0.15);
   }
 
   &.is-selected {
@@ -3406,8 +3607,9 @@
     box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
 
     [data-theme="dark"] & {
-      background: rgba(16, 185, 129, 0.15);
+      background: rgba(16, 185, 129, 0.12);
       border-color: #34D399;
+      box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.25);
     }
   }
 
@@ -3418,6 +3620,7 @@
     &:hover {
       background: #192338;
       border-color: #34D399;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
     }
   }
 
@@ -3427,13 +3630,35 @@
     justify-content: space-between;
     gap: 8px;
 
-    .season-perf-name {
-      font-size: 14px;
-      font-weight: 700;
-      color: #0F172A;
+    .season-title-with-icon {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
 
-      [data-theme="dark"] & {
-        color: #F8FAFC;
+      .season-crop-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: #059669;
+        flex-shrink: 0;
+
+        [data-theme="dark"] & {
+          color: #34D399;
+        }
+      }
+
+      .season-perf-name {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #0F172A;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        [data-theme="dark"] & {
+          color: #F8FAFC;
+        }
       }
     }
 
@@ -3445,13 +3670,30 @@
       border-radius: 9999px;
       background: #059669;
       color: #FFFFFF;
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 700;
+      flex-shrink: 0;
 
       mat-icon {
-        font-size: 13px;
-        width: 13px;
-        height: 13px;
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+      }
+    }
+
+    .season-jobs-chip {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 9999px;
+      background: #E2E8F0;
+      color: #475569;
+      white-space: nowrap;
+      flex-shrink: 0;
+
+      [data-theme="dark"] & {
+        background: #334155;
+        color: #CBD5E1;
       }
     }
   }
@@ -3460,27 +3702,51 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
-    padding: 8px 0;
-    border-top: 1px dashed #E2E8F0;
-    border-bottom: 1px dashed #E2E8F0;
 
-    [data-theme="dark"] & {
-      border-color: #334155;
-    }
-
-    .season-perf-metric {
+    .season-perf-metric-box {
       display: flex;
       flex-direction: column;
       gap: 2px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 6px 8px;
       min-width: 0;
+      box-sizing: border-box;
+
+      [data-theme="dark"] & {
+        background: #1E293B;
+        border-color: #334155;
+      }
+
+      &.emerald-box {
+        background: #F0FDF4;
+        border-color: #DCFCE7;
+
+        [data-theme="dark"] & {
+          background: rgba(16, 185, 129, 0.1);
+          border-color: rgba(16, 185, 129, 0.2);
+        }
+      }
+
+      &.amber-box {
+        background: #FFFBEB;
+        border-color: #FEF3C7;
+
+        [data-theme="dark"] & {
+          background: rgba(245, 158, 11, 0.1);
+          border-color: rgba(245, 158, 11, 0.2);
+        }
+      }
 
       .m-label {
-        font-size: 10px;
+        font-size: 9.5px;
         font-weight: 600;
         color: #64748B;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        line-height: 1.1;
 
         [data-theme="dark"] & {
           color: #94A3B8;
@@ -3488,17 +3754,16 @@
       }
 
       .m-value {
-        font-size: 12.5px;
+        font-size: 12px;
         font-weight: 700;
-        color: #0F172A;
+        line-height: 1.2;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
 
         small {
-          font-size: 9.5px;
+          font-size: 9px;
           font-weight: 500;
-          color: #64748B;
         }
 
         &.emerald-txt {
@@ -3516,10 +3781,6 @@
             color: #FBBF24;
           }
         }
-
-        [data-theme="dark"] & {
-          color: #F8FAFC;
-        }
       }
     }
   }
@@ -3527,26 +3788,159 @@
   .season-perf-footer {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     font-size: 11px;
+    padding-top: 2px;
 
-    .season-jobs-count {
+    .season-status-active-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #059669;
+      font-weight: 700;
+      font-size: 11px;
+
+      mat-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+      }
+
+      [data-theme="dark"] & {
+        color: #34D399;
+      }
+    }
+
+    .season-filter-prompt {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
       color: #64748B;
       font-weight: 600;
+      font-size: 11px;
+      transition: color 0.2s ease;
+
+      .arrow-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+        transition: transform 0.2s ease;
+      }
 
       [data-theme="dark"] & {
         color: #94A3B8;
       }
     }
 
-    .season-filter-hint {
-      color: #059669;
-      font-weight: 700;
+    &:hover {
+      .season-filter-prompt {
+        color: #059669;
 
-      [data-theme="dark"] & {
-        color: #34D399;
+        .arrow-icon {
+          transform: translateX(2px);
+        }
+
+        [data-theme="dark"] & {
+          color: #34D399;
+        }
       }
     }
   }
 }
+
+// ------------------------------------------
+// MACHINE FLEET VERTICAL BAR CHART STYLES
+// ------------------------------------------
+.machine-chart-icon {
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%) !important;
+  color: #2563EB !important;
+  border: 1px solid #BFDBFE !important;
+
+  [data-theme="dark"] & {
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(37, 99, 235, 0.2) 100%) !important;
+    color: #60A5FA !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
+  }
+}
+
+.fleet-settings-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 11px;
+  border-radius: 9999px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+    color: #059669;
+  }
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+    border-color: #334155;
+    color: #CBD5E1;
+
+    &:hover {
+      background: #334155;
+      color: #34D399;
+    }
+  }
+}
+
+.machine-bars-layer {
+  gap: 8px;
+}
+
+.machine-bar-group {
+  max-width: 80px;
+
+  .machine-x-label {
+    font-size: 11px;
+    font-weight: 600;
+    max-width: 74px;
+  }
+}
+
+.popover-title-row {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94A3B8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding-bottom: 2px;
+  margin-bottom: 3px;
+  width: 100%;
+  text-align: center;
+}
+
+.machine-jobs-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+
+  [data-theme="dark"] & {
+    background: rgba(30, 58, 138, 0.4);
+    color: #93C5FD;
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+}
+
 

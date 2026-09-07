@@ -22,6 +22,7 @@ import { DialogService } from '../../shared/services/dialog.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
 import { LandMeasurementComponent } from '../land-measurement/land-measurement.component';
+import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
 
 export type ReminderTabFilter = 'today' | 'tomorrow' | 'upcoming' | 'all' | 'custom';
 
@@ -107,6 +108,72 @@ export class RemindersComponent implements OnInit {
 
   readonly hoursList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
   readonly minutesList = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+
+  formattedBookingDateTime = computed(() => {
+    const d = this.bookingForm?.get('scheduledDate')?.value;
+    const t = this.bookingForm?.get('scheduledTime')?.value;
+    if (!d) return '';
+    const dateObj = d instanceof Date ? d : new Date(d);
+    if (isNaN(dateObj.getTime())) return '';
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const yyyy = dateObj.getFullYear();
+    
+    let timeFormatted = '';
+    if (t) {
+      const [hStr, mStr] = t.split(':');
+      let h = parseInt(hStr, 10) || 0;
+      const period = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      h = h ? h : 12;
+      timeFormatted = `, ${h}:${mStr || '00'} ${period}`;
+    }
+    return `${dd}/${mm}/${yyyy}${timeFormatted}`;
+  });
+
+  openBookingDateTimePicker(): void {
+    const currentDateVal = this.bookingForm.get('scheduledDate')?.value || new Date();
+    const currentTimeVal = this.bookingForm.get('scheduledTime')?.value || '08:00';
+
+    const dialogRef = this.dialog.open(DateTimePickerDialogComponent, {
+      panelClass: 'kendo-dtp-dialog-panel',
+      data: {
+        initialDate: currentDateVal,
+        initialTime: currentTimeVal,
+        minDate: this.todayDate,
+        mode: 'datetime',
+        title: this.isHindi() ? 'कटाई का दिनांक व समय' : 'Scheduled Date & Time'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result: DateTimePickerResult | null) => {
+      if (result) {
+        this.bookingForm.patchValue({
+          scheduledDate: result.date,
+          scheduledTime: result.time
+        });
+        this.bookingForm.get('scheduledDate')?.markAsDirty();
+        this.bookingForm.get('scheduledDate')?.markAsTouched();
+      }
+    });
+  }
+
+  openCalendarFilter(): void {
+    const dialogRef = this.dialog.open(DateTimePickerDialogComponent, {
+      panelClass: 'kendo-dtp-dialog-panel',
+      data: {
+        initialDate: new Date(),
+        mode: 'date',
+        title: this.isHindi() ? 'तारीख अनुसार फ़िल्टर' : 'Filter by Date'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result: DateTimePickerResult | null) => {
+      if (result) {
+        this.onCustomDateSelected(result.date);
+      }
+    });
+  }
 
   onReminderPickerOpened(): void {
     this.activeTimeView.set('none');

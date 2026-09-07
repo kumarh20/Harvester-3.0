@@ -1,0 +1,559 @@
+// ============================================================================
+// KENDO / MATERIAL HYBRID DATE TIME PICKER DIALOG STYLES
+// ============================================================================
+
+:host {
+  display: block;
+}
+
+.kendo-dtp-modal {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 16px 18px 14px;
+  width: 100%;
+  max-width: 330px;
+  box-sizing: border-box;
+  font-family: inherit;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+    color: #F8FAFC;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 1. TOP SEGMENTED TAB SWITCHER (Date | Time)
+// ----------------------------------------------------------------------------
+.dtp-tab-bar {
+  display: flex;
+  align-items: center;
+  background: #F1F5F9;
+  border-radius: 9999px;
+  padding: 3px;
+  gap: 4px;
+
+  [data-theme="dark"] & {
+    background: #0F172A;
+  }
+
+  .dtp-tab-btn {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 7px 12px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748B;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+
+    &:hover {
+      color: #1E293B;
+    }
+
+    &.active {
+      background: #E8F5E9;
+      color: #356335;
+      font-weight: 700;
+      box-shadow: 0 1px 3px rgba(68, 122, 68, 0.18);
+
+      [data-theme="dark"] & {
+        background: rgba(68, 122, 68, 0.35);
+        color: #A5D6A7;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      }
+    }
+
+    [data-theme="dark"] & {
+      color: #94A3B8;
+
+      &:hover {
+        color: #F1F5F9;
+      }
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 2. TAB 1: DATE VIEW
+// ----------------------------------------------------------------------------
+.dtp-date-view {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dtp-month-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px;
+
+  .month-title-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .month-name-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1E293B;
+      min-width: 120px;
+      text-align: center;
+
+      [data-theme="dark"] & {
+        color: #F8FAFC;
+      }
+    }
+
+    .nav-arrow-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid #E2E8F0;
+      background: #FFFFFF;
+      color: #64748B;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: all 0.15s ease;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+
+      &:hover {
+        background: #F8FAFC;
+        color: #0F172A;
+        border-color: #CBD5E1;
+      }
+
+      [data-theme="dark"] & {
+        background: #334155;
+        border-color: #475569;
+        color: #CBD5E1;
+
+        &:hover {
+          background: #475569;
+          color: #FFFFFF;
+        }
+      }
+    }
+  }
+
+  .quick-action-link-btn {
+    border: none;
+    background: transparent;
+    color: #447A44;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: #E8F5E9;
+    }
+
+    [data-theme="dark"] & {
+      color: #81C784;
+
+      &:hover {
+        background: rgba(129, 199, 132, 0.15);
+      }
+    }
+  }
+}
+
+.dtp-weekdays-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+  padding-bottom: 2px;
+
+  .weekday-cell {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+
+    [data-theme="dark"] & {
+      color: #94A3B8;
+    }
+  }
+}
+
+.dtp-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+
+  .day-grid-cell {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    outline: none;
+    background: transparent;
+    border-radius: 50%;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1E293B;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+
+    &:hover:not(:disabled):not(.is-selected) {
+      background: #F1F5F9;
+      color: #0F172A;
+    }
+
+    &.other-month {
+      color: #CBD5E1;
+
+      [data-theme="dark"] & {
+        color: #475569;
+      }
+    }
+
+    &.is-today:not(.is-selected) {
+      border: 1.5px solid #7CB342;
+      color: #447A44;
+      font-weight: 700;
+
+      [data-theme="dark"] & {
+        border-color: #81C784;
+        color: #A5D6A7;
+      }
+    }
+
+    &.is-selected {
+      background: linear-gradient(135deg, #447A44 0%, #356335 100%);
+      color: #FFFFFF !important;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(68, 122, 68, 0.4);
+
+      [data-theme="dark"] & {
+        background: linear-gradient(135deg, #5A935A 0%, #447A44 100%);
+        box-shadow: 0 2px 8px rgba(90, 147, 90, 0.5);
+      }
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    [data-theme="dark"] & {
+      color: #F1F5F9;
+
+      &:hover:not(:disabled):not(.is-selected) {
+        background: #334155;
+        color: #FFFFFF;
+      }
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 3. TAB 2: TIME VIEW
+// ----------------------------------------------------------------------------
+.dtp-time-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dtp-time-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px;
+
+  .time-readout-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #1E293B;
+
+    .time-period-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: #356335;
+      background: #E8F5E9;
+      padding: 1px 6px;
+      border-radius: 4px;
+
+      [data-theme="dark"] & {
+        background: rgba(68, 122, 68, 0.3);
+        color: #A5D6A7;
+      }
+    }
+
+    [data-theme="dark"] & {
+      color: #F8FAFC;
+    }
+  }
+
+  .quick-action-link-btn {
+    border: none;
+    background: transparent;
+    color: #447A44;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: #E8F5E9;
+    }
+
+    [data-theme="dark"] & {
+      color: #81C784;
+
+      &:hover {
+        background: rgba(129, 199, 132, 0.15);
+      }
+    }
+  }
+}
+
+.dtp-time-columns-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 8px;
+
+  [data-theme="dark"] & {
+    background: #0F172A;
+    border-color: #334155;
+  }
+
+  .time-col-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+
+    .time-col-header {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+
+      [data-theme="dark"] & {
+        color: #94A3B8;
+      }
+    }
+
+    .time-scroll-track {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      max-height: 160px;
+      overflow-y: auto;
+      width: 100%;
+      padding-right: 2px;
+      scrollbar-width: thin;
+
+      &::-webkit-scrollbar {
+        width: 4px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: #CBD5E1;
+        border-radius: 4px;
+      }
+
+      .time-val-item {
+        border: none;
+        outline: none;
+        background: transparent;
+        padding: 5px 0;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #334155;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-align: center;
+        width: 100%;
+
+        &:hover:not(.selected) {
+          background: #E2E8F0;
+          color: #0F172A;
+        }
+
+        &.selected {
+          background: linear-gradient(135deg, #447A44 0%, #356335 100%);
+          color: #FFFFFF;
+          font-weight: 700;
+          box-shadow: 0 2px 5px rgba(68, 122, 68, 0.35);
+
+          [data-theme="dark"] & {
+            background: linear-gradient(135deg, #5A935A 0%, #447A44 100%);
+          }
+        }
+
+        [data-theme="dark"] & {
+          color: #CBD5E1;
+
+          &:hover:not(.selected) {
+            background: #1E293B;
+            color: #FFFFFF;
+          }
+        }
+      }
+    }
+
+    &.period-col {
+      flex: 0 0 54px;
+
+      .period-toggle-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+        margin-top: 10px;
+
+        .period-pill-btn {
+          border: 1px solid #CBD5E1;
+          background: #FFFFFF;
+          padding: 8px 0;
+          border-radius: 8px;
+          font-size: 12.5px;
+          font-weight: 700;
+          color: #475569;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          text-align: center;
+
+          &:hover:not(.selected) {
+            background: #F1F5F9;
+            border-color: #94A3B8;
+          }
+
+          &.selected {
+            background: linear-gradient(135deg, #447A44 0%, #356335 100%);
+            border-color: #356335;
+            color: #FFFFFF;
+            box-shadow: 0 2px 6px rgba(68, 122, 68, 0.3);
+
+            [data-theme="dark"] & {
+              background: linear-gradient(135deg, #5A935A 0%, #447A44 100%);
+              border-color: #5A935A;
+            }
+          }
+
+          [data-theme="dark"] & {
+            background: #1E293B;
+            border-color: #475569;
+            color: #CBD5E1;
+
+            &:hover:not(.selected) {
+              background: #334155;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .time-col-divider {
+    font-size: 18px;
+    font-weight: 800;
+    color: #94A3B8;
+    padding-top: 14px;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 4. BOTTOM ACTION FOOTER (Set / Cancel)
+// ----------------------------------------------------------------------------
+.dtp-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid #F1F5F9;
+
+  [data-theme="dark"] & {
+    border-top-color: #334155;
+  }
+
+  .dtp-action-btn {
+    border: none;
+    outline: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &.btn-cancel {
+      background: #F1F5F9;
+      color: #64748B;
+
+      &:hover {
+        background: #E2E8F0;
+        color: #1E293B;
+      }
+
+      [data-theme="dark"] & {
+        background: #334155;
+        color: #CBD5E1;
+
+        &:hover {
+          background: #475569;
+          color: #FFFFFF;
+        }
+      }
+    }
+
+    &.btn-set {
+      background: linear-gradient(135deg, #447A44 0%, #356335 100%);
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(68, 122, 68, 0.35);
+
+      &:hover {
+        background: linear-gradient(135deg, #356335 0%, #244624 100%);
+        box-shadow: 0 4px 10px rgba(53, 99, 53, 0.4);
+      }
+
+      [data-theme="dark"] & {
+        background: linear-gradient(135deg, #5A935A 0%, #447A44 100%);
+
+        &:hover {
+          background: #447A44;
+        }
+      }
+    }
+  }
+}

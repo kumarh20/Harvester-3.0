@@ -14,6 +14,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { LandMeasurementComponent } from '../land-measurement/land-measurement.component';
+import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
 import { RecordsService } from '../../core/services/records.service';
 import { HarvesterService } from '../../core/services/harvester.service';
 import { RemindersService } from '../../core/services/reminders.service';
@@ -129,6 +130,89 @@ export class AddNewComponent implements OnInit {
 
   readonly hoursList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
   readonly minutesList = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+
+  formattedCuttingDateTime = computed(() => {
+    const d = this.recordForm?.get('date')?.value;
+    const t = this.recordForm?.get('cuttingTime')?.value;
+    if (!d) return '';
+    const dateObj = d instanceof Date ? d : new Date(d);
+    if (isNaN(dateObj.getTime())) return '';
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const yyyy = dateObj.getFullYear();
+    
+    let timeFormatted = '';
+    if (t) {
+      const [hStr, mStr] = t.split(':');
+      let h = parseInt(hStr, 10) || 0;
+      const period = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      h = h ? h : 12;
+      timeFormatted = `, ${h}:${mStr || '00'} ${period}`;
+    }
+    return `${dd}/${mm}/${yyyy}${timeFormatted}`;
+  });
+
+  formattedPaymentDate = computed(() => {
+    const d = this.recordForm?.get('fullPaymentDate')?.value;
+    if (!d) return '';
+    const dateObj = d instanceof Date ? d : new Date(d);
+    if (isNaN(dateObj.getTime())) return '';
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const yyyy = dateObj.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  });
+
+  openCuttingDateTimePicker(): void {
+    const currentDateVal = this.recordForm.get('date')?.value || new Date();
+    const currentTimeVal = this.recordForm.get('cuttingTime')?.value || this.getCurrentTimeString();
+
+    const dialogRef = this.dialog.open(DateTimePickerDialogComponent, {
+      panelClass: 'kendo-dtp-dialog-panel',
+      data: {
+        initialDate: currentDateVal,
+        initialTime: currentTimeVal,
+        maxDate: this.currentDate,
+        mode: 'datetime',
+        title: this.isHindi() ? 'कटाई का दिनांक व समय' : 'Harvest Date & Time'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result: DateTimePickerResult | null) => {
+      if (result) {
+        this.recordForm.patchValue({
+          date: result.date,
+          cuttingTime: result.time
+        });
+        this.recordForm.get('date')?.markAsDirty();
+        this.recordForm.get('date')?.markAsTouched();
+      }
+    });
+  }
+
+  openPaymentDatePicker(): void {
+    const currentVal = this.recordForm.get('fullPaymentDate')?.value || new Date();
+    const dialogRef = this.dialog.open(DateTimePickerDialogComponent, {
+      panelClass: 'kendo-dtp-dialog-panel',
+      data: {
+        initialDate: currentVal,
+        minDate: this.minPaymentDate(),
+        mode: 'date',
+        title: this.translationService.get('form.paymentDate')
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result: DateTimePickerResult | null) => {
+      if (result) {
+        this.recordForm.patchValue({
+          fullPaymentDate: result.date
+        });
+        this.recordForm.get('fullPaymentDate')?.markAsDirty();
+        this.recordForm.get('fullPaymentDate')?.markAsTouched();
+      }
+    });
+  }
 
   onPickerOpened(): void {
     this.activeTimeView.set('none');

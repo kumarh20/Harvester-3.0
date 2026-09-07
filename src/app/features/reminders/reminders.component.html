@@ -83,17 +83,11 @@
         type="button" 
         class="calendar-icon-btn" 
         [class.active]="activeTab() === 'custom'"
-        (click)="picker.open()"
+        (click)="openCalendarFilter()"
         title="तारीख चुनें / Select Date"
         id="btn-calendar-filter">
         <mat-icon>calendar_today</mat-icon>
       </button>
-      <input 
-        matInput 
-        [matDatepicker]="picker" 
-        class="hidden-datepicker-input" 
-        (dateChange)="onCustomDateSelected($event.value)" />
-      <mat-datepicker #picker></mat-datepicker>
     </div>
   </div>
 
@@ -337,133 +331,24 @@
             </div>
 
             <!-- Clean Single Unified Date & Time Field -->
-            <mat-form-field appearance="outline" class="custom-mat-field unified-datetime-field" id="field-reminder-date">
+            <mat-form-field appearance="outline" class="custom-mat-field unified-datetime-field" id="field-reminder-date" (click)="openBookingDateTimePicker()">
               <mat-label>{{ isHindi() ? 'कटाई का दिनांक व समय' : 'Scheduled Date & Time' }}</mat-label>
               <input 
                 matInput 
-                [matDatepicker]="reminderDateTimePicker" 
-                formControlName="scheduledDate" 
+                [value]="formattedBookingDateTime()" 
                 placeholder="DD/MM/YYYY, hh:mm AM/PM" 
-                (click)="reminderDateTimePicker.open()" 
-                [min]="todayDate" 
+                readonly 
+                style="cursor: pointer;" 
                 required />
-              <mat-datepicker-toggle matSuffix [for]="reminderDateTimePicker"></mat-datepicker-toggle>
-              <mat-datepicker #reminderDateTimePicker panelClass="clean-datetime-picker-panel" (opened)="onReminderPickerOpened()">
-                <mat-datepicker-actions>
-                  <div class="clean-datetime-actions-bar" (mousedown)="$event.stopPropagation()" (pointerdown)="$event.stopPropagation()">
-                    <!-- Time Selection Grid (Hours / Minutes) -->
-                    @if (activeTimeView() === 'hours') {
-                      <div class="time-picker-grid-panel" (click)="$event.stopPropagation()">
-                        <div class="time-picker-grid-header">
-                          <span class="grid-title">{{ isHindi() ? 'घंटा चुनें (Hour)' : 'Select Hour' }}</span>
-                          <button type="button" class="grid-close-btn" (click)="closeTimeView($event)">
-                            <mat-icon>close</mat-icon>
-                          </button>
-                        </div>
-                        <div class="time-grid-items">
-                          @for (h of hoursList; track h) {
-                            <button 
-                              type="button" 
-                              class="time-grid-btn" 
-                              [class.active]="selectedHour() === h"
-                              (click)="selectHour(h, $event)">
-                              {{ h }}
-                            </button>
-                          }
-                        </div>
-                      </div>
-                    } @else if (activeTimeView() === 'minutes') {
-                      <div class="time-picker-grid-panel" (click)="$event.stopPropagation()">
-                        <div class="time-picker-grid-header">
-                          <span class="grid-title">{{ isHindi() ? 'मिनट चुनें (Minute)' : 'Select Minute' }}</span>
-                          <button type="button" class="grid-close-btn" (click)="closeTimeView($event)">
-                            <mat-icon>close</mat-icon>
-                          </button>
-                        </div>
-                        <div class="time-grid-items">
-                          @for (m of minutesList; track m) {
-                            <button 
-                              type="button" 
-                              class="time-grid-btn" 
-                              [class.active]="selectedMinute() === m"
-                              (click)="selectMinute(m, $event)">
-                              {{ m }}
-                            </button>
-                          }
-                        </div>
-                      </div>
-                    }
-
-                    <div class="clean-time-selector-row">
-                      <div class="clean-time-label-group">
-                        <mat-icon class="clean-time-icon">schedule</mat-icon>
-                        <span class="clean-time-label">{{ isHindi() ? 'समय:' : 'Time:' }}</span>
-                      </div>
-
-                      <div class="clean-time-controls">
-                        <!-- Hour Button -->
-                        <button 
-                          type="button" 
-                          class="time-unit-pill-btn" 
-                          [class.active]="activeTimeView() === 'hours'"
-                          (click)="toggleTimeView('hours')"
-                          [title]="isHindi() ? 'घंटा चुनें' : 'Select Hour'">
-                          {{ selectedHour() }}
-                        </button>
-
-                        <span class="time-colon">:</span>
-
-                        <!-- Minute Button -->
-                        <button 
-                          type="button" 
-                          class="time-unit-pill-btn" 
-                          [class.active]="activeTimeView() === 'minutes'"
-                          (click)="toggleTimeView('minutes')"
-                          [title]="isHindi() ? 'मिनट चुनें' : 'Select Minute'">
-                          {{ selectedMinute() }}
-                        </button>
-
-                        <!-- AM/PM Toggle Segment -->
-                        <div class="am-pm-toggle-group">
-                          <button 
-                            type="button" 
-                            class="am-pm-btn" 
-                            [class.active]="selectedPeriod() === 'AM'"
-                            (click)="setReminderPeriod('AM')">AM</button>
-                          <button 
-                            type="button" 
-                            class="am-pm-btn" 
-                            [class.active]="selectedPeriod() === 'PM'"
-                            (click)="setReminderPeriod('PM')">PM</button>
-                        </div>
-
-                        <!-- Quick Now Button -->
-                        <button 
-                          type="button" 
-                          class="time-now-btn" 
-                          (click)="setReminderNow()"
-                          [title]="isHindi() ? 'वर्तमान समय सेट करें' : 'Set to Current Time'">
-                          <mat-icon>update</mat-icon>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div class="clean-actions-buttons">
-                      <button mat-button matDatepickerCancel class="clean-picker-cancel-btn">
-                        {{ translationService.get('common.cancel') || 'रद्द करें' }}
-                      </button>
-                      <button 
-                        mat-flat-button 
-                        color="primary" 
-                        class="clean-picker-apply-btn" 
-                        (click)="confirmReminderDateTimeSelection(reminderDateTimePicker)">
-                        <mat-icon>done</mat-icon>
-                        <span>{{ isHindi() ? 'लागू करें' : 'Apply' }}</span>
-                      </button>
-                    </div>
-                  </div>
-                </mat-datepicker-actions>
-              </mat-datepicker>
+              <button 
+                mat-icon-button 
+                matSuffix 
+                type="button" 
+                class="picker-trigger-icon-btn" 
+                (click)="openBookingDateTimePicker(); $event.stopPropagation()"
+                [title]="isHindi() ? 'दिनांक व समय चुनें' : 'Select Date & Time'">
+                <mat-icon>calendar_today</mat-icon>
+              </button>
               <mat-icon matPrefix class="field-icon">event_available</mat-icon>
               @if (bookingForm.get('scheduledDate')?.touched && bookingForm.get('scheduledDate')?.invalid) {
                 <mat-error>{{ translationService.get('errors.dateRequired') || 'दिनांक व समय आवश्यक है' }}</mat-error>

@@ -897,7 +897,10 @@
                 <mat-icon>grass</mat-icon>
               </div>
               <div>
-                <h3 class="season-perf-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न अनुसार कटाई रिपोर्ट' : 'Season Performance Overview' }}</h3>
+                <div class="season-title-row">
+                  <h3 class="season-perf-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न अनुसार कटाई रिपोर्ट' : 'Season Performance Overview' }}</h3>
+                  <span class="season-count-pill">{{ chartSeasonBreakdown().length }} {{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Seasons' }}</span>
+                </div>
                 <p class="season-perf-subtitle">{{ translationService.getCurrentLanguage() === 'hi' ? 'प्रत्येक सीज़न का रकबा, कुल आमदनी व बकाया विवरण' : 'Harvested acres, revenue, and outstanding by season' }}</p>
               </div>
             </div>
@@ -919,84 +922,229 @@
                 class="season-perf-item-card" 
                 [class.is-selected]="season.isSelected || selectedSeasonFilter() === season.seasonId"
                 (click)="selectSeasonOption(season.seasonId)">
+                
                 <div class="season-perf-top">
-                  <span class="season-perf-name">{{ season.fullLabel }}</span>
+                  <div class="season-title-with-icon">
+                    <mat-icon class="season-crop-icon">eco</mat-icon>
+                    <span class="season-perf-name">{{ season.fullLabel }}</span>
+                  </div>
                   @if (selectedSeasonFilter() === season.seasonId) {
                     <span class="season-active-badge">
-                      <mat-icon>check</mat-icon>
+                      <mat-icon>check_circle</mat-icon>
                       {{ translationService.getCurrentLanguage() === 'hi' ? 'सक्रिय' : 'Active' }}
                     </span>
+                  } @else {
+                    <span class="season-jobs-chip">{{ season.jobsCount }} {{ translationService.get('dashboard.completedJobs') }}</span>
                   }
                 </div>
 
                 <div class="season-perf-metrics">
-                  <div class="season-perf-metric">
+                  <div class="season-perf-metric-box">
                     <span class="m-label">{{ translationService.get('dashboard.totalLand') }}</span>
-                    <span class="m-value">{{ season.acres }} <small>{{ translationService.get('dashboard.acresUnit') }}</small></span>
+                    <span class="m-value font-bold text-slate-800 dark:text-slate-100">
+                      {{ season.acres }} <small class="text-xs font-medium text-slate-500">{{ translationService.get('dashboard.acresUnit') }}</small>
+                    </span>
                   </div>
-                  <div class="season-perf-metric">
+                  <div class="season-perf-metric-box emerald-box">
                     <span class="m-label">{{ translationService.get('dashboard.totalAmount') }}</span>
-                    <span class="m-value emerald-txt">{{ formatCurrency(season.revenue) }}</span>
+                    <span class="m-value emerald-txt font-bold">{{ formatCurrency(season.revenue) }}</span>
                   </div>
-                  <div class="season-perf-metric">
+                  <div class="season-perf-metric-box amber-box">
                     <span class="m-label">{{ translationService.get('dashboard.pendingAmount') }}</span>
-                    <span class="m-value amber-txt">{{ formatCurrency(season.pending) }}</span>
+                    <span class="m-value amber-txt font-bold">{{ formatCurrency(season.pending) }}</span>
                   </div>
                 </div>
 
                 <div class="season-perf-footer">
-                  <span class="season-jobs-count">{{ season.jobsCount }} {{ translationService.get('dashboard.completedJobs') }}</span>
-                  <span class="season-filter-hint">
-                    {{ selectedSeasonFilter() === season.seasonId 
-                        ? (translationService.getCurrentLanguage() === 'hi' ? 'फ़िल्टर लागू ✓' : 'Filtered ✓') 
-                        : (translationService.getCurrentLanguage() === 'hi' ? 'डैशबोर्ड फ़िल्टर करें →' : 'Filter dashboard →') }}
+                  @if (selectedSeasonFilter() === season.seasonId) {
+                    <span class="season-status-active-hint">
+                      <mat-icon>task_alt</mat-icon>
+                      {{ translationService.getCurrentLanguage() === 'hi' ? 'डैशबोर्ड पर यह सीज़न लागू है' : 'Filtered on dashboard' }}
+                    </span>
+                  } @else {
+                    <span class="season-filter-prompt">
+                      <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'डैशबोर्ड फ़िल्टर करें' : 'Filter dashboard' }}</span>
+                      <mat-icon class="arrow-icon">arrow_forward</mat-icon>
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+      <!-- Machine / Fleet Vertical Bar Chart Graph (matching screenshot & cutting trend graph) -->
+      @if (harvesterStats().length > 0) {
+        <div class="chart-card-container fleet-activity-card screenshot-styled-chart" id="dashboard-fleet-distribution">
+          <div class="chart-card-header">
+            <div class="chart-header-title-box">
+              <div class="chart-title-icon-wrapper trend-icon machine-chart-icon">
+                <mat-icon>agriculture</mat-icon>
+              </div>
+              <div>
+                <h3 class="chart-main-title">{{ translationService.get('dashboard.fleetDistribution') }}</h3>
+                <p class="chart-sub-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'सक्रिय हार्वेस्टर मशीनें व तुलनात्मक ग्राफ' : 'Active harvester comparative performance' }}</p>
+              </div>
+            </div>
+
+            <div class="chart-header-actions-wrap">
+              <!-- Top-Right Legend Indicators -->
+              <div class="chart-legend-box" id="machine-chart-legend">
+                <div class="legend-indicator-item">
+                  <span class="legend-box-dot primary-dot"></span>
+                  <span class="legend-box-text">
+                    {{ machineChartMetric() === 'revenue' 
+                        ? (translationService.getCurrentLanguage() === 'hi' ? 'कुल कमाई' : 'Revenue') 
+                        : (translationService.getCurrentLanguage() === 'hi' ? 'रकबा (Acres)' : 'Acres') }}
+                  </span>
+                </div>
+                <div class="legend-indicator-item">
+                  <span class="legend-box-dot secondary-dot"></span>
+                  <span class="legend-box-text">
+                    {{ machineChartMetric() === 'revenue' 
+                        ? (translationService.getCurrentLanguage() === 'hi' ? 'रकबा (Acres)' : 'Acres') 
+                        : (translationService.getCurrentLanguage() === 'hi' ? 'जॉब्स संख्या' : 'Jobs') }}
                   </span>
                 </div>
               </div>
-            }
-          </div>
-        </div>
-      }
-      <!-- Machine / Fleet Activity Progress Distribution (if machines exist) -->
-      @if (harvesterStats().length > 0) {
-        <div class="fleet-activity-card" id="dashboard-fleet-distribution">
-          <div class="fleet-card-header">
-            <div class="fleet-title-wrapper">
-              <mat-icon class="tractor-icon">agriculture</mat-icon>
-              <div>
-                <h3 class="fleet-title">{{ translationService.get('dashboard.fleetDistribution') }}</h3>
-                <p class="fleet-subtitle">{{ translationService.get('dashboard.topHarvesters') }}</p>
+
+              <!-- Controls Group: Metric Toggle (Acres vs Revenue) & Settings Link -->
+              <div class="chart-controls-cluster">
+                <div class="chart-metric-toggle-group" role="group" aria-label="Machine metric selector">
+                  <button 
+                    type="button" 
+                    id="machine-toggle-acres"
+                    class="metric-toggle-btn"
+                    [class.active]="machineChartMetric() === 'acres'"
+                    (click)="setMachineChartMetric('acres')">
+                    <mat-icon>grass</mat-icon>
+                    <span>{{ translationService.get('dashboard.chartAcres') }}</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    id="machine-toggle-revenue"
+                    class="metric-toggle-btn"
+                    [class.active]="machineChartMetric() === 'revenue'"
+                    (click)="setMachineChartMetric('revenue')">
+                    <mat-icon>currency_rupee</mat-icon>
+                    <span>{{ translationService.get('dashboard.chartRevenue') }}</span>
+                  </button>
+                </div>
+
+                <button 
+                  type="button" 
+                  id="manage-fleet-settings-btn"
+                  class="fleet-settings-link-btn" 
+                  (click)="goToSettings()">
+                  <mat-icon>tune</mat-icon>
+                  <span>{{ translationService.get('dashboard.manageFleet') }}</span>
+                </button>
               </div>
             </div>
-            <button 
-              type="button" 
-              id="manage-fleet-settings-btn"
-              class="fleet-settings-link" 
-              (click)="goToSettings()">
-              <mat-icon>tune</mat-icon>
-              <span>{{ translationService.get('dashboard.manageFleet') }}</span>
-            </button>
           </div>
 
-          <div class="fleet-bars-list">
-            @for (machine of harvesterStats(); track machine.name) {
-              <div class="fleet-machine-row" [id]="'machine-row-' + machine.name">
-                <div class="machine-meta-top">
-                  <div class="machine-name-group">
-                    <mat-icon class="machine-row-icon">precision_manufacturing</mat-icon>
-                    <span class="machine-name-text">{{ machine.name }}</span>
-                    <span class="machine-jobs-chip">{{ machine.count }} {{ translationService.get('dashboard.completedJobs') }}</span>
-                  </div>
-                  <div class="machine-stats-summary">
-                    <span class="machine-acres-badge">{{ formatNumber(machine.acres, 1) }} {{ translationService.get('dashboard.acresUnit') }}</span>
-                    <span class="machine-rev-badge">{{ formatCurrency(machine.revenue) }}</span>
-                  </div>
+          <!-- Vertical Bar Chart Stage -->
+          <div class="chart-body-area">
+            <div class="modern-bar-chart-stage" id="svg-machine-graph">
+              <div class="chart-plot-area">
+                <!-- Left Y-Axis Labels Column -->
+                <div class="y-axis-labels-col" aria-hidden="true">
+                  <span class="y-axis-tick">100%</span>
+                  <span class="y-axis-tick">75%</span>
+                  <span class="y-axis-tick">50%</span>
+                  <span class="y-axis-tick">25%</span>
+                  <span class="y-axis-tick">0</span>
                 </div>
 
-                <div class="machine-progress-track">
-                  <div 
-                    class="machine-progress-fill" 
-                    [style.width.%]="machine.percentOfTotal">
+                <!-- Plot Area with Horizontal Grid Lines and Overlaid Bars -->
+                <div class="chart-grid-canvas">
+                  <!-- 5 Horizontal Dashed Guide Lines -->
+                  <div class="chart-grid-lines-layer" aria-hidden="true">
+                    <div class="grid-horizontal-line"></div>
+                    <div class="grid-horizontal-line"></div>
+                    <div class="grid-horizontal-line"></div>
+                    <div class="grid-horizontal-line"></div>
+                    <div class="grid-horizontal-line baseline"></div>
+                  </div>
+
+                  <!-- Grouped Bars Layer (Side-by-side pill bars for each machine) -->
+                  <div class="chart-bars-layer machine-bars-layer">
+                    @for (machine of harvesterStats(); track machine.name) {
+                      <div 
+                        class="chart-bar-group machine-bar-group" 
+                        [id]="'mach-bar-' + machine.id"
+                        [class.is-active]="activeMachineBar()?.name === machine.name"
+                        (click)="toggleMachineBar(machine)">
+                        
+                        <!-- Floating Tooltip on Hover / Active -->
+                        <div class="bar-pair-popover">
+                          <div class="popover-title-row">{{ machine.name }}</div>
+                          <div class="popover-val p-val">
+                            {{ machineChartMetric() === 'revenue' ? ('₹' + formatNumber(machine.revenue, 0)) : (formatNumber(machine.acres, 1) + ' ac') }}
+                          </div>
+                          <div class="popover-val s-val">
+                            {{ machineChartMetric() === 'revenue' ? (formatNumber(machine.acres, 1) + ' ac') : (machine.count + ' jobs') }}
+                          </div>
+                        </div>
+
+                        <!-- Paired Bars Container (standing from baseline 0) -->
+                        <div class="bar-pair-container">
+                          <!-- Primary Bar (Emerald Green Gradient) -->
+                          <div 
+                            class="bar-pill bar-primary" 
+                            [style.height.%]="machine.primaryBarHeightPercent"
+                            [title]="(machineChartMetric() === 'revenue' ? machine.name + ' - कमाई: ₹' + formatNumber(machine.revenue, 0) : machine.name + ' - रकबा: ' + machine.acres + ' एकड़')">
+                            <div class="bar-top-cap"></div>
+                          </div>
+
+                          <!-- Secondary Bar (Sky Blue Gradient) -->
+                          <div 
+                            class="bar-pill bar-secondary" 
+                            [style.height.%]="machine.secondaryBarHeightPercent"
+                            [title]="(machineChartMetric() === 'revenue' ? machine.name + ' - रकबा: ' + machine.acres + ' एकड़' : machine.name + ' - कार्य: ' + machine.count)">
+                            <div class="bar-top-cap"></div>
+                          </div>
+                        </div>
+
+                        <!-- X-Axis Category Label (Machine Name below the pair) -->
+                        <span class="x-axis-label machine-x-label" [title]="machine.name">{{ machine.name }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Selected Machine Detail Card -->
+            @if (activeMachineBar()) {
+              <div class="active-bar-details-card" id="active-machine-details-card">
+                <div class="details-card-header">
+                  <div class="details-date-info">
+                    <mat-icon class="calendar-icon">agriculture</mat-icon>
+                    <span class="details-date-text font-bold">{{ activeMachineBar()!.name }}</span>
+                    <span class="machine-jobs-pill">{{ activeMachineBar()!.count }} {{ translationService.get('dashboard.completedJobs') }}</span>
+                  </div>
+                  <button 
+                    type="button" 
+                    id="close-active-machine-btn"
+                    class="close-details-btn" 
+                    (click)="selectMachineBar(null)" 
+                    aria-label="Dismiss details">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+                <div class="details-metrics-row">
+                  <div class="detail-metric-item">
+                    <span class="detail-metric-label">{{ translationService.get('dashboard.totalLand') }}</span>
+                    <span class="detail-metric-val">{{ activeMachineBar()!.acres }} {{ translationService.get('dashboard.acres') }}</span>
+                  </div>
+                  <div class="detail-metric-item">
+                    <span class="detail-metric-label">{{ translationService.get('dashboard.totalAmount') }}</span>
+                    <span class="detail-metric-val emerald-val">{{ formatCurrency(activeMachineBar()!.revenue) }}</span>
+                  </div>
+                  <div class="detail-metric-item">
+                    <span class="detail-metric-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल कार्य हिस्सेदारी' : 'Fleet Share' }}</span>
+                    <span class="detail-metric-val blue-val">{{ activeMachineBar()!.percentOfTotal }}%</span>
                   </div>
                 </div>
               </div>
@@ -1005,53 +1153,65 @@
         </div>
       }
 
-      <!-- 4 Core Performance Metrics Grid -->
+      <!-- 4 Core Performance Metrics Grid (Organized as per card design: top icon + status dot, colored value, label, subtitle) -->
       <div class="stats-metric-grid" id="dashboard-metrics-grid">
         <!-- Metric 1: Total Jobs -->
-        <div class="metric-card" id="metric-total-jobs">
-          <div class="metric-icon-box blue-accent">
-            <mat-icon>agriculture</mat-icon>
+        <div class="metric-card metric-card-vertical" id="metric-total-jobs">
+          <div class="metric-card-top">
+            <div class="metric-icon-box blue-accent">
+              <mat-icon>agriculture</mat-icon>
+            </div>
+            <span class="metric-accent-dot blue-dot" aria-hidden="true"></span>
           </div>
-          <div class="metric-info">
-            <span class="metric-label">{{ translationService.get('dashboard.totalRecords') }}</span>
-            <span class="metric-number">{{ stats().totalRecords }}</span>
-            <span class="metric-trend">{{ translationService.get('dashboard.completedJobs') }}</span>
+          <div class="metric-info-vertical">
+            <span class="metric-number-val blue-text">{{ stats().totalRecords }}</span>
+            <span class="metric-label-title">{{ translationService.get('dashboard.totalRecords') }}</span>
+            <span class="metric-sub-trend">{{ translationService.get('dashboard.completedJobs') }}</span>
           </div>
         </div>
 
         <!-- Metric 2: Total Land -->
-        <div class="metric-card" id="metric-total-land">
-          <div class="metric-icon-box emerald-accent">
-            <mat-icon>landscape</mat-icon>
+        <div class="metric-card metric-card-vertical" id="metric-total-land">
+          <div class="metric-card-top">
+            <div class="metric-icon-box emerald-accent">
+              <mat-icon>landscape</mat-icon>
+            </div>
+            <span class="metric-accent-dot emerald-dot" aria-hidden="true"></span>
           </div>
-          <div class="metric-info">
-            <span class="metric-label">{{ translationService.get('dashboard.totalLand') }}</span>
-            <span class="metric-number">{{ formatNumber(stats().totalLand) }}</span>
-            <span class="metric-trend">{{ translationService.get('dashboard.acresHarvested') }}</span>
+          <div class="metric-info-vertical">
+            <span class="metric-number-val emerald-text">{{ formatNumber(stats().totalLand) }}</span>
+            <span class="metric-label-title">{{ translationService.get('dashboard.totalLand') }}</span>
+            <span class="metric-sub-trend">{{ translationService.get('dashboard.acresHarvested') }}</span>
           </div>
         </div>
 
         <!-- Metric 3: Average Land / Job -->
-        <div class="metric-card" id="metric-avg-land">
-          <div class="metric-icon-box purple-accent">
-            <mat-icon>straighten</mat-icon>
+        <div class="metric-card metric-card-vertical" id="metric-avg-land">
+          <div class="metric-card-top">
+            <div class="metric-icon-box purple-accent">
+              <mat-icon>straighten</mat-icon>
+            </div>
+            <span class="metric-accent-dot purple-dot" aria-hidden="true"></span>
           </div>
-          <div class="metric-info">
-            <span class="metric-label">{{ translationService.get('dashboard.averageLand') }}</span>
-            <span class="metric-number">{{ formatNumber(stats().avgLandPerRecord) }}</span>
-            <span class="metric-trend">{{ translationService.get('dashboard.perCutting') }}</span>
+          <div class="metric-info-vertical">
+            <span class="metric-number-val purple-text">{{ formatNumber(stats().avgLandPerRecord) }}</span>
+            <span class="metric-label-title">{{ translationService.get('dashboard.averageLand') }}</span>
+            <span class="metric-sub-trend">{{ translationService.get('dashboard.perCutting') }}</span>
           </div>
         </div>
 
         <!-- Metric 4: Average Rate / Acre -->
-        <div class="metric-card" id="metric-avg-rate">
-          <div class="metric-icon-box amber-accent">
-            <mat-icon>trending_up</mat-icon>
+        <div class="metric-card metric-card-vertical" id="metric-avg-rate">
+          <div class="metric-card-top">
+            <div class="metric-icon-box amber-accent">
+              <mat-icon>trending_up</mat-icon>
+            </div>
+            <span class="metric-accent-dot amber-dot" aria-hidden="true"></span>
           </div>
-          <div class="metric-info">
-            <span class="metric-label">{{ translationService.get('dashboard.averageRate') }}</span>
-            <span class="metric-number">{{ formatCurrency(stats().averageRate) }}</span>
-            <span class="metric-trend">{{ translationService.get('dashboard.avgYieldRate') }}</span>
+          <div class="metric-info-vertical">
+            <span class="metric-number-val amber-text">{{ formatCurrency(stats().averageRate) }}</span>
+            <span class="metric-label-title">{{ translationService.get('dashboard.averageRate') }}</span>
+            <span class="metric-sub-trend">{{ translationService.get('dashboard.avgYieldRate') }}</span>
           </div>
         </div>
       </div>

@@ -51,11 +51,15 @@ export interface SeasonChartDataPoint {
 }
 
 export interface HarvesterStat {
+  id: string;
   name: string;
   count: number;
   acres: number;
   revenue: number;
   percentOfTotal: number;
+  barHeightPercent: number;
+  primaryBarHeightPercent: number;
+  secondaryBarHeightPercent: number;
 }
 
 export interface RecoveryOverview {
@@ -123,8 +127,10 @@ export class DashboardComponent implements OnInit {
   // Graph Controls State
   chartViewMode = signal<ChartViewMode>('daily');
   chartMetric = signal<ChartMetricMode>('revenue');
+  machineChartMetric = signal<ChartMetricMode>('acres');
   activeBar = signal<ChartDataPoint | null>(null);
   activeSeasonBar = signal<SeasonChartDataPoint | null>(null);
+  activeMachineBar = signal<HarvesterStat | null>(null);
 
   todayCount = signal(0);
   weekCount = signal(0);
@@ -546,7 +552,7 @@ export class DashboardComponent implements OnInit {
   });
 
   // ----------------------------------------------------
-  // Harvester Fleet Utilization
+  // Harvester Fleet Utilization & Vertical Bar Chart
   // ----------------------------------------------------
   harvesterStats = computed<HarvesterStat[]>(() => {
     const records = this.filteredRecords();
@@ -571,8 +577,9 @@ export class DashboardComponent implements OnInit {
       map.set(name, existing);
     }
 
-    return Array.from(map.entries())
-      .map(([name, data]) => ({
+    const rawList = Array.from(map.entries())
+      .map(([name, data], idx) => ({
+        id: 'mach-' + idx + '-' + name.replace(/\s+/g, '_'),
         name,
         count: data.count,
         acres: Math.round(data.acres * 10) / 10,
@@ -580,6 +587,34 @@ export class DashboardComponent implements OnInit {
         percentOfTotal: totalAcresAll > 0 ? Math.round((data.acres / totalAcresAll) * 100) : 0
       }))
       .sort((a, b) => b.acres - a.acres);
+
+    const metric = this.machineChartMetric();
+    const maxPrimary = metric === 'revenue'
+      ? Math.max(...rawList.map(x => x.revenue), 1)
+      : Math.max(...rawList.map(x => x.acres), 1);
+    const maxSecondary = metric === 'revenue'
+      ? Math.max(...rawList.map(x => x.acres), 1)
+      : Math.max(...rawList.map(x => x.count), 1);
+
+    return rawList.map(item => {
+      let pPct = 0;
+      let sPct = 0;
+
+      if (metric === 'revenue') {
+        pPct = item.revenue > 0 ? Math.min(100, Math.max(6, Math.round((item.revenue / maxPrimary) * 100))) : 0;
+        sPct = item.acres > 0 ? Math.min(100, Math.max(6, Math.round((item.acres / maxSecondary) * 100))) : 0;
+      } else {
+        pPct = item.acres > 0 ? Math.min(100, Math.max(6, Math.round((item.acres / maxPrimary) * 100))) : 0;
+        sPct = item.count > 0 ? Math.min(100, Math.max(6, Math.round((item.count / maxSecondary) * 100))) : 0;
+      }
+
+      return {
+        ...item,
+        barHeightPercent: pPct,
+        primaryBarHeightPercent: pPct,
+        secondaryBarHeightPercent: sPct
+      };
+    });
   });
 
   constructor(
@@ -937,6 +972,23 @@ export class DashboardComponent implements OnInit {
       this.activeSeasonBar.set(null);
     } else {
       this.activeSeasonBar.set(bar);
+    }
+  }
+
+  setMachineChartMetric(metric: ChartMetricMode): void {
+    this.machineChartMetric.set(metric);
+    this.activeMachineBar.set(null);
+  }
+
+  selectMachineBar(machine: HarvesterStat | null): void {
+    this.activeMachineBar.set(machine);
+  }
+
+  toggleMachineBar(machine: HarvesterStat): void {
+    if (this.activeMachineBar()?.id === machine.id) {
+      this.activeMachineBar.set(null);
+    } else {
+      this.activeMachineBar.set(machine);
     }
   }
 }
