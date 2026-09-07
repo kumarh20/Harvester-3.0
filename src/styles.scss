@@ -177,6 +177,23 @@ body {
     transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), color 0.35s ease;
 }
 
+/* 📱 Mobile Status Bar / Notch Safe Area Background Cover */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top, 0px);
+    background: linear-gradient(135deg, #2E562F 0%, #356335 50%, #234224 100%);
+    z-index: 1001;
+    pointer-events: none;
+}
+
+[data-theme="dark"] body::before {
+    background: linear-gradient(135deg, #102014 0%, #162A1C 50%, #0E1911 100%);
+}
+
 /* 🌞🌙 Smooth Daylight & Dark Mode Global Transition Animation */
 html.theme-transitioning,
 html.theme-transitioning body,
