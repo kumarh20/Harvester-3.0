@@ -136,7 +136,7 @@
     max-width: 100%;
     box-sizing: border-box;
     overflow-x: hidden;
-    padding-top: 64px; // Exact height of fixed header to prevent overlap
+    padding-top: calc(64px + env(safe-area-inset-top, 0px)); // Exact height of fixed header + status bar
     padding-bottom: 90px; // Space for bottom navigation bar
     background: var(--bg-primary);
     scroll-behavior: smooth;
@@ -151,7 +151,7 @@
     }
     
     @media (max-width: 768px) {
-        padding-top: 64px;
+        padding-top: calc(64px + env(safe-area-inset-top, 0px));
         padding-bottom: calc(88px + env(safe-area-inset-bottom, 16px)); // Safe margin for modern floating Instagram dock
     }
 
