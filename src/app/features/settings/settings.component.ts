@@ -1,4 +1,4 @@
-import { Component, signal, computed, ViewEncapsulation, OnInit } from '@angular/core';
+import { Component, signal, computed, ViewEncapsulation, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -46,7 +46,7 @@ import { ProfileDialogComponent, ProfileDialogData } from '../../shared/componen
   styleUrl: './settings.component.scss',
   encapsulation: ViewEncapsulation.None
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit, OnDestroy {
   // Active Modal Signal ('harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about' | null)
   activeModal = signal<'harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about' | null>(null);
 
@@ -132,6 +132,20 @@ export class SettingsComponent implements OnInit {
     public seasonService: SeasonService
   ) {
     this.loadSettings();
+
+    // Auto toggle body class for bottom nav suppression & iOS stacking fixes
+    effect(() => {
+      const modal = this.activeModal();
+      if (modal) {
+        document.body.classList.add('settings-modal-open');
+      } else {
+        document.body.classList.remove('settings-modal-open');
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    document.body.classList.remove('settings-modal-open');
   }
 
   async ngOnInit(): Promise<void> {

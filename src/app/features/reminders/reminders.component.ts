@@ -80,6 +80,9 @@ export class RemindersComponent implements OnInit {
   // Move to record prompt modal
   pendingMoveReminder = signal<Reminder | null>(null);
 
+  // Temporary selected time for clean datetime picker in reminders
+  tempReminderTime = signal<string>('08:00');
+
   constructor(
     private fb: FormBuilder,
     public remindersService: RemindersService,
@@ -95,6 +98,133 @@ export class RemindersComponent implements OnInit {
     private dialog: MatDialog
   ) {
     this.initializeForm();
+  }
+
+  selectedHour = signal<string>('08');
+  selectedMinute = signal<string>('00');
+  selectedPeriod = signal<string>('AM');
+  activeTimeView = signal<'none' | 'hours' | 'minutes'>('none');
+
+  readonly hoursList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+  readonly minutesList = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+
+  onReminderPickerOpened(): void {
+    this.activeTimeView.set('none');
+    const currentTime = this.bookingForm.get('scheduledTime')?.value || '08:00';
+    this.parseAndSetReminderTime(currentTime);
+  }
+
+  toggleTimeView(view: 'hours' | 'minutes'): void {
+    if (this.activeTimeView() === view) {
+      this.activeTimeView.set('none');
+    } else {
+      this.activeTimeView.set(view);
+    }
+  }
+
+  selectHour(hour: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    this.selectedHour.set(hour);
+    this.activeTimeView.set('minutes');
+  }
+
+  selectMinute(minute: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    this.selectedMinute.set(minute);
+    this.activeTimeView.set('none');
+  }
+
+  closeTimeView(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    this.activeTimeView.set('none');
+  }
+
+  parseAndSetReminderTime(timeStr: string): void {
+    if (!timeStr) return;
+    const [hStr, mStr] = timeStr.split(':');
+    let h = parseInt(hStr, 10) || 0;
+    const period = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    h = h ? h : 12;
+    this.selectedHour.set(String(h).padStart(2, '0'));
+    
+    const rawMin = parseInt(mStr, 10) || 0;
+    const minPadded = String(rawMin).padStart(2, '0');
+    this.selectedMinute.set(this.minutesList.includes(minPadded) ? minPadded : String(Math.round(rawMin / 5) * 5 % 60).padStart(2, '0'));
+    this.selectedPeriod.set(period);
+  }
+
+  setReminderNow(): void {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    this.parseAndSetReminderTime(`${h}:${m}`);
+  }
+
+  setReminderPeriod(period: string): void {
+    this.selectedPeriod.set(period);
+  }
+
+  onReminderHourChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value;
+    if (val) this.selectedHour.set(val);
+  }
+
+  onReminderMinuteChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value;
+    if (val) this.selectedMinute.set(val);
+  }
+
+  getFormattedReminder24hTime(): string {
+    let h = parseInt(this.selectedHour(), 10) || 0;
+    const m = this.selectedMinute() || '00';
+    const isPM = this.selectedPeriod() === 'PM';
+    if (isPM && h < 12) h += 12;
+    if (!isPM && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${m}`;
+  }
+
+  confirmReminderDateTimeSelection(picker: any): void {
+    let baseDate: Date;
+    if (picker && picker._pendingSelection) {
+      baseDate = new Date(picker._pendingSelection);
+    } else {
+      const formDate = this.bookingForm.get('scheduledDate')?.value;
+      baseDate = formDate instanceof Date && !isNaN(formDate.getTime()) ? new Date(formDate) : new Date();
+    }
+
+    const time = this.getFormattedReminder24hTime();
+    const [hStr, mStr] = time.split(':');
+    const hours = parseInt(hStr, 10) || 0;
+    const minutes = parseInt(mStr, 10) || 0;
+
+    baseDate.setHours(hours, minutes, 0, 0);
+    (baseDate as any).hasTime = true;
+    (baseDate as any).timeString = time;
+
+    this.bookingForm.patchValue({
+      scheduledDate: baseDate,
+      scheduledTime: time
+    });
+    this.bookingForm.get('scheduledDate')?.markAsDirty();
+    this.bookingForm.get('scheduledDate')?.markAsTouched();
+
+    if (picker) {
+      picker.close();
+    }
+  }
+
+  isHindi(): boolean {
+    return this.translationService.getCurrentLanguage() === 'hi';
   }
 
   async ngOnInit(): Promise<void> {

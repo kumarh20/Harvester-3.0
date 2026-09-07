@@ -276,7 +276,7 @@
     width: 100vw;
     height: 100vh;
     height: 100dvh;
-    z-index: 99999;
+    z-index: 100000;
     background: rgba(0, 0, 0, 0.65);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
@@ -313,12 +313,14 @@
     overflow: hidden;
     animation: slideUpSheet 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     box-sizing: border-box;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 
     @media (min-width: 640px) {
         border-radius: 20px;
         max-height: 80vh;
         max-height: calc(100dvh - 80px);
         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+        padding-bottom: 0;
     }
 
     [data-theme="dark"] & {
@@ -462,7 +464,7 @@
 
 // Modal Body Container (CRITICAL: flex 1, min-height 0, smooth touch scroll)
 .modal-sheet-body {
-    padding: 12px 14px 34px 14px;
+    padding: 12px 14px calc(34px + env(safe-area-inset-bottom, 16px)) 14px;
     overflow-y: auto;
     flex: 1 1 auto;
     min-height: 0;

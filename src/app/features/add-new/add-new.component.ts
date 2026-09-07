@@ -122,6 +122,127 @@ export class AddNewComponent implements OnInit {
     this.initializeForm();
   }
 
+  selectedHour = signal<string>('08');
+  selectedMinute = signal<string>('00');
+  selectedPeriod = signal<string>('AM');
+  activeTimeView = signal<'none' | 'hours' | 'minutes'>('none');
+
+  readonly hoursList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+  readonly minutesList = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+
+  onPickerOpened(): void {
+    this.activeTimeView.set('none');
+    const currentTime = this.recordForm.get('cuttingTime')?.value || this.getCurrentTimeString();
+    this.parseAndSetTime(currentTime);
+  }
+
+  toggleTimeView(view: 'hours' | 'minutes'): void {
+    if (this.activeTimeView() === view) {
+      this.activeTimeView.set('none');
+    } else {
+      this.activeTimeView.set(view);
+    }
+  }
+
+  selectHour(hour: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    this.selectedHour.set(hour);
+    this.activeTimeView.set('minutes');
+  }
+
+  selectMinute(minute: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    this.selectedMinute.set(minute);
+    this.activeTimeView.set('none');
+  }
+
+  closeTimeView(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    this.activeTimeView.set('none');
+  }
+
+  parseAndSetTime(timeStr: string): void {
+    if (!timeStr) return;
+    const [hStr, mStr] = timeStr.split(':');
+    let h = parseInt(hStr, 10) || 0;
+    const period = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    h = h ? h : 12;
+    this.selectedHour.set(String(h).padStart(2, '0'));
+    
+    // Nearest or exact minute
+    const rawMin = parseInt(mStr, 10) || 0;
+    const minPadded = String(rawMin).padStart(2, '0');
+    this.selectedMinute.set(this.minutesList.includes(minPadded) ? minPadded : String(Math.round(rawMin / 5) * 5 % 60).padStart(2, '0'));
+    this.selectedPeriod.set(period);
+  }
+
+  setNow(): void {
+    this.parseAndSetTime(this.getCurrentTimeString());
+  }
+
+  setPeriod(period: string): void {
+    this.selectedPeriod.set(period);
+  }
+
+  onHourChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value;
+    if (val) this.selectedHour.set(val);
+  }
+
+  onMinuteChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value;
+    if (val) this.selectedMinute.set(val);
+  }
+
+  getFormatted24hTime(): string {
+    let h = parseInt(this.selectedHour(), 10) || 0;
+    const m = this.selectedMinute() || '00';
+    const isPM = this.selectedPeriod() === 'PM';
+    if (isPM && h < 12) h += 12;
+    if (!isPM && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${m}`;
+  }
+
+  confirmDateTimeSelection(picker: any): void {
+    let baseDate: Date;
+    if (picker && picker._pendingSelection) {
+      baseDate = new Date(picker._pendingSelection);
+    } else {
+      const formDate = this.recordForm.get('date')?.value;
+      baseDate = formDate instanceof Date && !isNaN(formDate.getTime()) ? new Date(formDate) : new Date();
+    }
+
+    const time = this.getFormatted24hTime();
+    const [hStr, mStr] = time.split(':');
+    const hours = parseInt(hStr, 10) || 0;
+    const minutes = parseInt(mStr, 10) || 0;
+
+    baseDate.setHours(hours, minutes, 0, 0);
+    (baseDate as any).hasTime = true;
+    (baseDate as any).timeString = time;
+
+    this.recordForm.patchValue({
+      date: baseDate,
+      cuttingTime: time
+    });
+    this.recordForm.get('date')?.markAsDirty();
+    this.recordForm.get('date')?.markAsTouched();
+
+    if (picker) {
+      picker.close();
+    }
+  }
+
   openLandMeasurementDialog(): void {
     const dialogRef = this.dialog.open(LandMeasurementComponent, {
       width: '96vw',
@@ -167,68 +288,6 @@ export class AddNewComponent implements OnInit {
 
   isHindi(): boolean {
     return this.translationService.getCurrentLanguage() === 'hi';
-  }
-
-  onPickerOpened(): void {
-    const currentTime = this.recordForm.get('cuttingTime')?.value || this.getCurrentTimeString();
-    this.tempSelectedTime.set(currentTime);
-  }
-
-  onTempTimeChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input && input.value) {
-      this.tempSelectedTime.set(input.value);
-    }
-  }
-
-  setTempTimeToNow(): void {
-    this.tempSelectedTime.set(this.getCurrentTimeString());
-  }
-
-  setTempTimePreset(timeStr: string): void {
-    this.tempSelectedTime.set(timeStr);
-  }
-
-  getFormattedTimePreview(): string {
-    const time = this.tempSelectedTime();
-    if (!time) return '';
-    const [hStr, mStr] = time.split(':');
-    let h = parseInt(hStr, 10) || 0;
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12;
-    h = h ? h : 12;
-    const formattedH = String(h).padStart(2, '0');
-    return `${formattedH}:${mStr} ${ampm}`;
-  }
-
-  confirmDateTimeSelection(picker: any): void {
-    let baseDate: Date;
-    if (picker && picker._pendingSelection) {
-      baseDate = new Date(picker._pendingSelection);
-    } else {
-      const formDate = this.recordForm.get('date')?.value;
-      baseDate = formDate instanceof Date && !isNaN(formDate.getTime()) ? new Date(formDate) : new Date();
-    }
-
-    const time = this.tempSelectedTime() || this.getCurrentTimeString();
-    const [hStr, mStr] = time.split(':');
-    const hours = parseInt(hStr, 10) || 0;
-    const minutes = parseInt(mStr, 10) || 0;
-
-    baseDate.setHours(hours, minutes, 0, 0);
-    (baseDate as any).hasTime = true;
-    (baseDate as any).timeString = time;
-
-    this.recordForm.patchValue({
-      date: baseDate,
-      cuttingTime: time
-    });
-    this.recordForm.get('date')?.markAsDirty();
-    this.recordForm.get('date')?.markAsTouched();
-
-    if (picker) {
-      picker.close();
-    }
   }
 
   /**
