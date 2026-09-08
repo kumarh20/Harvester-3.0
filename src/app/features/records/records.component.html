@@ -13,11 +13,11 @@
                 <div class="kisan-header-hero" id="kisan-header-hero">
                     <!-- Top Navigation Bar -->
                     <div class="kisan-nav-bar">
-                        <button type="button" class="kisan-round-btn" (click)="closeKisanRecords()" title="Back to Records" id="btn-kisan-back">
+                        <button type="button" class="kisan-round-btn" (click)="closeKisanRecords()" [title]="translationService.getCurrentLanguage() === 'hi' ? 'रिकॉर्ड्स पर वापस' : 'Back to Records'" id="btn-kisan-back">
                             <mat-icon>chevron_left</mat-icon>
                         </button>
-                        <h1 class="kisan-header-title">Kisan Record</h1>
-                        <button type="button" class="kisan-round-btn" [matMenuTriggerFor]="kisanMenu" title="Options" id="btn-kisan-menu">
+                        <h1 class="kisan-header-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'किसान रिकॉर्ड' : 'Kisan Record' }}</h1>
+                        <button type="button" class="kisan-round-btn" [matMenuTriggerFor]="kisanMenu" [title]="translationService.getCurrentLanguage() === 'hi' ? 'विकल्प' : 'Options'" id="btn-kisan-menu">
                             <mat-icon>more_vert</mat-icon>
                         </button>
                         <mat-menu #kisanMenu="matMenu">
@@ -50,9 +50,9 @@
                             </p>
                         </div>
                         @if (selectedFarmer()?.phone) {
-                            <a [href]="'tel:' + selectedFarmer()?.phone" class="kisan-call-pill" title="Call" id="btn-kisan-call">
+                            <a [href]="'tel:' + selectedFarmer()?.phone" class="kisan-call-pill" [title]="translationService.getCurrentLanguage() === 'hi' ? 'कॉल करें' : 'Call'" id="btn-kisan-call">
                                 <mat-icon>call</mat-icon>
-                                <span>Call</span>
+                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'कॉल' : 'Call' }}</span>
                             </a>
                         }
                     </div>
@@ -60,15 +60,15 @@
                     <!-- 3 Stat Boxes Row -->
                     <div class="kisan-stats-trio">
                         <div class="kisan-stat-box stat-total">
-                            <span class="stat-box-label">TOTAL</span>
+                            <span class="stat-box-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल' : 'TOTAL' }}</span>
                             <span class="stat-box-val">{{ formatCurrency(selectedFarmerSummary().totalAmount) }}</span>
                         </div>
                         <div class="kisan-stat-box stat-paid">
-                            <span class="stat-box-label">PAID</span>
+                            <span class="stat-box-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'जमा' : 'PAID' }}</span>
                             <span class="stat-box-val">{{ formatCurrency(selectedFarmerSummary().paidAmount) }}</span>
                         </div>
                         <div class="kisan-stat-box stat-pending">
-                            <span class="stat-box-label">PENDING</span>
+                            <span class="stat-box-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'बाकी' : 'PENDING' }}</span>
                             <span class="stat-box-val">{{ formatCurrency(selectedFarmerSummary().pendingAmount) }}</span>
                         </div>
                     </div>
@@ -106,10 +106,10 @@
                         <div class="kisan-subbar-btns">
                             <button type="button" class="kisan-add-reminder-text-btn" (click)="addReminderForSelectedFarmer()" id="btn-kisan-add-reminder">
                                 <mat-icon>alarm_add</mat-icon>
-                                <span>+ {{ translationService.get('nav.reminders') || 'रिमाइंडर' }}</span>
+                                <span>+ {{ translationService.getCurrentLanguage() === 'hi' ? 'रिमाइंडर' : 'Reminder' }}</span>
                             </button>
                             <button type="button" class="kisan-add-record-text-btn" (click)="addRecordForSelectedFarmer()" id="btn-kisan-add-record">
-                                + Add Record
+                                + {{ translationService.getCurrentLanguage() === 'hi' ? 'रिकॉर्ड जोड़ें' : 'Add Record' }}
                             </button>
                         </div>
                     </div>
@@ -187,7 +187,7 @@
                                                 <span>{{ rem.scheduledDate }}</span>
                                             </div>
                                             <div class="rem-summary-right">
-                                                <span class="rem-acres-badge">{{ rem.landInAcres }} एकड़</span>
+                                                <span class="rem-acres-badge">{{ rem.landInAcres }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Acres' }}</span>
                                                 <mat-icon class="chevron-icon">
                                                     {{ expandedReminderId() === rem.id ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}
                                                 </mat-icon>
@@ -197,9 +197,9 @@
                                         @if (expandedReminderId() === rem.id) {
                                             <div class="rem-expanded-body" (click)="$event.stopPropagation()">
                                                 <div class="rem-detail-row">
-                                                    <span>समय: {{ formatDisplayTime(rem.scheduledTime) }}</span>
-                                                    <span>दर: ₹{{ rem.ratePerAcre }}/एकड़</span>
-                                                    <span class="est-total">अनुमानित: ₹{{ rem.estimatedTotal }}</span>
+                                                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'समय' : 'Time' }}: {{ formatDisplayTime(rem.scheduledTime) }}</span>
+                                                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'दर' : 'Rate' }}: ₹{{ rem.ratePerAcre }}/{{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'acre' }}</span>
+                                                    <span class="est-total">{{ translationService.getCurrentLanguage() === 'hi' ? 'अनुमानित' : 'Est.' }}: ₹{{ rem.estimatedTotal }}</span>
                                                 </div>
                                                 @if (rem.notes) {
                                                     <div class="rem-notes-text">📝 {{ rem.notes }}</div>
@@ -273,7 +273,7 @@
                                             <div class="status-amount-stack">
                                                 @if (cutting.markedAsPaid || cutting.pendingAmount <= 0) {
                                                     <span class="status-pill-ss pill-paid">
-                                                        Paid ✓
+                                                        {{ translationService.getCurrentLanguage() === 'hi' ? 'चुक्ता ✓' : 'Paid ✓' }}
                                                     </span>
                                                 } @else {
                                                     <span class="status-pill-ss pill-pending">
@@ -747,14 +747,17 @@
                                         <!-- Financial Status & Chevron (Matching Screenshot) -->
                                         <div class="figma-card-right">
                                             <div class="figma-amount-status-col">
-                                                <span class="figma-total-payment">{{ formatCurrency(record.totalPayment) }}</span>
                                                 @if (record.pendingAmount <= 0 || record.markedAsPaid) {
+                                                    <span class="figma-total-payment">{{ formatCurrency(record.totalPayment) }}</span>
                                                     <span class="figma-badge-paid">
                                                         {{ translationService.getCurrentLanguage() === 'hi' ? 'चुक्ता' : 'Paid' }}
                                                     </span>
                                                 } @else {
-                                                    <span class="figma-badge-due">
+                                                    <span class="figma-due-payment">
                                                         {{ translationService.getCurrentLanguage() === 'hi' ? 'बकाया: ' + formatCurrency(record.pendingAmount) : 'Due: ' + formatCurrency(record.pendingAmount) }}
+                                                    </span>
+                                                    <span class="figma-badge-total">
+                                                        {{ translationService.getCurrentLanguage() === 'hi' ? 'कुल: ' + formatCurrency(record.totalPayment) : 'Total: ' + formatCurrency(record.totalPayment) }}
                                                     </span>
                                                 }
                                             </div>

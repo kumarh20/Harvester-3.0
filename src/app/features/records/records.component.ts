@@ -1516,9 +1516,11 @@ export class RecordsComponent implements OnInit, OnDestroy {
 
   getDateMonth(dateStr: string): string {
     const d = this.parseDate(dateStr);
-    if (!d) return 'DATE';
+    if (!d) return this.translationService.getCurrentLanguage() === 'hi' ? 'तारीख' : 'DATE';
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+    const hindiMonths = ['जन', 'फ़र', 'मार्च', 'अप्रै', 'मई', 'जून', 'जुला', 'अग', 'सितं', 'अक्टू', 'नव', 'दिसं'];
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEPT', 'OCT', 'NOV', 'DEC'];
-    return months[d.getMonth()];
+    return isHi ? hindiMonths[d.getMonth()] : months[d.getMonth()];
   }
 
   getDateDay(dateStr: string): string {
