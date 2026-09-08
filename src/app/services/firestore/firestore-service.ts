@@ -145,8 +145,8 @@ export class FirestoreService {
       const q = query(ref, where('uid', '==', uid));
       const snap = await getDocs(q);
       snap.docs.forEach(d => remindersMap.set(d.id, { id: d.id, ...d.data() }));
-    } catch (e) {
-      console.warn('Query reminders collection (rules may restrict collection query):', e);
+    } catch {
+      // Handled gracefully via user document fallback
     }
 
     // 2. Also read from user document: users/{uid}.reminders
@@ -167,8 +167,8 @@ export class FirestoreService {
           });
         }
       }
-    } catch (e) {
-      console.warn('Query user doc reminders:', e);
+    } catch {
+      // Handled gracefully via local cache fallback
     }
 
     const allReminders = Array.from(remindersMap.values());
@@ -233,8 +233,8 @@ export class FirestoreService {
       const remDocRef = doc(this.firestore, `reminders/${reminderId}`);
       await setDoc(remDocRef, reminderPayload);
       savedToCollection = true;
-    } catch (err: any) {
-      console.warn('Could not save to reminders collection (permissions), using user profile storage:', err);
+    } catch {
+      // Fallback seamlessly to user document storage
     }
 
     // 2. Always persist into user profile document (users/{uid}.reminders)
@@ -253,8 +253,7 @@ export class FirestoreService {
       list.unshift(reminderPayload);
 
       await setDoc(userRef, { reminders: list }, { merge: true });
-    } catch (userDocErr: any) {
-      console.warn('Could not save to user document:', userDocErr);
+    } catch {
       if (!savedToCollection) {
         // Fallback: Still save to local storage cache so user never loses data
         try {
@@ -277,8 +276,8 @@ export class FirestoreService {
     // 1. Try updating in 'reminders' collection
     try {
       await updateDoc(doc(this.firestore, `reminders/${id}`), data);
-    } catch (err) {
-      console.warn('Could not update in reminders collection (permissions):', err);
+    } catch {
+      // Handled via user document update
     }
 
     // 2. Always update in user profile document (users/{uid}.reminders)
@@ -298,8 +297,8 @@ export class FirestoreService {
             await setDoc(userRef, { reminders: updated }, { merge: true });
           }
         }
-      } catch (err) {
-        console.warn('Could not update in user document:', err);
+      } catch {
+        // Handled via local storage sync
       }
     }
 
@@ -321,8 +320,8 @@ export class FirestoreService {
     // 1. Try deleting from 'reminders' collection
     try {
       await deleteDoc(doc(this.firestore, `reminders/${id}`));
-    } catch (err) {
-      console.warn('Could not delete from reminders collection (permissions):', err);
+    } catch {
+      // Handled via user document delete
     }
 
     // 2. Always remove from user profile document (users/{uid}.reminders)
@@ -337,8 +336,8 @@ export class FirestoreService {
             await setDoc(userRef, { reminders: filtered }, { merge: true });
           }
         }
-      } catch (err) {
-        console.warn('Could not delete from user document:', err);
+      } catch {
+        // Handled via local storage sync
       }
     }
 

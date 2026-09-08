@@ -85,8 +85,7 @@ export class RemindersService {
         } catch {
           // Ignore cache write error
         }
-      } catch (e) {
-        console.warn('Could not load reminders from Firestore, using cache:', e);
+      } catch {
         try {
           const cached = localStorage.getItem('harvester_reminders_cache');
           if (cached) {
