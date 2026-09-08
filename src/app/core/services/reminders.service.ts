@@ -47,34 +47,63 @@ export class RemindersService {
     this.pendingReminders().filter(r => this.isFuture(r.scheduledDate))
   );
 
-  constructor(private firestoreService: FirestoreService) {}
+  private loadPromise: Promise<void> | null = null;
+
+  constructor(private firestoreService: FirestoreService) {
+    this.initFromCache();
+    this.loadReminders();
+  }
+
+  private initFromCache(): void {
+    try {
+      const cached = localStorage.getItem('harvester_reminders_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.remindersSignal.set(parsed);
+        }
+      }
+    } catch {
+      // Ignore cache read error
+    }
+  }
 
   /**
    * Load reminders from Firestore with localStorage fallback
    */
-  async loadReminders(): Promise<void> {
-    this.isLoading.set(true);
-    try {
-      const list = await this.firestoreService.getUserReminders();
-      this.remindersSignal.set(list);
-      try {
-        localStorage.setItem('harvester_reminders_cache', JSON.stringify(list));
-      } catch {
-        // Ignore cache write error
-      }
-    } catch (e) {
-      console.warn('Could not load reminders from Firestore, using cache:', e);
-      try {
-        const cached = localStorage.getItem('harvester_reminders_cache');
-        if (cached) {
-          this.remindersSignal.set(JSON.parse(cached));
-        }
-      } catch {
-        // Ignore cache read error
-      }
-    } finally {
-      this.isLoading.set(false);
+  async loadReminders(force = false): Promise<void> {
+    if (this.loadPromise && !force) {
+      return this.loadPromise;
     }
+    this.isLoading.set(true);
+    this.loadPromise = (async () => {
+      try {
+        const list = await this.firestoreService.getUserReminders();
+        this.remindersSignal.set(list);
+        try {
+          localStorage.setItem('harvester_reminders_cache', JSON.stringify(list));
+        } catch {
+          // Ignore cache write error
+        }
+      } catch (e) {
+        console.warn('Could not load reminders from Firestore, using cache:', e);
+        try {
+          const cached = localStorage.getItem('harvester_reminders_cache');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed)) {
+              this.remindersSignal.set(parsed);
+            }
+          }
+        } catch {
+          // Ignore cache read error
+        }
+      } finally {
+        this.isLoading.set(false);
+        this.loadPromise = null;
+      }
+    })();
+    return this.loadPromise;
   }
 
   refreshReminders(): void {

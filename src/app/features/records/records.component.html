@@ -98,7 +98,7 @@
                         </div>
                     }
 
-                    <!-- Records Subbar with count, "+ Reminder", and "+ Add Record" button -->
+                    <!-- Records Subbar with count and action buttons -->
                     <div class="kisan-records-subbar">
                         <span class="kisan-records-count-heading">
                             {{ farmerFilteredCuttings().length }} {{ translationService.getCurrentLanguage() === 'hi' ? 'कटाई रिकॉर्ड' : 'CUTTING RECORDS' }}
@@ -113,6 +113,54 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Season Filter Dropdown Row for Kisan Detail -->
+                    @if (seasonService.seasons().length > 0) {
+                        <div class="records-filter-bar-row kisan-season-filter-bar-row" id="kisan-season-filter-container">
+                            <div class="filter-dropdown-container" style="width: 100%;">
+                                <button 
+                                    type="button" 
+                                    class="filter-select-btn" 
+                                    [class.is-active]="selectedSeasonFilter() !== 'all'"
+                                    [class.is-open]="isSeasonFilterOpen()"
+                                    (click)="toggleSeasonDropdown($event)"
+                                    id="btn-kisan-season-filter"
+                                    aria-label="Filter by season">
+                                    <mat-icon class="filter-btn-icon">grass</mat-icon>
+                                    <span class="filter-btn-label">{{ getSelectedSeasonFilterLabel() }}</span>
+                                    <mat-icon class="filter-btn-chevron" [class.rotated]="isSeasonFilterOpen()">expand_more</mat-icon>
+                                </button>
+
+                                @if (isSeasonFilterOpen()) {
+                                    <div class="filter-dropdown-backdrop" (click)="closeAllFilterDropdowns()"></div>
+                                    <div class="filter-dropdown-menu" role="listbox" id="kisan-season-dropdown-menu" style="width: 100%;">
+                                        <button type="button" 
+                                                class="filter-dropdown-item" 
+                                                [class.selected]="selectedSeasonFilter() === 'all'"
+                                                (click)="selectSeasonOption('all')"
+                                                id="kisan-season-opt-all">
+                                            <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी सीज़न' : 'All Seasons' }}</span>
+                                            @if (selectedSeasonFilter() === 'all') {
+                                                <mat-icon class="check-icon">check</mat-icon>
+                                            }
+                                        </button>
+                                        @for (season of seasonService.seasons(); track (season.id || season.name)) {
+                                            <button type="button" 
+                                                    class="filter-dropdown-item" 
+                                                    [class.selected]="selectedSeasonFilter() === (season.id || '')"
+                                                    (click)="selectSeasonOption(season.id || '')"
+                                                    [id]="'kisan-season-opt-' + (season.id || '')">
+                                                <span>{{ season.name }} {{ season.year }}</span>
+                                                @if (selectedSeasonFilter() === (season.id || '')) {
+                                                    <mat-icon class="check-icon">check</mat-icon>
+                                                }
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
 
                     <!-- Upcoming Reminders for this farmer if any exist -->
                     @if (selectedFarmerReminders().length > 0) {
@@ -129,28 +177,45 @@
 
                             <div class="farmer-reminders-list">
                                 @for (rem of selectedFarmerReminders(); track rem.id) {
-                                    <div class="farmer-reminder-card" [id]="'kisan-rem-' + rem.id">
-                                        <div class="rem-info-left">
+                                    <div class="farmer-reminder-card" 
+                                         [class.is-expanded]="expandedReminderId() === rem.id"
+                                         [id]="'kisan-rem-' + rem.id"
+                                         (click)="toggleReminderExpand(rem.id)">
+                                        <div class="rem-card-main">
                                             <div class="rem-date-tag">
                                                 <mat-icon>schedule</mat-icon>
-                                                <span>{{ rem.scheduledDate }} ({{ formatDisplayTime(rem.scheduledTime) }})</span>
+                                                <span>{{ rem.scheduledDate }}</span>
                                             </div>
-                                            <div class="rem-acres-rate">
-                                                <strong>{{ rem.landInAcres }} एकड़</strong> • ₹{{ rem.ratePerAcre }}/एकड़ (अनुमानित: ₹{{ rem.estimatedTotal }})
+                                            <div class="rem-summary-right">
+                                                <span class="rem-acres-badge">{{ rem.landInAcres }} एकड़</span>
+                                                <mat-icon class="chevron-icon">
+                                                    {{ expandedReminderId() === rem.id ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}
+                                                </mat-icon>
                                             </div>
-                                            @if (rem.notes) {
-                                                <div class="rem-notes-text">📝 {{ rem.notes }}</div>
-                                            }
                                         </div>
 
-                                        <button 
-                                            type="button" 
-                                            class="btn-kisan-convert-rem" 
-                                            (click)="promptMoveReminderToRecord(rem)"
-                                            [id]="'btn-kisan-convert-' + rem.id">
-                                            <mat-icon>check_circle</mat-icon>
-                                            <span>{{ translationService.get('reminders.moveToRecords') || 'रिकॉर्ड में बदलें' }}</span>
-                                        </button>
+                                        @if (expandedReminderId() === rem.id) {
+                                            <div class="rem-expanded-body" (click)="$event.stopPropagation()">
+                                                <div class="rem-detail-row">
+                                                    <span>समय: {{ formatDisplayTime(rem.scheduledTime) }}</span>
+                                                    <span>दर: ₹{{ rem.ratePerAcre }}/एकड़</span>
+                                                    <span class="est-total">अनुमानित: ₹{{ rem.estimatedTotal }}</span>
+                                                </div>
+                                                @if (rem.notes) {
+                                                    <div class="rem-notes-text">📝 {{ rem.notes }}</div>
+                                                }
+                                                <div class="rem-actions-row">
+                                                    <button 
+                                                        type="button" 
+                                                        class="btn-kisan-convert-rem" 
+                                                        (click)="promptMoveReminderToRecord(rem)"
+                                                        [id]="'btn-kisan-convert-' + rem.id">
+                                                        <mat-icon>check_circle</mat-icon>
+                                                        <span>{{ translationService.get('reminders.moveToRecords') || 'रिकॉर्ड में बदलें' }}</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        }
                                     </div>
                                 }
                             </div>
@@ -185,13 +250,11 @@
                                     (click)="toggleCuttingExpand(cutting.id)">
                                     
                                     <div class="cutting-card-main">
-                                        <!-- Date Badge: Month + Day -->
+                                        <!-- Date Badge: Month + Day + Year -->
                                         <div class="cutting-date-badge">
                                             <span class="date-month">{{ getDateMonth(cutting.date) }}</span>
                                             <span class="date-day">{{ getDateDay(cutting.date) }}</span>
-                                            @if (cutting.cuttingTime) {
-                                                <span class="date-time-chip">{{ formatDisplayTime(cutting.cuttingTime) }}</span>
-                                            }
+                                            <span class="date-year">{{ getDateYear(cutting.date) }}</span>
                                         </div>
 
                                         <!-- Center Info -->
@@ -202,37 +265,23 @@
                                             <div class="cutting-harvester-row">
                                                 <span class="harvester-icon-emoji">🚜</span>
                                                 <span class="harvester-name-text">{{ cutting.harvester || 'Harvester 1' }}</span>
-                                                @if (getRecordSeasonName(cutting); as sName) {
-                                                    <span class="rate-bullet">•</span>
-                                                    <span class="cutting-season-badge">
-                                                        <mat-icon class="season-badge-icon">grass</mat-icon>
-                                                        {{ sName }}
-                                                    </span>
-                                                }
-                                                <span class="rate-bullet">•</span>
-                                                <span class="cutting-full-date-text">{{ formatDisplayDate(cutting.date) }}</span>
-                                                @if (cutting.cuttingTime) {
-                                                    <span class="cutting-time-text">, {{ formatDisplayTime(cutting.cuttingTime) }}</span>
-                                                }
-                                            </div>
-                                            <div class="cutting-rates-row">
-                                                <span class="rate-per-ac">{{ formatCurrency(cutting.ratePerAcre) }}/Ac</span>
-                                                <span class="rate-bullet">•</span>
-                                                <span class="rate-total-ac">{{ formatCurrency(cutting.totalPayment) }} Total</span>
                                             </div>
                                         </div>
 
-                                        <!-- Right Status Pill & Chevron -->
+                                        <!-- Right Status Stack & Chevron -->
                                         <div class="cutting-status-col">
-                                            @if (cutting.markedAsPaid || cutting.pendingAmount <= 0) {
-                                                <span class="status-pill-ss pill-paid">
-                                                    Paid ✓
-                                                </span>
-                                            } @else {
-                                                <span class="status-pill-ss pill-pending">
-                                                    {{ formatCurrency(cutting.pendingAmount) }}
-                                                </span>
-                                            }
+                                            <div class="status-amount-stack">
+                                                @if (cutting.markedAsPaid || cutting.pendingAmount <= 0) {
+                                                    <span class="status-pill-ss pill-paid">
+                                                        Paid ✓
+                                                    </span>
+                                                } @else {
+                                                    <span class="status-pill-ss pill-pending">
+                                                        {{ formatCurrency(cutting.pendingAmount) }}
+                                                    </span>
+                                                }
+                                                <span class="status-total-sub">{{ formatCurrency(cutting.totalPayment) }}</span>
+                                            </div>
                                             <mat-icon class="chevron-icon">
                                                 {{ expandedCuttingId() === cutting.id ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}
                                             </mat-icon>
@@ -244,29 +293,59 @@
                                         <div class="cutting-expanded-body" (click)="$event.stopPropagation()">
                                             <div class="cutting-spec-breakdown">
                                                 <div class="breakdown-item">
-                                                    <span class="b-label">{{ translationService.get('records.totalAmount') }}</span>
-                                                    <span class="b-value highlight">{{ formatCurrency(cutting.totalPayment) }}</span>
+                                                    <span class="b-label">
+                                                        <mat-icon class="breakdown-icon">account_balance_wallet</mat-icon>
+                                                        {{ translationService.get('records.totalAmount') }}
+                                                    </span>
+                                                    <span class="b-value">{{ formatCurrency(cutting.totalPayment) }}</span>
                                                 </div>
                                                 <div class="breakdown-item">
-                                                    <span class="b-label">{{ translationService.get('records.cashPaid') }}</span>
-                                                    <span class="b-value">{{ formatCurrency(cutting.paidOnSight || 0) }}</span>
+                                                    <span class="b-label">
+                                                        <mat-icon class="breakdown-icon" style="color: #10B981;">paid</mat-icon>
+                                                        {{ translationService.get('records.cashPaid') }}
+                                                    </span>
+                                                    <span class="b-value" style="color: #10B981; font-weight: 650;">{{ formatCurrency(cutting.paidOnSight || 0) }}</span>
                                                 </div>
                                                 <div class="breakdown-item">
-                                                    <span class="b-label">{{ translationService.get('records.pendingAmount') }}</span>
+                                                    <span class="b-label">
+                                                        <mat-icon class="breakdown-icon">pending</mat-icon>
+                                                        {{ translationService.get('records.pendingAmount') }}
+                                                    </span>
                                                     <span class="b-value" [class.due-val]="cutting.pendingAmount > 0">{{ formatCurrency(cutting.pendingAmount) }}</span>
                                                 </div>
-                                                @if (cutting.fullPaymentDate && cutting.pendingAmount > 0) {
+                                                @if (cutting.pendingAmount > 0) {
                                                     <div class="breakdown-item">
-                                                        <span class="b-label">{{ translationService.get('records.paymentDate') }}</span>
-                                                        <span class="b-value">{{ formatDisplayDate(cutting.fullPaymentDate) }}</span>
+                                                        <span class="b-label">
+                                                            <mat-icon class="breakdown-icon">event</mat-icon>
+                                                            {{ translationService.get('records.paymentDate') || (translationService.getCurrentLanguage() === 'hi' ? 'भुगतान तिथि' : 'Payment Date') }}
+                                                        </span>
+                                                        <span class="b-value">{{ cutting.fullPaymentDate ? formatDisplayDate(cutting.fullPaymentDate) : '-' }}</span>
+                                                    </div>
+                                                } @else {
+                                                    <div class="breakdown-item">
+                                                        <span class="b-label">
+                                                            <mat-icon class="breakdown-icon" style="color: #10B981;">task_alt</mat-icon>
+                                                            {{ translationService.getCurrentLanguage() === 'hi' ? 'भुगतान स्थिति' : 'Payment Status' }}
+                                                        </span>
+                                                        <span class="b-value" style="color: #10B981;">
+                                                            {{ translationService.getCurrentLanguage() === 'hi' ? 'पूर्ण चुकता' : 'Paid in Full' }}
+                                                        </span>
                                                     </div>
                                                 }
-                                                @if (getRecordSeasonName(cutting); as sName) {
-                                                    <div class="breakdown-item">
-                                                        <span class="b-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Season' }}</span>
-                                                        <span class="b-value">{{ sName }}</span>
-                                                    </div>
-                                                }
+                                                <div class="breakdown-item">
+                                                    <span class="b-label">
+                                                        <mat-icon class="breakdown-icon">grass</mat-icon>
+                                                        {{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Season' }}
+                                                    </span>
+                                                    <span class="b-value">{{ getRecordSeasonName(cutting) || (translationService.getCurrentLanguage() === 'hi' ? 'सामान्य' : 'General') }}</span>
+                                                </div>
+                                                <div class="breakdown-item" id="cutting-rate-breakdown-item">
+                                                    <span class="b-label">
+                                                        <mat-icon class="breakdown-icon" style="color: #0284C7;">payments</mat-icon>
+                                                        {{ translationService.get('records.ratePerAcre') || (translationService.getCurrentLanguage() === 'hi' ? 'कटाई दर' : 'Rate / Acre') }}
+                                                    </span>
+                                                    <span class="b-value font-semibold">{{ formatCurrency(getRecordRate(cutting)) }}/{{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'acre' }}</span>
+                                                </div>
                                             </div>
 
                                             <div class="cutting-action-buttons">
@@ -274,18 +353,24 @@
                                                     <mat-icon>edit</mat-icon>
                                                     <span>{{ translationService.get('records.editRecord') }}</span>
                                                 </button>
-                                                <button type="button" class="c-action-btn share-btn" (click)="shareRecord(cutting)">
-                                                    <mat-icon>share</mat-icon>
-                                                    <span>{{ translationService.get('records.shareRecord') }}</span>
+                                                <button type="button" class="c-action-btn share-btn" (click)="openBillModal(cutting)">
+                                                    <mat-icon>receipt_long</mat-icon>
+                                                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'रसीद / ऑनलाइन बिल' : 'Receipt / Bill' }}</span>
                                                 </button>
-                                                <button 
-                                                    type="button" 
-                                                    class="c-action-btn paid-btn" 
-                                                    [class.is-paid]="cutting.markedAsPaid"
-                                                    (click)="markRecordAsPaid(cutting.id)">
-                                                    <mat-icon>{{ cutting.markedAsPaid ? 'check_circle' : 'task_alt' }}</mat-icon>
-                                                    <span>{{ cutting.markedAsPaid ? translationService.get('messages.paidStatus') : translationService.get('messages.markAsPaidButton') }}</span>
-                                                </button>
+                                                @if (!cutting.markedAsPaid && cutting.pendingAmount > 0) {
+                                                    <button 
+                                                        type="button" 
+                                                        class="c-action-btn paid-btn" 
+                                                        (click)="markRecordAsPaid(cutting.id)">
+                                                        <mat-icon>task_alt</mat-icon>
+                                                        <span>{{ translationService.get('messages.markAsPaidButton') || 'चुकता दर्ज करें' }}</span>
+                                                    </button>
+                                                } @else {
+                                                    <div class="c-action-paid-badge">
+                                                        <mat-icon>check_circle</mat-icon>
+                                                        <span>{{ translationService.get('messages.paidStatus') || (translationService.getCurrentLanguage() === 'hi' ? 'पूर्ण चुकता' : 'Paid') }}</span>
+                                                    </div>
+                                                }
                                             </div>
                                         </div>
                                     }
@@ -303,10 +388,23 @@
             <div class="figma-records-header" id="figma-records-header">
                 <div class="figma-header-top-row">
                     <div class="figma-title-group">
-                        <h1 class="figma-page-title">{{ translationService.get('records.title') || 'सभी कटाई रिकॉर्ड' }}</h1>
-                        <p class="figma-page-subtitle">
-                            {{ translationService.getCurrentLanguage() === 'hi' ? 'कुल ' + recordCount() + ' रिकॉर्ड उपलब्ध' : 'Total ' + recordCount() + ' records available' }}
-                        </p>
+                        <div class="title-with-back-btn">
+                            <button 
+                                type="button" 
+                                class="page-route-back-btn" 
+                                (click)="goBack()" 
+                                [title]="translationService.get('common.back') || 'वापस'"
+                                aria-label="Back"
+                                id="records-route-back-btn">
+                                <mat-icon>arrow_back</mat-icon>
+                            </button>
+                            <div class="title-texts">
+                                <h1 class="figma-page-title">{{ translationService.get('records.title') || 'सभी कटाई रिकॉर्ड' }}</h1>
+                                <p class="figma-page-subtitle">
+                                    {{ translationService.getCurrentLanguage() === 'hi' ? 'कुल ' + recordCount() + ' रिकॉर्ड उपलब्ध' : 'Total ' + recordCount() + ' records available' }}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="figma-top-badges-row">
@@ -639,20 +737,11 @@
                                                 @if (record.harvester) {
                                                     <span class="figma-harvester-pill">{{ record.harvester }}</span>
                                                 }
-                                                @if (getRecordSeasonName(record); as seasonName) {
-                                                    <span class="figma-season-badge" [title]="seasonName">
-                                                        <mat-icon class="season-badge-icon">grass</mat-icon>
-                                                        {{ seasonName }}
-                                                    </span>
-                                                }
+                                                
                                             </div>
                                             <div class="figma-farmer-sub-line">
-                                                <span>{{ record.date }}</span>
-                                                <span class="figma-dot-sep">•</span>
-                                                <span class="figma-acres-text">{{ record.landInAcres }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Acres' }}</span>
-                                                <span class="figma-dot-sep">•</span>
-                                                <span class="figma-rate-text">@ {{ formatCurrency(record.ratePerAcre) }}/{{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Ac' }}</span>
-                                            </div>
+                                                 <span class="figma-acres-text">{{ record.landInAcres }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Acres' }}</span>
+                                             </div>
                                         </div>
 
                                         <!-- Financial Status & Chevron (Matching Screenshot) -->
@@ -733,6 +822,211 @@
                         {{ translationService.get('common.cancel') || 'रद्द करें' }}
                     </button>
                 </div>
+            </div>
+        </div>
+    }
+
+    <!-- Online Bill & PDF Sharing Modal -->
+    @if (selectedBillRecord(); as bill) {
+        <div class="online-bill-backdrop" (click)="closeBillModal()" id="modal-online-bill-backdrop">
+            <div class="online-bill-dialog" (click)="$event.stopPropagation()" id="modal-online-bill-dialog">
+                
+                <!-- Modal Top Header -->
+                <div class="online-bill-nav">
+                    <div class="bill-nav-title-group">
+                        <div class="nav-icon-wrap">
+                            <mat-icon>receipt_long</mat-icon>
+                        </div>
+                        <div>
+                            <h3 class="bill-modal-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'डिजिटल कटाई रसीद एवं बिल' : 'Digital Harvesting Invoice' }}</h3>
+                            <span class="bill-modal-sub">{{ translationService.getCurrentLanguage() === 'hi' ? 'पीडीएफ (PDF) बिल व रसीद शेयरिंग' : 'Official PDF Bill & Receipt' }}</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-close-bill" (click)="closeBillModal()" [title]="translationService.get('common.cancel') || 'बंद करें'" id="btn-close-bill-modal">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </div>
+
+                <!-- Printable / Exportable Bill Area (#online-bill-preview) -->
+                <div class="bill-scrollable-container">
+                    <div class="online-bill-sheet professional-bill-sheet" id="online-bill-preview">
+                        
+                        <!-- Top Corner Accent Graphic (Matching screenshot) -->
+                        <div class="bill-top-corner-accents">
+                            <div class="accent-stripe-bar"></div>
+                            <div class="accent-stripe-dark"></div>
+                            <div class="accent-stripe-light"></div>
+                        </div>
+
+                        <!-- Main Title (Matching screenshot "Personal Bill Sheet") -->
+                        <div class="prof-bill-title-container">
+                            <h1 class="prof-bill-main-title">Personal Bill Sheet</h1>
+                            <p class="prof-bill-company-line">{{ getBillCompanyLine(bill) }}</p>
+                        </div>
+
+                        <!-- Invoice & Customer Meta Details -->
+                        <div class="prof-bill-meta-grid">
+                            <div class="meta-col-left">
+                                <div class="meta-item">
+                                    <span class="meta-label">Billed To (किसान):</span>
+                                    <span class="meta-value font-bold">{{ bill.farmerName }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Contact (मोबाइल):</span>
+                                    <span class="meta-value">{{ bill.contactNumber || 'N/A' }}</span>
+                                </div>
+                                @if (getRecordSeasonName(bill)) {
+                                    <div class="meta-item">
+                                        <span class="meta-label">Season (सीज़न):</span>
+                                        <span class="meta-value">{{ getRecordSeasonName(bill) }}</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="meta-col-right">
+                                <div class="meta-item">
+                                    <span class="meta-label">Invoice No (बिल क्र.):</span>
+                                    <span class="meta-value font-mono font-bold">#BILL-{{ bill.id.slice(-6).toUpperCase() }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Date (दिनांक):</span>
+                                    <span class="meta-value">{{ formatDisplayDate(bill.date) }} {{ bill.cuttingTime ? ' | ' + formatDisplayTime(bill.cuttingTime) : '' }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Payment Status:</span>
+                                    <span class="meta-value status-indicator" [class.is-paid]="bill.markedAsPaid || bill.pendingAmount <= 0" [class.is-due]="!bill.markedAsPaid && bill.pendingAmount > 0">
+                                        {{ (bill.markedAsPaid || bill.pendingAmount <= 0) ? 'PAID (पूर्ण चुकता)' : 'BALANCE DUE (बकाया)' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Professional Invoice Table (Matching screenshot 4-column grid) -->
+                        <div class="prof-bill-table-wrapper">
+                            <table class="prof-bill-grid-table">
+                                <thead>
+                                    <tr>
+                                        <th class="col-desc">Description</th>
+                                        <th class="col-qty">Quantity</th>
+                                        <th class="col-price">Unit Price</th>
+                                        <th class="col-total">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="col-desc">
+                                            <div class="item-title">Crop Harvesting (कंबाइन फसल कटाई)</div>
+                                            <div class="item-desc-sub">{{ bill.harvester || 'Harvester Fleet' }} • {{ formatDisplayDate(bill.date) }}</div>
+                                        </td>
+                                        <td class="col-qty">{{ bill.landInAcres }} Acres</td>
+                                        <td class="col-price">₹{{ getRecordRate(bill) }}</td>
+                                        <td class="col-total">₹{{ bill.totalPayment }}</td>
+                                    </tr>
+                                    <!-- Subtotal Row (Matching screenshot) -->
+                                    <tr class="summary-row subtotal-row">
+                                        <td colspan="3" class="summary-label">Subtotal</td>
+                                        <td class="summary-value">₹{{ bill.totalPayment }}</td>
+                                    </tr>
+                                    <!-- Advance / Cash Paid Row -->
+                                    <tr class="summary-row advance-row">
+                                        <td colspan="3" class="summary-label">Advance / Cash Received (नकद प्राप्त)</td>
+                                        <td class="summary-value text-green-value">₹{{ bill.paidOnSight || 0 }}</td>
+                                    </tr>
+                                    <!-- Total Amount Due Row (Matching screenshot) -->
+                                    <tr class="summary-row total-due-row">
+                                        <td colspan="3" class="summary-label font-bold">Total Amount Due</td>
+                                        <td class="summary-value font-bold due-amount-highlight">₹{{ bill.pendingAmount }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Professional Footer Terms & Contacts (Exact match to screenshot) -->
+                        <div class="prof-bill-footer-section">
+                            <div class="prof-footer-row">
+                                <span class="footer-lbl font-bold">Total Amount in Words:</span>
+                                <span class="footer-val font-semibold">{{ getAmountInWords(bill.pendingAmount > 0 ? bill.pendingAmount : bill.totalPayment) }}</span>
+                            </div>
+
+                            <div class="prof-footer-row">
+                                <span class="footer-lbl font-bold">Payment Terms:</span>
+                                <span class="footer-val">
+                                    @if (bill.markedAsPaid || bill.pendingAmount <= 0) {
+                                        Full payment received with thanks. No dues pending.
+                                    } @else if (bill.fullPaymentDate) {
+                                        Payment is due on or before promise date: {{ formatDisplayDate(bill.fullPaymentDate) }}.
+                                    } @else {
+                                        Payment is due upon completion of crop harvesting.
+                                    }
+                                </span>
+                            </div>
+
+                            <div class="prof-footer-row contact-row">
+                                <span class="footer-lbl font-bold">Contact for Payment:</span>
+                                <span class="footer-val font-semibold">
+                                    {{ userService.userProfile()?.name || 'Harvester Operator' }}
+                                    @if (userService.userProfile()?.phone) {
+                                        (Phone: +91 {{ userService.userProfile()?.phone }})
+                                    }
+                                </span>
+                            </div>
+
+                            <!-- Signature Area at bottom right -->
+                            <div class="prof-signature-block">
+                                <div class="prof-sign-line"></div>
+                                <span class="prof-sign-text">Authorized Signatory</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Modal Action Toolbar (Sharing & PDF Export) -->
+                <div class="online-bill-action-bar">
+                    <!-- Share PDF Button (Primary Action) -->
+                    <button 
+                        type="button" 
+                        class="bill-act-btn btn-share-pdf" 
+                        (click)="generateAndShareBillPdf(bill, 'share')"
+                        [disabled]="isGeneratingPdf()"
+                        id="btn-bill-share-pdf">
+                        <mat-icon>{{ isGeneratingPdf() ? 'hourglass_top' : 'picture_as_pdf' }}</mat-icon>
+                        <span>{{ isGeneratingPdf() ? (translationService.getCurrentLanguage() === 'hi' ? 'PDF तैयार हो रहा है...' : 'Generating PDF...') : (translationService.getCurrentLanguage() === 'hi' ? 'PDF शेयर करें' : 'Share PDF') }}</span>
+                    </button>
+
+                    <!-- Download PDF Button -->
+                    <button 
+                        type="button" 
+                        class="bill-act-btn btn-download-pdf" 
+                        (click)="generateAndShareBillPdf(bill, 'download')"
+                        [disabled]="isGeneratingPdf()"
+                        id="btn-bill-download-pdf">
+                        <mat-icon>download</mat-icon>
+                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'PDF डाउनलोड' : 'Download PDF' }}</span>
+                    </button>
+
+                    <!-- WhatsApp Share Button -->
+                    <button 
+                        type="button" 
+                        class="bill-act-btn btn-whatsapp-share" 
+                        (click)="shareBillWhatsApp(bill)"
+                        id="btn-bill-share-wa">
+                        <mat-icon>chat</mat-icon>
+                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'व्हाट्सएप' : 'WhatsApp' }}</span>
+                    </button>
+
+                    <!-- Print Button -->
+                    <button 
+                        type="button" 
+                        class="bill-act-btn btn-print-slip" 
+                        (click)="printBill()"
+                        id="btn-bill-print">
+                        <mat-icon>print</mat-icon>
+                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'प्रिंट' : 'Print' }}</span>
+                    </button>
+                </div>
+
             </div>
         </div>
     }

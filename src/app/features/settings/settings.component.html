@@ -3,8 +3,21 @@
     <div class="settings-header-card" id="settings-header">
         <div class="settings-header-top-row">
             <div class="settings-title-group">
-                <h1 class="settings-main-title">{{ translationService.get('settings.title') || 'सेटिंग्स' }}</h1>
-                <p class="settings-main-subtitle">{{ translationService.get('settings.subtitle') || 'मशीनें, दर व व्यक्तिगत प्राथमिकताएं' }}</p>
+                <div class="title-with-back-btn">
+                    <button 
+                        type="button" 
+                        class="page-route-back-btn" 
+                        (click)="goBack()" 
+                        [title]="translationService.get('common.back') || 'वापस'"
+                        aria-label="Back"
+                        id="settings-route-back-btn">
+                        <mat-icon>arrow_back</mat-icon>
+                    </button>
+                    <div class="title-texts">
+                        <h1 class="settings-main-title">{{ translationService.get('settings.title') || 'सेटिंग्स' }}</h1>
+                        <p class="settings-main-subtitle">{{ translationService.get('settings.subtitle') || 'मशीनें, दर व व्यक्तिगत प्राथमिकताएं' }}</p>
+                    </div>
+                </div>
             </div>
             <div class="settings-cloud-chip" id="settings-cloud-badge">
                 <span class="pulse-dot"></span>

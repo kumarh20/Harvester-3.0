@@ -3,11 +3,15 @@
   <!-- Top Navigation & Controls Header -->
   <header class="tracker-header" id="tracker-header">
     <div class="tracker-title-section">
-      @if (isDialogMode) {
-        <button mat-icon-button (click)="closeDialog()" class="header-icon-btn" [title]="translationService.get('common.close')">
-          <mat-icon>arrow_back</mat-icon>
-        </button>
-      }
+      <button 
+        type="button" 
+        class="page-route-back-btn tracker-back-btn" 
+        (click)="handleBack()" 
+        [title]="translationService.get('common.back') || 'वापस'"
+        aria-label="Back"
+        id="measure-route-back-btn">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
       <div class="title-wrap">
         <h2 class="tracker-title">
           <mat-icon class="title-icon">landscape</mat-icon>

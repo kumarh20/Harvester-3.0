@@ -22,6 +22,10 @@ import { LanguageService } from '../../shared/services/language.service';
 import { UiPreferencesService, DefaultRecordFilterSetting } from '../../core/services/ui-preferences.service';
 import { RecordSkeletonComponent } from '../../shared/components/skeleton/record-skeleton/record-skeleton.component';
 import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
+import { UserService } from '../../services/user/user-service';
+import { AppNavigationService } from '../../core/services/app-navigation.service';
 
 export type RecordDateFilterOption = 'today' | 'yesterday' | 'week' | 'month' | 'custom' | 'all' | 'dueToday';
 
@@ -77,6 +81,7 @@ export class RecordsComponent implements OnInit, OnDestroy {
   // Kisan Records Page State
   selectedFarmer = signal<{ name: string; phone: string } | null>(null);
   expandedCuttingId = signal<string | null>(null);
+  expandedReminderId = signal<string | null>(null);
   selectedHarvesterFilter = signal<string>('all');
 
   // Date Filtering State
@@ -97,6 +102,10 @@ export class RecordsComponent implements OnInit, OnDestroy {
   // Move reminder to record prompt state
   pendingMoveReminder = signal<Reminder | null>(null);
 
+  // Online Bill & PDF Modal State
+  selectedBillRecord = signal<Record | null>(null);
+  isGeneratingPdf = signal<boolean>(false);
+
   constructor(
     public recordsService: RecordsService,
     public remindersService: RemindersService,
@@ -109,7 +118,9 @@ export class RecordsComponent implements OnInit, OnDestroy {
     public translationService: TranslationService,
     private languageService: LanguageService,
     private uiPreferencesService: UiPreferencesService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    public userService: UserService,
+    public appNavigationService: AppNavigationService
   ) {
     effect(() => {
       const isFarmerDetailOpen = !!this.selectedFarmer();
@@ -181,7 +192,8 @@ export class RecordsComponent implements OnInit, OnDestroy {
       await Promise.all([
         this.harvesterService.loadHarvesters(),
         this.seasonService.loadSeasons(),
-        this.recordsService.loadRecords()
+        this.recordsService.loadRecords(),
+        this.remindersService.loadReminders()
       ]);
       
       // Check query params for notification deep links and farmer detail view
@@ -210,7 +222,6 @@ export class RecordsComponent implements OnInit, OnDestroy {
           }
           if (params['recordId']) {
             const targetId = params['recordId'];
-            this.expandedCuttingId.set(targetId);
             setTimeout(() => {
               const el = document.getElementById('kisan-cutting-' + targetId);
               if (el) {
@@ -416,6 +427,23 @@ export class RecordsComponent implements OnInit, OnDestroy {
   getRecordSeasonName(record: Record): string {
     const season = this.seasonService.getSeasonForRecord(record);
     return season ? this.seasonService.getSeasonBadgeLabel(season) : '';
+  }
+
+  /**
+   * Get cutting rate per acre for record card (with fallback if 0)
+   */
+  getRecordRate(record: Record | any): number {
+    if (!record) return 2500;
+    const rate = Number(record.ratePerAcre);
+    if (!isNaN(rate) && rate > 0) {
+      return Math.round(rate);
+    }
+    const land = Number(record.landInAcres);
+    const total = Number(record.totalPayment);
+    if (!isNaN(land) && land > 0 && !isNaN(total) && total > 0) {
+      return Math.round(total / land);
+    }
+    return 2500;
   }
 
   getSeasonLabel(seasonId?: string): string {
@@ -668,22 +696,292 @@ export class RecordsComponent implements OnInit, OnDestroy {
     }).format(amount);
   }
 
-  shareRecord(record: Record){
-    const text: string = this.buildShareText(record);
-    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+  openBillModal(record: Record): void {
+    this.selectedBillRecord.set(record);
+  }
 
-    if (navigator.share) {
-      navigator.share({
-        title: isHi ? 'किसान कटाई पर्ची' : 'Farmer Record',
-        text: text
-      }).catch(() => {
-        // Fallback to clipboard on cancel or error
-        navigator.clipboard?.writeText(text);
+  closeBillModal(): void {
+    this.selectedBillRecord.set(null);
+  }
+
+  shareRecord(record: Record){
+    this.openBillModal(record);
+  }
+
+  getAmountInWords(amount: number): string {
+    if (!amount || isNaN(amount) || amount <= 0) {
+      return this.translationService.getCurrentLanguage() === 'hi' 
+        ? 'शून्य रुपये मात्र' 
+        : 'Zero Rupees Only';
+    }
+
+    const num = Math.round(amount);
+    const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+    const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    const inWordsEn = (n: number): string => {
+      if (n === 0) return '';
+      let str = '';
+      if (Math.floor(n / 10000000) > 0) {
+        str += inWordsEn(Math.floor(n / 10000000)) + 'Crore ';
+        n %= 10000000;
+      }
+      if (Math.floor(n / 100000) > 0) {
+        str += inWordsEn(Math.floor(n / 100000)) + 'Lakh ';
+        n %= 100000;
+      }
+      if (Math.floor(n / 1000) > 0) {
+        str += inWordsEn(Math.floor(n / 1000)) + 'Thousand ';
+        n %= 1000;
+      }
+      if (Math.floor(n / 100) > 0) {
+        str += inWordsEn(Math.floor(n / 100)) + 'Hundred ';
+        n %= 100;
+      }
+      if (n > 0) {
+        if (n < 20) {
+          str += a[n];
+        } else {
+          str += b[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + a[n % 10] : ' ');
+        }
+      }
+      return str;
+    };
+
+    const words = inWordsEn(num).trim();
+    return `${words} Rupees Only`;
+  }
+
+  getBillCompanyLine(bill: Record): string {
+    const parts: string[] = [];
+    const busName = this.userService.userProfile()?.businessName?.trim() || 'Harvester Cutting Services';
+    parts.push(`[${busName}]`);
+
+    const harvester = bill.harvester?.trim() || 'Harvester Fleet';
+    parts.push(`[${harvester}]`);
+
+    const phone = this.userService.userProfile()?.phone?.trim() || bill.contactNumber;
+    if (phone) {
+      parts.push(`[+91 ${phone}]`);
+    }
+
+    const season = this.getRecordSeasonName(bill);
+    if (season) {
+      parts.push(`[Season: ${season}]`);
+    }
+
+    return parts.join(' | ');
+  }
+
+  async generateAndShareBillPdf(record: Record, mode: 'share' | 'download' = 'share'): Promise<void> {
+    const billElement = document.getElementById('online-bill-preview');
+    if (!billElement) {
+      this.toastService.error(this.translationService.getCurrentLanguage() === 'hi' ? 'बिल लोड नहीं हो सका' : 'Could not load bill');
+      return;
+    }
+
+    try {
+      this.isGeneratingPdf.set(true);
+
+      // html2canvas capture with cloned document modifications to guarantee zero clipping
+      const canvas = await html2canvas(billElement, {
+        scale: 2.2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: 750,
+        onclone: (clonedDoc) => {
+          const clonedElement = clonedDoc.getElementById('online-bill-preview');
+          if (clonedElement) {
+            clonedElement.style.width = '620px';
+            clonedElement.style.maxWidth = '620px';
+            clonedElement.style.height = 'auto';
+            clonedElement.style.maxHeight = 'none';
+            clonedElement.style.overflow = 'visible';
+            clonedElement.style.margin = '0 auto';
+            clonedElement.style.boxShadow = 'none';
+            clonedElement.style.border = 'none';
+          }
+          const clonedContainer = clonedDoc.querySelector('.bill-scrollable-container') as HTMLElement;
+          if (clonedContainer) {
+            clonedContainer.style.overflow = 'visible';
+            clonedContainer.style.height = 'auto';
+            clonedContainer.style.maxHeight = 'none';
+            clonedContainer.style.padding = '0';
+          }
+          const clonedDialog = clonedDoc.querySelector('.online-bill-dialog') as HTMLElement;
+          if (clonedDialog) {
+            clonedDialog.style.overflow = 'visible';
+            clonedDialog.style.height = 'auto';
+            clonedDialog.style.maxHeight = 'none';
+          }
+        }
       });
-    } else if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => {
-        this.toastService.success(isHi ? 'पर्ची क्लिपबोर्ड पर कॉपी हो गई है' : 'Record copied to clipboard');
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
       });
+
+      const pageWidth = pdf.internal.pageSize.getWidth(); // 210mm
+      const pageHeight = pdf.internal.pageSize.getHeight(); // 297mm
+      const margin = 10; // 10mm margin
+      const contentWidth = pageWidth - (margin * 2); // 190mm
+      const contentHeight = pageHeight - (margin * 2); // 277mm
+
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      if (imgHeight <= contentHeight) {
+        // Fits comfortably on a single A4 page
+        pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
+      } else {
+        // Scale down proportionally to fit complete bill on single page without any cutoff
+        const scaleFactor = contentHeight / imgHeight;
+        const fittedWidth = imgWidth * scaleFactor;
+        const xOffset = margin + (contentWidth - fittedWidth) / 2;
+        pdf.addImage(imgData, 'JPEG', xOffset, margin, fittedWidth, contentHeight);
+      }
+
+      const cleanFarmer = (record.farmerName || 'Kisan').replace(/[^a-zA-Z0-9_\u0900-\u097F]/g, '_');
+      const fileName = `Bill_${cleanFarmer}_${record.date || 'date'}.pdf`;
+
+      if (mode === 'share' && typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
+        const pdfBlob = pdf.output('blob');
+        const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+        if (navigator.canShare({ files: [pdfFile] })) {
+          await navigator.share({
+            files: [pdfFile],
+            title: `किसान कटाई बिल - ${record.farmerName}`,
+            text: `किसान ${record.farmerName} का फसल कटाई ऑनलाइन बिल (कुल राशि: ₹${record.totalPayment}, बकाया: ₹${record.pendingAmount})`
+          });
+          this.toastService.success(this.translationService.getCurrentLanguage() === 'hi' ? 'बिल PDF सफलतापूर्वक साझा किया गया' : 'Bill PDF shared successfully');
+          return;
+        }
+      }
+
+      // Download fallback
+      pdf.save(fileName);
+      this.toastService.success(this.translationService.getCurrentLanguage() === 'hi' ? 'बिल PDF डाउनलोड हो गया है' : 'Bill PDF downloaded');
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      this.toastService.error(this.translationService.getCurrentLanguage() === 'hi' ? 'PDF बनाने में समस्या आई' : 'Error generating PDF');
+    } finally {
+      this.isGeneratingPdf.set(false);
+    }
+  }
+
+  shareBillWhatsApp(record: Record): void {
+    const harvesterName = record.harvester?.trim() || 'Harvester 1';
+    const formattedDate = this.formatDisplayDate(record.date);
+    const timeText = record.cuttingTime ? ` (${this.formatDisplayTime(record.cuttingTime)})` : '';
+    const statusText = (record.markedAsPaid || record.pendingAmount <= 0)
+      ? '✅ *भुगतान स्थिति:* पूर्ण चुकता (PAID)'
+      : `⚠️ *भुगतान स्थिति:* कुल बकाया ₹${record.pendingAmount}`;
+
+    const text = `🌾 *डिजिटल कटाई रसीद एवं बिल* 🌾\n` +
+      `--------------------------------\n` +
+      `👤 *किसान का नाम:* ${record.farmerName}\n` +
+      `📞 *मोबाइल:* ${record.contactNumber || '-'}\n` +
+      `🚜 *मशीन:* ${harvesterName}\n` +
+      `📅 *दिनांक:* ${formattedDate}${timeText}\n` +
+      `🌾 *रकबा:* ${record.landInAcres} एकड़\n` +
+      `💰 *दर:* ₹${record.ratePerAcre}/एकड़\n` +
+      `--------------------------------\n` +
+      `💵 *कुल बिल राशि:* ₹${record.totalPayment}\n` +
+      `🟢 *नकद प्राप्त:* ₹${record.paidOnSight || 0}\n` +
+      `🔴 *शेष बकाया:* ₹${record.pendingAmount}\n` +
+      (record.fullPaymentDate ? `⏳ *भुगतान वादा तारीख:* ${this.formatDisplayDate(record.fullPaymentDate)}\n` : '') +
+      `--------------------------------\n` +
+      `${statusText}\n\n` +
+      `हार्वेस्टर कटिंग लेजर • अधिकृत डिजिटल बिल`;
+
+    let cleanPhone = (record.contactNumber || '').replace(/\D/g, '');
+    if (cleanPhone.length === 10) {
+      cleanPhone = '91' + cleanPhone;
+    }
+    const encoded = encodeURIComponent(text);
+    if (cleanPhone) {
+      window.open(`https://wa.me/${cleanPhone}?text=${encoded}`, '_blank');
+    } else {
+      window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    }
+  }
+
+  printBill(): void {
+    const billElement = document.getElementById('online-bill-preview');
+    if (!billElement) {
+      window.print();
+      return;
+    }
+
+    try {
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = 'none';
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentWindow?.document;
+      if (iframeDoc) {
+        const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+          .map(el => el.outerHTML)
+          .join('\n');
+
+        iframeDoc.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>Bill - ${this.selectedBillRecord()?.farmerName || 'Print'}</title>
+              ${styles}
+              <style>
+                @page { size: A4; margin: 10mm; }
+                body {
+                  margin: 0;
+                  padding: 10px;
+                  background: #ffffff !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+                .online-bill-sheet {
+                  box-shadow: none !important;
+                  border: none !important;
+                  width: 100% !important;
+                  max-width: 650px !important;
+                  margin: 0 auto !important;
+                  padding: 0 !important;
+                  overflow: visible !important;
+                  height: auto !important;
+                }
+              </style>
+            </head>
+            <body>
+              ${billElement.outerHTML}
+            </body>
+          </html>
+        `);
+        iframeDoc.close();
+        iframe.contentWindow?.focus();
+        setTimeout(() => {
+          iframe.contentWindow?.print();
+          setTimeout(() => {
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+            }
+          }, 2000);
+        }, 350);
+        return;
+      }
+    } catch {
+      window.print();
     }
   }
 
@@ -886,12 +1184,17 @@ export class RecordsComponent implements OnInit, OnDestroy {
     if (!farmer) return [];
     const all = this.recordsService.records();
     const farmerPhone = this.cleanPhone(farmer.phone);
+    const seasonFilter = this.selectedSeasonFilter();
 
     const matches = all.filter(r => {
-      if (farmerPhone && r.contactNumber) {
-        return this.cleanPhone(r.contactNumber) === farmerPhone;
+      const phoneMatch = farmerPhone && r.contactNumber ? 
+        this.cleanPhone(r.contactNumber) === farmerPhone : 
+        r.farmerName.trim().toLowerCase() === farmer.name.trim().toLowerCase();
+      if (!phoneMatch) return false;
+      if (seasonFilter !== 'all' && r.seasonId && r.seasonId !== seasonFilter) {
+        return false;
       }
-      return r.farmerName.trim().toLowerCase() === farmer.name.trim().toLowerCase();
+      return true;
     });
 
     return [...matches].sort((a, b) => {
@@ -988,7 +1291,7 @@ export class RecordsComponent implements OnInit, OnDestroy {
       phone: record.contactNumber || ''
     });
     this.selectedHarvesterFilter.set('all');
-    this.expandedCuttingId.set(record.id);
+    this.expandedCuttingId.set(null);
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { 
@@ -1006,11 +1309,23 @@ export class RecordsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Universal back button handler: closes farmer detail or navigates back in route history
+   */
+  goBack(): void {
+    if (this.selectedFarmer()) {
+      this.closeKisanRecords();
+    } else {
+      this.appNavigationService.back('/dashboard');
+    }
+  }
+
+  /**
    * Close the Kisan Records view and return to main Records feed
    */
   closeKisanRecords(): void {
     this.selectedFarmer.set(null);
     this.expandedCuttingId.set(null);
+    this.expandedReminderId.set(null);
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { farmer: null, recordId: null },
@@ -1030,6 +1345,13 @@ export class RecordsComponent implements OnInit, OnDestroy {
    */
   toggleCuttingExpand(id: string): void {
     this.expandedCuttingId.set(this.expandedCuttingId() === id ? null : id);
+  }
+
+  /**
+   * Toggle reminder item expansion inside farmer detail page
+   */
+  toggleReminderExpand(id: string): void {
+    this.expandedReminderId.set(this.expandedReminderId() === id ? null : id);
   }
 
   /**
@@ -1203,6 +1525,12 @@ export class RecordsComponent implements OnInit, OnDestroy {
     const d = this.parseDate(dateStr);
     if (!d) return '-';
     return d.getDate().toString();
+  }
+
+  getDateYear(dateStr: string): string {
+    const d = this.parseDate(dateStr);
+    if (!d) return '';
+    return d.getFullYear().toString();
   }
 
   getFormattedFullDate(dateStr: string): string {

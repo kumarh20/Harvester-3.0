@@ -195,6 +195,7 @@ export interface Translations {
     markAsPaidConfirm: string;
     markAsPaidMessage: string;
     markAsPaidButton: string;
+    paidStatus?: string;
     saveError: string;
     updateError: string;
     deleteError: string;
@@ -628,6 +629,8 @@ const HINDI_TRANSLATIONS: Translations = {
     pendingAmount: 'बकाया राशि',
     fullPayment: 'पूर्ण भुगतान',
     fullPaymentPromise: 'भुगतान वादा तारीख',
+    paymentDate: 'भुगतान तिथि',
+    ratePerAcre: 'कटाई दर',
     editRecord: 'संपादित करें',
     deleteRecord: 'हटाएं',
     shareRecord: 'रसीद साझा करें',
@@ -720,6 +723,7 @@ const HINDI_TRANSLATIONS: Translations = {
     markAsPaidConfirm: 'चुकता दर्ज करें?',
     markAsPaidMessage: 'यह रिकॉर्ड को चुकता (बकाया राशि 0) कर देगा। आप बाद में इसे संपादित भी कर सकते हैं।',
     markAsPaidButton: 'चुकता दर्ज करें',
+    paidStatus: 'पूर्ण चुकता',
     saveError: 'रिकॉर्ड सहेजने में त्रुटि',
     updateError: 'रिकॉर्ड अपडेट करने में त्रुटि',
     deleteError: 'रिकॉर्ड हटाने में त्रुटि',
@@ -1135,6 +1139,8 @@ const ENGLISH_TRANSLATIONS: Translations = {
     pendingAmount: 'Pending Amount',
     fullPayment: 'Full Payment',
     fullPaymentPromise: 'Promise Date',
+    paymentDate: 'Payment Date',
+    ratePerAcre: 'Harvesting Rate',
     editRecord: 'Edit',
     deleteRecord: 'Delete',
     shareRecord: 'Share Invoice',
@@ -1227,6 +1233,7 @@ const ENGLISH_TRANSLATIONS: Translations = {
     markAsPaidConfirm: 'Mark as paid?',
     markAsPaidMessage: 'This will mark the record as paid (pending amount will be ₹0). You can edit it later if needed.',
     markAsPaidButton: 'Mark as Paid',
+    paidStatus: 'Paid',
     saveError: 'Error saving record',
     updateError: 'Error updating record',
     deleteError: 'Error deleting record',

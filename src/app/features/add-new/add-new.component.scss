@@ -48,6 +48,55 @@
   }
 }
 
+.form-route-back-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+  flex-shrink: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    transition: transform 0.15s ease;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.32);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: translateX(-2px);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+
+  @media (min-width: 640px) {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: 10px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
 .form-header-badge {
   width: 28px;
   height: 28px;

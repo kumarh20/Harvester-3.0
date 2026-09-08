@@ -22,6 +22,7 @@ import * as L from 'leaflet';
 import { LandMeasurementService, GeoPoint, SavedFieldMeasurement } from '../../core/services/land-measurement.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { TranslationService } from '../../shared/services/translation.service';
+import { AppNavigationService } from '../../core/services/app-navigation.service';
 
 export interface LandMeasurementDialogData {
   isDialog?: boolean;
@@ -123,6 +124,7 @@ export class LandMeasurementComponent implements OnInit, AfterViewInit, OnDestro
     private toastService: ToastService,
     public translationService: TranslationService,
     private router: Router,
+    public appNavigationService: AppNavigationService,
     @Optional() public dialogRef: MatDialogRef<LandMeasurementComponent>,
     @Optional() @Inject(MAT_DIALOG_DATA) public dialogData: LandMeasurementDialogData | null
   ) {
@@ -130,6 +132,14 @@ export class LandMeasurementComponent implements OnInit, AfterViewInit, OnDestro
       this.isDialogMode = true;
     }
     this.bighaRatio.set(this.landService.bighaPerAcre());
+  }
+
+  handleBack(): void {
+    if (this.isDialogMode) {
+      this.closeDialog();
+    } else {
+      this.appNavigationService.back('/dashboard');
+    }
   }
 
   ngOnInit(): void {

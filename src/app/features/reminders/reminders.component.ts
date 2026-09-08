@@ -23,6 +23,7 @@ import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
 import { LandMeasurementComponent } from '../land-measurement/land-measurement.component';
 import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
+import { AppNavigationService } from '../../core/services/app-navigation.service';
 
 export type ReminderTabFilter = 'today' | 'tomorrow' | 'upcoming' | 'all' | 'custom';
 
@@ -80,6 +81,7 @@ export class RemindersComponent implements OnInit {
 
   // Move to record prompt modal
   pendingMoveReminder = signal<Reminder | null>(null);
+  expandedReminderId = signal<string | null>(null);
 
   // Temporary selected time for clean datetime picker in reminders
   tempReminderTime = signal<string>('08:00');
@@ -96,9 +98,14 @@ export class RemindersComponent implements OnInit {
     public router: Router,
     public translationService: TranslationService,
     private languageService: LanguageService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    public appNavigationService: AppNavigationService
   ) {
     this.initializeForm();
+  }
+
+  goBack(): void {
+    this.appNavigationService.back('/dashboard');
   }
 
   selectedHour = signal<string>('08');
@@ -300,6 +307,10 @@ export class RemindersComponent implements OnInit {
     if (picker) {
       picker.close();
     }
+  }
+
+  toggleReminderExpand(id: string): void {
+    this.expandedReminderId.set(this.expandedReminderId() === id ? null : id);
   }
 
   isHindi(): boolean {

@@ -24,6 +24,7 @@ import { LoaderService } from '../../shared/services/loader.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { DialogService } from '../../shared/services/dialog.service';
 import { Auth } from '@angular/fire/auth';
+import { AppNavigationService } from '../../core/services/app-navigation.service';
 
 @Component({
   selector: 'app-add-new',
@@ -118,9 +119,14 @@ export class AddNewComponent implements OnInit {
     private loaderService: LoaderService,
     private auth: Auth,
     private dialog: MatDialog,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    public appNavigationService: AppNavigationService
   ) {
     this.initializeForm();
+  }
+
+  goBack(): void {
+    this.appNavigationService.back('/records');
   }
 
   selectedHour = signal<string>('08');

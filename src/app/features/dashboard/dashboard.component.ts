@@ -14,6 +14,7 @@ import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
 import { DashboardSkeletonComponent } from '../../shared/components/skeleton/dashboard-skeleton/dashboard-skeleton.component';
 import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
+import { AppNavigationService } from '../../core/services/app-navigation.service';
 
 export type DashboardDateFilter = 'all' | 'today' | 'yesterday' | 'week' | 'month' | 'custom' | 'dueToday';
 export type ChartMetricMode = 'revenue' | 'acres';
@@ -627,7 +628,8 @@ export class DashboardComponent implements OnInit {
     public translationService: TranslationService,
     private languageService: LanguageService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    public appNavigationService: AppNavigationService
   ) {
     this.updatePeriodCounts();
 
@@ -638,6 +640,10 @@ export class DashboardComponent implements OnInit {
         this.selectedSeasonFilter.set(defSeason.id);
       }
     });
+  }
+
+  goBack(): void {
+    this.appNavigationService.back('/records');
   }
 
   openCustomDateDialog(type: 'single' | 'start' | 'end'): void {

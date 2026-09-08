@@ -3,6 +3,15 @@
         
         <!-- Form Header Card (Thin & Compact) -->
         <div class="form-header-card" id="form-header-card">
+            <button 
+                type="button" 
+                class="form-route-back-btn" 
+                (click)="goBack()" 
+                [title]="translationService.get('common.back') || 'वापस'"
+                aria-label="Back"
+                id="add-new-route-back-btn">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
             <div class="form-header-badge">
                 <mat-icon>{{ isEditMode() ? 'edit_note' : 'add_task' }}</mat-icon>
             </div>

@@ -3,12 +3,25 @@
   <!-- Clean Top Header (Matching Screenshot) -->
   <header class="reminders-header-bar" id="reminders-header">
     <div class="header-titles">
-      <h1 class="page-main-title" id="reminders-title">
-        {{ translationService.getCurrentLanguage() === 'hi' ? 'कटाई रिमाइंडर' : (translationService.get('reminders.title') || 'कटाई रिमाइंडर') }}
-      </h1>
-      <p class="page-subtitle" id="reminders-subtitle">
-        {{ translationService.getCurrentLanguage() === 'hi' ? 'आगामी बुकिंग व रिमाइंडर प्रबंधित करें' : (translationService.get('reminders.subtitle') || 'आगामी बुकिंग व रिमाइंडर प्रबंधित करें') }}
-      </p>
+      <div class="title-with-back-btn">
+        <button 
+          type="button" 
+          class="page-route-back-btn" 
+          (click)="goBack()" 
+          [title]="translationService.get('common.back') || 'वापस'"
+          aria-label="Back"
+          id="reminders-route-back-btn">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="title-texts">
+          <h1 class="page-main-title" id="reminders-title">
+            {{ translationService.getCurrentLanguage() === 'hi' ? 'कटाई रिमाइंडर' : (translationService.get('reminders.title') || 'कटाई रिमाइंडर') }}
+          </h1>
+          <p class="page-subtitle" id="reminders-subtitle">
+            {{ translationService.getCurrentLanguage() === 'hi' ? 'आगामी बुकिंग व रिमाइंडर प्रबंधित करें' : (translationService.get('reminders.subtitle') || 'आगामी बुकिंग व रिमाइंडर प्रबंधित करें') }}
+          </p>
+        </div>
+      </div>
     </div>
 
     <button 
@@ -130,9 +143,11 @@
           <article 
             class="reminder-item-card" 
             [class.card-today]="isToday(reminder.scheduledDate)"
-            [id]="'reminder-card-' + reminder.id">
+            [class.is-expanded]="expandedReminderId() === reminder.id"
+            [id]="'reminder-card-' + reminder.id"
+            (click)="toggleReminderExpand(reminder.id)">
             
-            <!-- Row 1: Farmer Name, Timing Badge, Date & Time -->
+            <!-- Row 1: Farmer Name, Timing Badge, Date & Acres (Collapsed Header) -->
             <div class="card-header-row">
               <div class="farmer-info-left">
                 <div class="farmer-name-badge-line">
@@ -144,93 +159,110 @@
                   }
                 </div>
                 
-                <a [href]="'tel:' + reminder.contactNumber" class="farmer-phone-link">
-                  <mat-icon class="phone-icon">call</mat-icon>
-                  <span>{{ reminder.contactNumber }}</span>
-                </a>
-              </div>
-
-              <div class="date-time-right">
-                <span class="card-date-text">{{ formatCardDate(reminder.scheduledDate) }}</span>
-                <span class="card-time-text">{{ formatDisplayTime(reminder.scheduledTime || '08:00 AM') }}</span>
-              </div>
-            </div>
-
-            <!-- Row 2: 3 Specification Tags (Green Acres, Yellow Rate, Purple Harvester) -->
-            <div class="card-tags-row">
-              <div class="tag-pill tag-acres">
-                <span class="tag-emoji">🌾</span>
-                <span class="tag-label">{{ reminder.landInAcres }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Ac' }}</span>
-              </div>
-
-              <div class="tag-pill tag-rate">
-                <span class="tag-label">{{ formatRate(reminder.ratePerAcre) }}</span>
-              </div>
-
-              @if (reminder.harvester) {
-                <div class="tag-pill tag-harvester">
-                  <span class="tag-emoji">🚜</span>
-                  <span class="tag-label">{{ reminder.harvester }}</span>
-                </div>
-              }
-            </div>
-
-            <!-- Notes if available -->
-            @if (reminder.notes) {
-              <div class="card-notes-row">
-                <mat-icon class="notes-icon">notes</mat-icon>
-                <span class="notes-text">{{ reminder.notes }}</span>
-              </div>
-            }
-
-            <!-- Row 3: Estimation & Action Buttons -->
-            <div class="card-bottom-row">
-              <div class="estimate-block">
-                <span class="estimate-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल अनुमान' : 'Est. Total' }}</span>
-                <span class="estimate-value">{{ formatCurrency(reminder.estimatedTotal) }}</span>
-              </div>
-
-              <div class="card-actions-group">
-                <!-- Edit Button -->
-                <button 
-                  type="button" 
-                  class="icon-action-btn btn-edit" 
-                  (click)="openEditForm(reminder)" 
-                  [title]="translationService.get('common.edit') || 'संपादित करें'">
-                  <mat-icon>edit_square</mat-icon>
-                </button>
-
-                <!-- Delete Button -->
-                <button 
-                  type="button" 
-                  class="icon-action-btn btn-delete" 
-                  (click)="deleteBooking(reminder)" 
-                  [title]="translationService.get('common.delete') || 'हटाएं'">
-                  <mat-icon>delete_outline</mat-icon>
-                </button>
-
-                <!-- Record Status / Action Button -->
-                @if (reminder.status === 'completed' || reminder.movedToRecordId) {
-                  <button 
-                    type="button" 
-                    class="status-action-btn btn-added" 
-                    (click)="goToRecord(reminder)"
-                    title="रिकॉर्ड देखें / View Record">
-                    <mat-icon class="btn-check-icon">check</mat-icon>
-                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'जोड़ा गया' : 'Added' }}</span>
-                  </button>
-                } @else {
-                  <button 
-                    type="button" 
-                    class="status-action-btn btn-add-record" 
-                    (click)="promptMoveToRecord(reminder)"
-                    [id]="'btn-convert-' + reminder.id">
-                    <span class="plus-icon">+</span>
-                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'रिकॉर्ड में जोड़ें' : 'Add to Records' }}</span>
-                  </button>
+                @if (reminder.harvester) {
+                  <div class="harvester-subtext">
+                    <span>🚜 {{ reminder.harvester }}</span>
+                  </div>
                 }
               </div>
+
+              <div class="reminder-collapsed-right">
+                <div class="collapsed-date-acres">
+                  <span class="c-date">{{ formatCardDate(reminder.scheduledDate) }}</span>
+                  <span class="c-acres">{{ reminder.landInAcres }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Ac' }}</span>
+                </div>
+                <mat-icon class="chevron-icon">
+                  {{ expandedReminderId() === reminder.id ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}
+                </mat-icon>
+              </div>
             </div>
+
+            <!-- Expanded Body -->
+            @if (expandedReminderId() === reminder.id) {
+              <div class="reminder-expanded-body" (click)="$event.stopPropagation()">
+                <div class="card-time-contact-row">
+                  <span class="card-time-text">⏱️ {{ formatDisplayTime(reminder.scheduledTime || '08:00 AM') }}</span>
+                  
+                  @if (reminder.contactNumber) {
+                    <a [href]="'tel:' + reminder.contactNumber" class="btn-call-farmer">
+                      <mat-icon>call</mat-icon>
+                      <span>{{ reminder.contactNumber }}</span>
+                    </a>
+                  }
+                </div>
+
+                <!-- Row 2: Specification Tags (Rate, Harvester) -->
+                <div class="card-tags-row">
+                  <div class="tag-pill tag-rate">
+                    <span class="tag-label">{{ formatRate(reminder.ratePerAcre) }}</span>
+                  </div>
+
+                  @if (reminder.harvester) {
+                    <div class="tag-pill tag-harvester">
+                      <span class="tag-emoji">🚜</span>
+                      <span class="tag-label">{{ reminder.harvester }}</span>
+                    </div>
+                  }
+                </div>
+
+                <!-- Notes if available -->
+                @if (reminder.notes) {
+                  <div class="card-notes-row">
+                    <mat-icon class="notes-icon">notes</mat-icon>
+                    <span class="notes-text">{{ reminder.notes }}</span>
+                  </div>
+                }
+
+                <!-- Row 3: Estimation & Action Buttons -->
+                <div class="card-bottom-row">
+                  <div class="estimate-block">
+                    <span class="estimate-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल अनुमान' : 'Est. Total' }}</span>
+                    <span class="estimate-value">{{ formatCurrency(reminder.estimatedTotal) }}</span>
+                  </div>
+
+                  <div class="card-actions-group">
+                    <!-- Edit Button -->
+                    <button 
+                      type="button" 
+                      class="icon-action-btn btn-edit" 
+                      (click)="openEditForm(reminder); $event.stopPropagation()" 
+                      [title]="translationService.get('common.edit') || 'संपादित करें'">
+                      <mat-icon>edit_square</mat-icon>
+                    </button>
+
+                    <!-- Delete Button -->
+                    <button 
+                      type="button" 
+                      class="icon-action-btn btn-delete" 
+                      (click)="deleteBooking(reminder); $event.stopPropagation()" 
+                      [title]="translationService.get('common.delete') || 'हटाएं'">
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
+
+                    <!-- Record Status / Action Button -->
+                    @if (reminder.status === 'completed' || reminder.movedToRecordId) {
+                      <button 
+                        type="button" 
+                        class="status-action-btn btn-added" 
+                        (click)="goToRecord(reminder); $event.stopPropagation()"
+                        title="रिकॉर्ड देखें / View Record">
+                        <mat-icon class="btn-check-icon">check</mat-icon>
+                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'जोड़ा गया' : 'Added' }}</span>
+                      </button>
+                    } @else {
+                      <button 
+                        type="button" 
+                        class="status-action-btn btn-add-record" 
+                        (click)="promptMoveToRecord(reminder); $event.stopPropagation()"
+                        [id]="'btn-convert-' + reminder.id">
+                        <span class="plus-icon">+</span>
+                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'रिकॉर्ड में जोड़ें' : 'Add to Records' }}</span>
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
 
           </article>
         }

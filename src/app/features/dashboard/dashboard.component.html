@@ -14,6 +14,17 @@
         <div class="hero-top-bar">
           <div class="hero-header-text">
             <div class="hero-title-group">
+              @if (appNavigationService.canGoBack()) {
+                <button 
+                  type="button" 
+                  class="page-route-back-btn" 
+                  (click)="goBack()" 
+                  [title]="translationService.get('common.back') || 'वापस'"
+                  aria-label="Back"
+                  id="dashboard-route-back-btn">
+                  <mat-icon>arrow_back</mat-icon>
+                </button>
+              }
               <h1 class="hero-title">{{ translationService.get('dashboard.title') }}</h1>
               <div class="welcome-badge">
                 <span class="pulse-dot"></span>

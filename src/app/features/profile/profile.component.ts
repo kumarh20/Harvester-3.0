@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
 import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import { ProfileDialogComponent, ProfileDialogData } from '../../shared/components/profile-dialog/profile-dialog.component';
 import { firstValueFrom } from 'rxjs';
+import { AppNavigationService } from '../../core/services/app-navigation.service';
 
 @Component({
   selector: 'app-profile',
@@ -69,7 +70,8 @@ export class ProfileComponent implements OnInit {
     private dialogService: DialogService,
     private matDialog: MatDialog,
     public translationService: TranslationService,
-    private router: Router
+    private router: Router,
+    public appNavigationService: AppNavigationService
   ) {}
 
   ngOnInit(): void {
@@ -209,6 +211,6 @@ export class ProfileComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard']);
+    this.appNavigationService.back('/dashboard');
   }
 }

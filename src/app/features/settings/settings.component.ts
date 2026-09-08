@@ -27,6 +27,7 @@ import { SeasonService } from '../../core/services/season.service';
 import { Season, HINDI_MONTHS, getSeasonDisplayLabel } from '../../core/models/season.model';
 import { HarvesterDialogComponent, HarvesterDialogData } from '../../shared/components/harvester-dialog/harvester-dialog.component';
 import { ProfileDialogComponent, ProfileDialogData } from '../../shared/components/profile-dialog/profile-dialog.component';
+import { AppNavigationService } from '../../core/services/app-navigation.service';
 
 @Component({
   selector: 'app-settings',
@@ -131,7 +132,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     public notificationService: NotificationService,
     private uiPreferencesService: UiPreferencesService,
-    public seasonService: SeasonService
+    public seasonService: SeasonService,
+    public appNavigationService: AppNavigationService
   ) {
     this.loadSettings();
 
@@ -174,6 +176,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
         await this.loadUserData(user.uid);
       }
     });
+  }
+
+  goBack(): void {
+    if (this.activeModal()) {
+      this.closeModal();
+    } else {
+      this.appNavigationService.back('/dashboard');
+    }
   }
 
   get operatorInitials(): string {
@@ -407,10 +417,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   onCurrencyChange(format: string): void {
     this.currencyFormat.set(format);
     localStorage.setItem('currency', format);
-  }
-
-  goBack(): void {
-    this.router.navigate(['/dashboard']);
   }
 
   /**
