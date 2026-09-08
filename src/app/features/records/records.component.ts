@@ -84,6 +84,15 @@ export class RecordsComponent implements OnInit, OnDestroy {
   expandedReminderId = signal<string | null>(null);
   selectedHarvesterFilter = signal<string>('all');
 
+  // Main Records Harvester Filter (Default: 'all')
+  selectedHarvesterRecordFilter = signal<string>('all');
+
+  // Side Filter Drawer State
+  isFilterPanelOpen = signal<boolean>(false);
+  isDrawerSeasonOpen = signal<boolean>(false);
+  isDrawerHarvesterOpen = signal<boolean>(false);
+  isDrawerDateOpen = signal<boolean>(false);
+
   // Date Filtering State
   selectedDateFilter = signal<RecordDateFilterOption>('today');
   customMode = signal<'single' | 'range'>('single');
@@ -98,6 +107,27 @@ export class RecordsComponent implements OnInit, OnDestroy {
   // Filter Dropdown Open State
   isDateFilterOpen = signal<boolean>(false);
   isSeasonFilterOpen = signal<boolean>(false);
+
+  // Available Harvesters list for filter options
+  availableHarvesters = computed(() => {
+    const list = this.harvesterService.harvesters();
+    const allRecords = this.recordsService.records();
+    const fromRecords = allRecords.map(r => (r.harvester || '').trim()).filter(Boolean);
+    const set = new Set([...list, ...fromRecords]);
+    if (set.size === 0) {
+      set.add('Harvester 1');
+    }
+    return Array.from(set);
+  });
+
+  // Active filter count for badge indicator
+  activeFilterCount = computed(() => {
+    let count = 0;
+    if (this.selectedDateFilter() !== 'all') count++;
+    if (this.selectedSeasonFilter() !== 'all') count++;
+    if (this.selectedHarvesterRecordFilter() !== 'all') count++;
+    return count;
+  });
 
   // Move reminder to record prompt state
   pendingMoveReminder = signal<Reminder | null>(null);
@@ -399,6 +429,79 @@ export class RecordsComponent implements OnInit, OnDestroy {
     return sMonth === eMonth ? sMonth : `${sMonth} - ${eMonth}`;
   }
 
+  openFilterPanel(): void {
+    this.closeAllFilterDropdowns();
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+    this.isDrawerDateOpen.set(false);
+    this.isFilterPanelOpen.set(true);
+  }
+
+  toggleDrawerDate(): void {
+    this.isDrawerDateOpen.update(v => !v);
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+  }
+
+  toggleDrawerSeason(): void {
+    this.isDrawerSeasonOpen.update(v => !v);
+    this.isDrawerDateOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+  }
+
+  toggleDrawerHarvester(): void {
+    this.isDrawerHarvesterOpen.update(v => !v);
+    this.isDrawerDateOpen.set(false);
+    this.isDrawerSeasonOpen.set(false);
+  }
+
+  closeFilterPanel(): void {
+    this.isFilterPanelOpen.set(false);
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+    this.isDrawerDateOpen.set(false);
+  }
+
+  applyFilterPanel(): void {
+    this.isFilterPanelOpen.set(false);
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+    this.isDrawerDateOpen.set(false);
+  }
+
+  resetAllFilters(): void {
+    const prefDefault = this.uiPreferencesService.defaultRecordFilter();
+    this.selectedDateFilter.set(prefDefault || 'all');
+    const defSeason = this.seasonService.defaultSeason();
+    this.selectedSeasonFilter.set(defSeason?.id || 'all');
+    this.selectedHarvesterRecordFilter.set('all');
+    this.customStartDate.set('');
+    this.customEndDate.set('');
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+    this.isDrawerDateOpen.set(false);
+  }
+
+  selectHarvesterRecordOption(harvester: string): void {
+    this.selectedHarvesterRecordFilter.set(harvester);
+    this.isDrawerHarvesterOpen.set(false);
+  }
+
+  getSelectedHarvesterFilterLabel(): string {
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+    const filter = this.selectedHarvesterRecordFilter();
+    if (filter === 'all' || !filter) {
+      return isHi ? 'सभी हार्वेस्टर' : 'All Harvesters';
+    }
+    return filter;
+  }
+
+  getHarvesterRecordCount(harvester: string): number {
+    const recs = this.recordsService.records();
+    if (harvester === 'all') return recs.length;
+    return recs.filter(r => (r.harvester || 'Harvester 1').trim().toLowerCase() === harvester.trim().toLowerCase()).length;
+  }
+
   getSeasonRecordCount(seasonId?: string): number {
     const all = this.recordsService.records();
     if (!seasonId || seasonId === 'all') {
@@ -562,16 +665,24 @@ export class RecordsComponent implements OnInit, OnDestroy {
     });
   });
 
-  // Computed filtered records based on date, season, and search query
+  // Computed filtered records based on date, season, harvester, and search query
   filteredRecords = computed(() => {
     const records = this.recordsByDate();
     const seasonFilter = this.selectedSeasonFilter();
+    const harvesterFilter = this.selectedHarvesterRecordFilter();
 
     let result = records;
     if (seasonFilter !== 'all') {
       result = result.filter(record => {
         const s = this.seasonService.getSeasonForRecord(record);
         return s?.id === seasonFilter || record.seasonId === seasonFilter;
+      });
+    }
+
+    if (harvesterFilter !== 'all') {
+      result = result.filter(record => {
+        const h = (record.harvester || 'Harvester 1').trim().toLowerCase();
+        return h === harvesterFilter.trim().toLowerCase();
       });
     }
 
@@ -1237,20 +1348,84 @@ export class RecordsComponent implements OnInit, OnDestroy {
   });
 
   /**
-   * Cuttings filtered by harvester selector tab on farmer detail view
+   * Cuttings filtered by harvester, season, and date filters on farmer detail view
    */
   farmerFilteredCuttings = computed(() => {
     const records = this.selectedFarmerRecords();
-    const filter = this.selectedHarvesterFilter();
-    if (filter === 'all') return records;
-    return records.filter(r => (r.harvester || 'Harvester 1').trim().toLowerCase() === filter.trim().toLowerCase());
+    const harvesterFilter = this.selectedHarvesterRecordFilter();
+    const dateFilter = this.selectedDateFilter();
+
+    let result = records;
+
+    // 1. Harvester Filter
+    if (harvesterFilter !== 'all') {
+      result = result.filter(r => (r.harvester || 'Harvester 1').trim().toLowerCase() === harvesterFilter.trim().toLowerCase());
+    }
+
+    // 2. Date Filter
+    if (dateFilter !== 'all') {
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const oneDayMs = 24 * 60 * 60 * 1000;
+      const yesterdayStart = todayStart - oneDayMs;
+      const weekStart = todayStart - (7 * oneDayMs);
+      const monthStart = todayStart - (30 * oneDayMs);
+      const todayEnd = todayStart + oneDayMs - 1;
+      const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+      result = result.filter(record => {
+        if (dateFilter === 'dueToday') {
+          if (record.markedAsPaid || (Number(record.pendingAmount) || 0) <= 0 || !record.fullPaymentDate) return false;
+          return this.normalizeDateToKey(record.fullPaymentDate) === todayKey;
+        }
+
+        const parsed = this.parseDate(record.date);
+        if (!parsed) return false;
+        const recordDay = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()).getTime();
+
+        switch (dateFilter) {
+          case 'today':
+            return recordDay === todayStart;
+          case 'yesterday':
+            return recordDay === yesterdayStart;
+          case 'week':
+            return recordDay >= weekStart && recordDay <= todayEnd;
+          case 'month':
+            return recordDay >= monthStart && recordDay <= todayEnd;
+          case 'custom': {
+            const mode = this.customMode();
+            if (mode === 'single') {
+              const single = this.customSingleDate();
+              if (!single) return true;
+              const target = this.parseDate(single);
+              if (!target) return true;
+              const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
+              return recordDay === targetDay;
+            } else {
+              const startStr = this.customStartDate();
+              const endStr = this.customEndDate();
+              if (!startStr && !endStr) return true;
+              const startD = startStr ? this.parseDate(startStr) : null;
+              const endD = endStr ? this.parseDate(endStr) : null;
+              const startMs = startD ? new Date(startD.getFullYear(), startD.getMonth(), startD.getDate()).getTime() : -Infinity;
+              const endMs = endD ? new Date(endD.getFullYear(), endD.getMonth(), endD.getDate()).getTime() + oneDayMs - 1 : Infinity;
+              return recordDay >= startMs && recordDay <= endMs;
+            }
+          }
+          default:
+            return true;
+        }
+      });
+    }
+
+    return result;
   });
 
   /**
-   * Aggregate financial & land summary for the selected farmer
+   * Aggregate financial & land summary for the selected farmer (filtered)
    */
   selectedFarmerSummary = computed(() => {
-    const records = this.selectedFarmerRecords();
+    const records = this.farmerFilteredCuttings();
     let totalAmount = 0;
     let paidAmount = 0;
     let pendingAmount = 0;

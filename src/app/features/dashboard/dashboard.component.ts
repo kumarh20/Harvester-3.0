@@ -10,6 +10,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RecordsService, Record } from '../../core/services/records.service';
 import { SeasonService } from '../../core/services/season.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { HarvesterService } from '../../core/services/harvester.service';
+import { UiPreferencesService } from '../../core/services/ui-preferences.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
 import { DashboardSkeletonComponent } from '../../shared/components/skeleton/dashboard-skeleton/dashboard-skeleton.component';
@@ -115,12 +117,44 @@ interface Stats {
 })
 export class DashboardComponent implements OnInit {
 
-  // Dual Filter State (Identical to Records screen)
+  // Dual & Harvester Filter State (Unified with Records screen)
   selectedDateFilter = signal<DashboardDateFilter>('all');
   selectedSeasonFilter = signal<string>('all');
+  selectedHarvesterFilter = signal<string>('all');
   private userManuallySelectedSeason = false;
   isDateFilterOpen = signal<boolean>(false);
   isSeasonFilterOpen = signal<boolean>(false);
+
+  // Filter Drawer State
+  isFilterPanelOpen = signal<boolean>(false);
+  isDrawerDateOpen = signal<boolean>(false);
+  isDrawerSeasonOpen = signal<boolean>(false);
+  isDrawerHarvesterOpen = signal<boolean>(false);
+
+  // Available Harvesters list
+  availableHarvesters = computed(() => {
+    const list = this.harvesterService.harvesters();
+    if (list && list.length > 0) {
+      return list;
+    }
+    const allRecords = this.recordsService.records();
+    const set = new Set<string>();
+    allRecords.forEach(r => {
+      const h = (r.harvester || '').trim();
+      if (h) set.add(h);
+    });
+    const found = Array.from(set);
+    return found.length > 0 ? found : ['Harvester 1', 'Harvester 2'];
+  });
+
+  // Active filter count for badge
+  activeFilterCount = computed(() => {
+    let count = 0;
+    if (this.selectedDateFilter() !== 'all') count++;
+    if (this.selectedSeasonFilter() !== 'all') count++;
+    if (this.selectedHarvesterFilter() !== 'all') count++;
+    return count;
+  });
 
   // Custom date drawer state
   customMode = signal<'single' | 'range'>('single');
@@ -220,19 +254,29 @@ export class DashboardComponent implements OnInit {
     });
   });
 
-  // Filtered records matching BOTH Date filter and Season filter
+  // Filtered records matching Date filter, Season filter, and Harvester filter
   filteredRecords = computed(() => {
     const records = this.recordsByDate();
     const seasonFilter = this.selectedSeasonFilter();
+    const harvesterFilter = this.selectedHarvesterFilter();
 
-    if (seasonFilter === 'all' || !seasonFilter) {
-      return records;
+    let result = records;
+
+    if (seasonFilter !== 'all' && seasonFilter) {
+      result = result.filter(record => {
+        const s = this.seasonService.getSeasonForRecord(record);
+        return s?.id === seasonFilter || record.seasonId === seasonFilter;
+      });
     }
 
-    return records.filter(record => {
-      const s = this.seasonService.getSeasonForRecord(record);
-      return s?.id === seasonFilter || record.seasonId === seasonFilter;
-    });
+    if (harvesterFilter !== 'all' && harvesterFilter) {
+      result = result.filter(record => {
+        const h = (record.harvester || 'Harvester 1').trim().toLowerCase();
+        return h === harvesterFilter.trim().toLowerCase();
+      });
+    }
+
+    return result;
   });
 
   stats = computed(() => {
@@ -629,7 +673,9 @@ export class DashboardComponent implements OnInit {
     private languageService: LanguageService,
     private router: Router,
     private dialog: MatDialog,
-    public appNavigationService: AppNavigationService
+    public appNavigationService: AppNavigationService,
+    public harvesterService: HarvesterService,
+    private uiPreferencesService: UiPreferencesService
   ) {
     this.updatePeriodCounts();
 
@@ -776,15 +822,92 @@ export class DashboardComponent implements OnInit {
     this.activeSeasonBar.set(null);
   }
 
+  openFilterPanel(): void {
+    this.closeAllFilterDropdowns();
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+    this.isDrawerDateOpen.set(false);
+    this.isFilterPanelOpen.set(true);
+  }
+
+  toggleDrawerDate(): void {
+    this.isDrawerDateOpen.update(v => !v);
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+  }
+
+  toggleDrawerSeason(): void {
+    this.isDrawerSeasonOpen.update(v => !v);
+    this.isDrawerDateOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+  }
+
+  toggleDrawerHarvester(): void {
+    this.isDrawerHarvesterOpen.update(v => !v);
+    this.isDrawerDateOpen.set(false);
+    this.isDrawerSeasonOpen.set(false);
+  }
+
+  closeFilterPanel(): void {
+    this.isFilterPanelOpen.set(false);
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+    this.isDrawerDateOpen.set(false);
+  }
+
+  applyFilterPanel(): void {
+    this.isFilterPanelOpen.set(false);
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+    this.isDrawerDateOpen.set(false);
+  }
+
+  selectHarvesterOption(harvester: string): void {
+    this.selectedHarvesterFilter.set(harvester);
+    this.isDrawerHarvesterOpen.set(false);
+    this.activeBar.set(null);
+  }
+
+  getSelectedHarvesterFilterLabel(): string {
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    const filter = this.selectedHarvesterFilter();
+    if (filter === 'all' || !filter) {
+      return isHi ? 'सभी हार्वेस्टर' : 'All Harvesters';
+    }
+    return filter;
+  }
+
+  getHarvesterRecordCount(harvester: string): number {
+    const recs = this.recordsService.records();
+    if (harvester === 'all') return recs.length;
+    return recs.filter(r => (r.harvester || 'Harvester 1').trim().toLowerCase() === harvester.trim().toLowerCase()).length;
+  }
+
+  getSeasonRecordCount(seasonId?: string): number {
+    const all = this.recordsService.records();
+    if (!seasonId || seasonId === 'all') {
+      return all.length;
+    }
+    return all.filter(r => {
+      const s = this.seasonService.getSeasonForRecord(r);
+      return s?.id === seasonId || r.seasonId === seasonId;
+    }).length;
+  }
+
   resetAllFilters(): void {
     this.userManuallySelectedSeason = false;
-    this.selectedDateFilter.set('all');
+    const prefDefault = this.uiPreferencesService.defaultRecordFilter();
+    this.selectedDateFilter.set(prefDefault || 'all');
     const defSeason = this.seasonService.defaultSeason();
     this.selectedSeasonFilter.set(defSeason?.id || 'all');
+    this.selectedHarvesterFilter.set('all');
     this.customStartDate.set('');
     this.customEndDate.set('');
     this.isDateFilterOpen.set(false);
     this.isSeasonFilterOpen.set(false);
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+    this.isDrawerDateOpen.set(false);
     this.activeBar.set(null);
     this.activeSeasonBar.set(null);
   }

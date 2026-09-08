@@ -24,6 +24,8 @@ import { LanguageService } from '../../shared/services/language.service';
 import { LandMeasurementComponent } from '../land-measurement/land-measurement.component';
 import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
 import { AppNavigationService } from '../../core/services/app-navigation.service';
+import { SeasonService } from '../../core/services/season.service';
+import { UiPreferencesService } from '../../core/services/ui-preferences.service';
 
 export type ReminderTabFilter = 'today' | 'tomorrow' | 'upcoming' | 'all' | 'custom';
 
@@ -70,10 +72,24 @@ export class RemindersComponent implements OnInit {
   landInAcresVal = signal<number>(1);
   ratePerAcreVal = signal<number>(2500);
 
-  // Search & Filter
+  // Search & Unified Filters (Date, Season, Harvester)
   searchQuery = signal<string>('');
   activeTab = signal<ReminderTabFilter>('all');
   customFilterDate = signal<string>('');
+
+  selectedDateFilter = signal<string>('all');
+  selectedSeasonFilter = signal<string>('all');
+  selectedHarvesterFilter = signal<string>('all');
+
+  // Filter Drawer State
+  isFilterPanelOpen = signal<boolean>(false);
+  isDrawerDateOpen = signal<boolean>(false);
+  isDrawerSeasonOpen = signal<boolean>(false);
+  isDrawerHarvesterOpen = signal<boolean>(false);
+  customMode = signal<'single' | 'range'>('single');
+  customSingleDate = signal<string>('');
+  customStartDate = signal<string>('');
+  customEndDate = signal<string>('');
 
   // Auto-detect existing farmer
   isCheckingFarmer = false;
@@ -91,6 +107,8 @@ export class RemindersComponent implements OnInit {
     public remindersService: RemindersService,
     private recordsService: RecordsService,
     public harvesterService: HarvesterService,
+    public seasonService: SeasonService,
+    private uiPreferencesService: UiPreferencesService,
     public notificationService: NotificationService,
     private toastService: ToastService,
     private dialogService: DialogService,
@@ -321,13 +339,30 @@ export class RemindersComponent implements OnInit {
     await this.harvesterService.loadHarvesters();
     await this.remindersService.loadReminders();
     await this.recordsService.loadRecords();
+    await this.seasonService.loadSeasons();
+
+    // Default filter from UI preferences (if configured)
+    const prefFilter = this.uiPreferencesService.defaultRecordFilter();
+    if (prefFilter && prefFilter !== 'all') {
+      this.selectedDateFilter.set(prefFilter);
+    }
+
+    // Default season from SeasonService (if configured)
+    const defSeason = this.seasonService.defaultSeason();
+    if (defSeason && defSeason.id) {
+      this.selectedSeasonFilter.set(defSeason.id);
+    }
+
+    // Default harvester is 'all' as requested
+    this.selectedHarvesterFilter.set('all');
 
     // Check query params
     this.route.queryParams.subscribe(params => {
       if (params['filter']) {
         const f = params['filter'];
-        if (f === 'today' || f === 'tomorrow' || f === 'upcoming' || f === 'all') {
+        if (f === 'today' || f === 'tomorrow' || f === 'upcoming' || f === 'all' || f === 'week' || f === 'month') {
           this.activeTab.set(f as ReminderTabFilter);
+          this.selectedDateFilter.set(f);
         }
       }
 
@@ -459,32 +494,123 @@ export class RemindersComponent implements OnInit {
     return Math.round(acres * rate);
   });
 
+  // Available Harvesters list
+  availableHarvesters = computed(() => {
+    const list = this.harvesterService.harvesters();
+    if (list && list.length > 0) {
+      return list;
+    }
+    const allReminders = this.remindersService.reminders();
+    const set = new Set<string>();
+    allReminders.forEach(r => {
+      const h = (r.harvester || '').trim();
+      if (h) set.add(h);
+    });
+    const found = Array.from(set);
+    return found.length > 0 ? found : ['Harvester 1', 'Harvester 2'];
+  });
+
+  // Active filter count for badge
+  activeFilterCount = computed(() => {
+    let count = 0;
+    if (this.selectedDateFilter() !== 'all') count++;
+    if (this.selectedSeasonFilter() !== 'all') count++;
+    if (this.selectedHarvesterFilter() !== 'all') count++;
+    return count;
+  });
+
   // Filtered Reminders
   filteredReminders = computed(() => {
     const all = this.remindersService.reminders();
     const query = this.searchQuery().trim().toLowerCase();
-    const tab = this.activeTab();
-    const customDate = this.customFilterDate();
+    const dateFilter = this.selectedDateFilter();
+    const seasonFilter = this.selectedSeasonFilter();
+    const harvesterFilter = this.selectedHarvesterFilter();
 
     let list = all.filter(r => r.status !== 'cancelled');
 
-    // Filter by tab
-    if (tab === 'today') {
-      list = list.filter(r => this.remindersService.isToday(r.scheduledDate));
-    } else if (tab === 'tomorrow') {
-      list = list.filter(r => this.remindersService.isTomorrow(r.scheduledDate));
-    } else if (tab === 'upcoming') {
-      list = list.filter(r => this.remindersService.isFuture(r.scheduledDate) && !this.remindersService.isToday(r.scheduledDate));
-    } else if (tab === 'custom' && customDate) {
+    // Filter by Harvester
+    if (harvesterFilter !== 'all') {
+      list = list.filter(r => (r.harvester || '').trim().toLowerCase() === harvesterFilter.trim().toLowerCase());
+    }
+
+    // Filter by Season
+    if (seasonFilter !== 'all') {
       list = list.filter(r => {
-        const d = this.remindersService.parseDate(r.scheduledDate);
-        if (!d) return false;
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        return key === customDate;
+        const s = this.seasonService.getSeasonForDate(r.scheduledDate);
+        return s && (s.id === seasonFilter || s.name === seasonFilter);
       });
     }
 
-    // Filter by search
+    // Filter by Date
+    if (dateFilter !== 'all') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (dateFilter === 'today') {
+        list = list.filter(r => this.remindersService.isToday(r.scheduledDate));
+      } else if (dateFilter === 'tomorrow') {
+        list = list.filter(r => this.remindersService.isTomorrow(r.scheduledDate));
+      } else if (dateFilter === 'yesterday') {
+        list = list.filter(r => {
+          const d = this.remindersService.parseDate(r.scheduledDate);
+          if (!d) return false;
+          const yest = new Date(today);
+          yest.setDate(yest.getDate() - 1);
+          return d.getFullYear() === yest.getFullYear() &&
+                 d.getMonth() === yest.getMonth() &&
+                 d.getDate() === yest.getDate();
+        });
+      } else if (dateFilter === 'week') {
+        const startOfWeek = new Date(today);
+        const day = startOfWeek.getDay();
+        const diff = (day === 0 ? -6 : 1) - day;
+        startOfWeek.setDate(startOfWeek.getDate() + diff);
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(endOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        list = list.filter(r => {
+          const d = this.remindersService.parseDate(r.scheduledDate);
+          return d && d >= startOfWeek && d <= endOfWeek;
+        });
+      } else if (dateFilter === 'month') {
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+        list = list.filter(r => {
+          const d = this.remindersService.parseDate(r.scheduledDate);
+          return d && d >= startOfMonth && d <= endOfMonth;
+        });
+      } else if (dateFilter === 'custom') {
+        const mode = this.customMode();
+        if (mode === 'single' && this.customSingleDate()) {
+          const target = this.customSingleDate();
+          list = list.filter(r => {
+            const d = this.remindersService.parseDate(r.scheduledDate);
+            if (!d) return false;
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const dayStr = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${dayStr}` === target;
+          });
+        } else if (mode === 'range') {
+          const start = this.customStartDate() ? new Date(this.customStartDate()) : null;
+          const end = this.customEndDate() ? new Date(this.customEndDate()) : null;
+          if (start) start.setHours(0, 0, 0, 0);
+          if (end) end.setHours(23, 59, 59, 999);
+
+          list = list.filter(r => {
+            const d = this.remindersService.parseDate(r.scheduledDate);
+            if (!d) return false;
+            if (start && d < start) return false;
+            if (end && d > end) return false;
+            return true;
+          });
+        }
+      }
+    }
+
+    // Filter by search query
     if (query) {
       list = list.filter(r => 
         r.farmerName?.toLowerCase().includes(query) ||
@@ -503,11 +629,243 @@ export class RemindersComponent implements OnInit {
     });
   });
 
+  // Reminders by date for drawer count badge
+  remindersByDate = computed(() => {
+    const all = this.remindersService.reminders().filter(r => r.status !== 'cancelled');
+    const dateFilter = this.selectedDateFilter();
+    if (dateFilter === 'all') return all;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (dateFilter === 'today') return all.filter(r => this.remindersService.isToday(r.scheduledDate));
+    if (dateFilter === 'tomorrow') return all.filter(r => this.remindersService.isTomorrow(r.scheduledDate));
+    if (dateFilter === 'week') {
+      const startOfWeek = new Date(today);
+      const day = startOfWeek.getDay();
+      const diff = (day === 0 ? -6 : 1) - day;
+      startOfWeek.setDate(startOfWeek.getDate() + diff);
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(endOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+      return all.filter(r => {
+        const d = this.remindersService.parseDate(r.scheduledDate);
+        return d && d >= startOfWeek && d <= endOfWeek;
+      });
+    }
+    if (dateFilter === 'month') {
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+      return all.filter(r => {
+        const d = this.remindersService.parseDate(r.scheduledDate);
+        return d && d >= startOfMonth && d <= endOfMonth;
+      });
+    }
+    return all;
+  });
+
   // Summary counts
   allCount = computed(() => this.remindersService.reminders().filter(r => r.status !== 'cancelled').length);
   todayCount = computed(() => this.remindersService.reminders().filter(r => r.status !== 'cancelled' && this.remindersService.isToday(r.scheduledDate)).length);
   tomorrowCount = computed(() => this.remindersService.reminders().filter(r => r.status !== 'cancelled' && this.remindersService.isTomorrow(r.scheduledDate)).length);
+  weekCount = computed(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startOfWeek = new Date(today);
+    const day = startOfWeek.getDay();
+    const diff = (day === 0 ? -6 : 1) - day;
+    startOfWeek.setDate(startOfWeek.getDate() + diff);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    return this.remindersService.reminders().filter(r => {
+      if (r.status === 'cancelled') return false;
+      const d = this.remindersService.parseDate(r.scheduledDate);
+      return d && d >= startOfWeek && d <= endOfWeek;
+    }).length;
+  });
+  monthCount = computed(() => {
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    return this.remindersService.reminders().filter(r => {
+      if (r.status === 'cancelled') return false;
+      const d = this.remindersService.parseDate(r.scheduledDate);
+      return d && d >= startOfMonth && d <= endOfMonth;
+    }).length;
+  });
   totalPendingCount = computed(() => this.remindersService.pendingReminders().length);
+
+  getSelectedDateFilterLabel(): string {
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+    const filter = this.selectedDateFilter();
+    switch (filter) {
+      case 'today': return isHi ? 'आज' : 'Today';
+      case 'yesterday': return isHi ? 'कल (बीता)' : 'Yesterday';
+      case 'tomorrow': return isHi ? 'कल (आगामी)' : 'Tomorrow';
+      case 'week': return isHi ? 'इस सप्ताह' : 'This Week';
+      case 'month': return isHi ? 'इस माह' : 'This Month';
+      case 'custom': {
+        if (this.customMode() === 'single' && this.customSingleDate()) {
+          return this.formatDateDisplay(this.customSingleDate());
+        } else if (this.customMode() === 'range' && (this.customStartDate() || this.customEndDate())) {
+          return `${this.formatDateDisplay(this.customStartDate())} - ${this.formatDateDisplay(this.customEndDate())}`;
+        }
+        return isHi ? 'कस्टम तारीख' : 'Custom Date';
+      }
+      default: return isHi ? 'सभी तारीख' : 'All Dates';
+    }
+  }
+
+  getSelectedSeasonFilterLabel(): string {
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+    const filter = this.selectedSeasonFilter();
+    if (filter === 'all') {
+      return isHi ? 'सभी सीज़न' : 'All Seasons';
+    }
+    const season = this.seasonService.seasons().find(s => s.id === filter);
+    return season ? `${season.name} ${season.year}` : (isHi ? 'सीज़न' : 'Season');
+  }
+
+  getSelectedHarvesterFilterLabel(): string {
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+    const filter = this.selectedHarvesterFilter();
+    if (filter === 'all') {
+      return isHi ? 'सभी हार्वेस्टर' : 'All Harvesters';
+    }
+    return filter;
+  }
+
+  getSeasonReminderCount(seasonId?: string): number {
+    if (!seasonId) return 0;
+    const all = this.remindersService.reminders().filter(r => r.status !== 'cancelled');
+    if (seasonId === 'all') return all.length;
+    return all.filter(r => {
+      const s = this.seasonService.getSeasonForDate(r.scheduledDate);
+      return s && (s.id === seasonId || s.name === seasonId);
+    }).length;
+  }
+
+  getHarvesterReminderCount(harvester: string): number {
+    const all = this.remindersService.reminders().filter(r => r.status !== 'cancelled');
+    if (harvester === 'all') return all.length;
+    return all.filter(r => (r.harvester || '').trim().toLowerCase() === harvester.trim().toLowerCase()).length;
+  }
+
+  formatDateDisplay(dateStr?: string | null): string {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    return dateStr;
+  }
+
+  openFilterPanel(): void {
+    this.isFilterPanelOpen.set(true);
+  }
+
+  closeFilterPanel(): void {
+    this.isFilterPanelOpen.set(false);
+    this.isDrawerDateOpen.set(false);
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+  }
+
+  applyFilterPanel(): void {
+    this.closeFilterPanel();
+  }
+
+  toggleDrawerDate(): void {
+    this.isDrawerDateOpen.update(v => !v);
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+  }
+
+  toggleDrawerSeason(): void {
+    this.isDrawerSeasonOpen.update(v => !v);
+    this.isDrawerDateOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
+  }
+
+  toggleDrawerHarvester(): void {
+    this.isDrawerHarvesterOpen.update(v => !v);
+    this.isDrawerDateOpen.set(false);
+    this.isDrawerSeasonOpen.set(false);
+  }
+
+  selectDateOption(option: string): void {
+    this.selectedDateFilter.set(option);
+    this.isDrawerDateOpen.set(false);
+  }
+
+  selectSeasonOption(seasonId?: string): void {
+    this.selectedSeasonFilter.set(seasonId || 'all');
+    this.isDrawerSeasonOpen.set(false);
+  }
+
+  selectHarvesterOption(harvester: string): void {
+    this.selectedHarvesterFilter.set(harvester);
+    this.isDrawerHarvesterOpen.set(false);
+  }
+
+  setCustomMode(mode: 'single' | 'range'): void {
+    this.customMode.set(mode);
+  }
+
+  openCustomDateDialog(type: 'single' | 'start' | 'end'): void {
+    let currentVal = '';
+    if (type === 'single') currentVal = this.customSingleDate();
+    if (type === 'start') currentVal = this.customStartDate();
+    if (type === 'end') currentVal = this.customEndDate();
+
+    let initialDate = new Date();
+    if (currentVal) {
+      const parts = currentVal.split('-');
+      if (parts.length === 3) {
+        initialDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      }
+    }
+
+    const dialogRef = this.dialog.open(DateTimePickerDialogComponent, {
+      width: '92vw',
+      maxWidth: '380px',
+      data: {
+        title: type === 'single' ? 'तारीख चुनें' : (type === 'start' ? 'प्रारंभिक तारीख' : 'अंतिम तारीख'),
+        initialDate: initialDate,
+        initialTime: '00:00',
+        includeTime: false
+      },
+      panelClass: 'custom-date-dialog-panel'
+    });
+
+    dialogRef.afterClosed().subscribe((res: DateTimePickerResult | null) => {
+      if (!res || !res.date) return;
+      const d = res.date;
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const formatted = `${y}-${m}-${day}`;
+
+      if (type === 'single') {
+        this.customSingleDate.set(formatted);
+      } else if (type === 'start') {
+        this.customStartDate.set(formatted);
+      } else if (type === 'end') {
+        this.customEndDate.set(formatted);
+      }
+    });
+  }
+
+  resetAllFilters(): void {
+    this.selectedDateFilter.set('all');
+    this.selectedSeasonFilter.set('all');
+    this.selectedHarvesterFilter.set('all');
+    this.customSingleDate.set('');
+    this.customStartDate.set('');
+    this.customEndDate.set('');
+    this.closeFilterPanel();
+  }
   
   totalScheduledAcres = computed(() => {
     const pending = this.remindersService.pendingReminders();
