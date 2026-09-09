@@ -16,7 +16,7 @@
                             "base": "dist",
                             "browser": ""
                         },
-                        "baseHref": "/",
+                        "baseHref": "./",
                         "browser": "src/main.ts",
                         "tsConfig": "tsconfig.app.json",
                         "inlineStyleLanguage": "scss",

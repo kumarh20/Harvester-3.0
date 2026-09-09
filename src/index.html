@@ -8,7 +8,7 @@
     <meta property="og:title" content="Harvester Wala">
     <meta name="description" content="A web application for tracking harvester cutting operations, farmer records, acreage, rates, and payments.">
     <meta property="og:description" content="A web application for tracking harvester cutting operations, farmer records, acreage, rates, and payments.">
-    <base href="/">
+    <base href="./">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -28,7 +28,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
         });
       }
     </script>
