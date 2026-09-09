@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Auth, signInWithCustomToken, UserCredential } from '@angular/fire/auth';
+import { Auth, type UserCredential } from '@angular/fire/auth';
+import { signInWithCustomToken } from 'firebase/auth';
 import { firstValueFrom } from 'rxjs';
 
 /**

@@ -4,7 +4,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { Auth, onAuthStateChanged, signOut, User } from '@angular/fire/auth';
+import { Auth, authState, User } from '@angular/fire/auth';
+import { signOut } from 'firebase/auth';
 import { TranslationService } from '../../services/translation.service';
 import { LanguageService } from '../../services/language.service';
 import { ThemeService } from '../../services/theme.service';
@@ -125,7 +126,7 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     // Listen to auth state changes and update signal
-    onAuthStateChanged(this.auth, (user) => {
+    authState(this.auth).subscribe((user) => {
       this.ngZone.run(() => {
         this.currentUser.set(user);
         if (user) {

@@ -10,7 +10,7 @@ import {
   query,
   where
 } from '@angular/fire/firestore';
-import { Auth, onAuthStateChanged } from '@angular/fire/auth';
+import { Auth, authState } from '@angular/fire/auth';
 import { Season, getSeasonDisplayLabel } from '../models/season.model';
 
 const SEASONS_CACHE_KEY = 'harvester_seasons_cache';
@@ -55,7 +55,7 @@ export class SeasonService {
     this.loadCachedSeasons();
 
     // Automatically load user's seasons as soon as auth state is confirmed
-    onAuthStateChanged(this.auth, (user) => {
+    authState(this.auth).subscribe((user) => {
       if (user) {
         this.loadSeasons();
       }

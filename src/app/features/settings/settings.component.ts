@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
-import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
+import { Auth, authState, User } from '@angular/fire/auth';
 import { DialogService } from '../../shared/services/dialog.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
@@ -170,7 +170,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }
     });
 
-    onAuthStateChanged(this.auth, async (user) => {
+    authState(this.auth).subscribe(async (user) => {
       this.currentUser.set(user);
       if (user) {
         await this.loadUserData(user.uid);

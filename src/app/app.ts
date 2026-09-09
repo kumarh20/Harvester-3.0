@@ -11,7 +11,7 @@ import { NotificationService } from './core/services/notification.service';
 import { TranslationService } from './shared/services/translation.service';
 import { LanguageService } from './shared/services/language.service';
 import { ThemeService } from './shared/services/theme.service';
-import { Auth, onAuthStateChanged } from '@angular/fire/auth';
+import { Auth, authState } from '@angular/fire/auth';
 import { IdleService } from './core/services/idle-service';
 
 interface NavItem {
@@ -76,7 +76,7 @@ export class App implements OnInit {
   }
 
   ngOnInit(): void {
-    onAuthStateChanged(this.auth, (user) => {
+    authState(this.auth).subscribe((user) => {
       // Run inside Angular zone for proper change detection on Safari/iOS
       this.ngZone.run(() => {
         if (user) {

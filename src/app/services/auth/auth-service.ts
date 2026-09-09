@@ -1,25 +1,15 @@
 import { Injectable } from '@angular/core';
+import { Auth, type User } from '@angular/fire/auth';
 import {
-  Auth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut,
-  User
-} from '@angular/fire/auth';
-import { setPersistence, browserLocalPersistence } from 'firebase/auth';
+  signOut
+} from 'firebase/auth';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  constructor(private auth: Auth) {
-    setPersistence(this.auth, browserLocalPersistence)
-      .then(() => {
-        console.log('Firebase session persistence set to LOCAL');
-      })
-      .catch((error) => {
-        console.error('Persistence error', error);
-      });
-  }
+  constructor(private auth: Auth) {}
 
   // Convert phone to email for standard Firebase Email/Password auth
   private phoneToEmail(phone: string): string {

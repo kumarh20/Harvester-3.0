@@ -12,7 +12,7 @@ import { HarvesterService } from '../../core/services/harvester.service';
 import { RecordsService } from '../../core/services/records.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { Router } from '@angular/router';
-import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
+import { Auth, authState, User } from '@angular/fire/auth';
 import { ProfileDialogComponent, ProfileDialogData } from '../../shared/components/profile-dialog/profile-dialog.component';
 import { firstValueFrom } from 'rxjs';
 import { AppNavigationService } from '../../core/services/app-navigation.service';
@@ -75,7 +75,7 @@ export class ProfileComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    onAuthStateChanged(this.auth, (user) => {
+    authState(this.auth).subscribe((user) => {
       this.currentUser.set(user);
       if (user) {
         this.loadProfile();
