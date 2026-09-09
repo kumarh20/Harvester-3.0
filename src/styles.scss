@@ -1397,9 +1397,10 @@ input[type="date"] {
 .filter-drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(3px);
-  z-index: 2999;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99998 !important;
   animation: filterBackdropFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1417,10 +1418,12 @@ input[type="date"] {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 360px;
-  max-width: 88vw;
+  height: 100vh;
+  height: 100dvh;
+  width: 250px;
+  max-width: 70vw;
   background: #FFFFFF;
-  z-index: 3000;
+  z-index: 99999 !important;
   box-shadow: -6px 0 28px rgba(0, 0, 0, 0.22);
   display: flex;
   flex-direction: column;
@@ -1428,65 +1431,92 @@ input[type="date"] {
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
 
+  @media (max-width: 480px) {
+    width: 240px;
+    max-width: 68vw;
+  }
+
   &.is-open {
     transform: translateX(0) !important;
   }
 
-  // Drawer Header
+  // Drawer Header (iOS Dynamic Island & Safe Area Aware)
   .drawer-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    padding-bottom: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
     border-bottom: 1px solid #EEF5EF;
     flex-shrink: 0;
+    background: #FFFFFF;
+    position: relative;
+    z-index: 2;
 
     .drawer-title-wrap,
     .drawer-title-block {
       display: flex;
       align-items: center;
       gap: 8px;
+      min-width: 0;
 
       .drawer-header-icon {
-        font-size: 22px;
-        width: 22px;
-        height: 22px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
         color: #447A44;
+        flex-shrink: 0;
       }
 
       .drawer-title {
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 800;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.04em;
         color: #1C2D1F;
         text-transform: uppercase;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
 
     .drawer-close-circle-btn,
     .drawer-close-btn {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
       border-radius: 50%;
-      border: 1px solid #D1E2D3;
+      border: 1.5px solid #D1E2D3;
       background: #F0F5F1;
-      color: #4A634E;
+      color: #2D4830;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.15s ease;
+      flex-shrink: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
 
       mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
       }
 
       &:hover {
         background: #E3EDE4;
         color: #1C2D1F;
         border-color: #B2D1B6;
+      }
+
+      &:active {
+        transform: scale(0.92);
       }
     }
   }
@@ -1496,17 +1526,18 @@ input[type="date"] {
   .drawer-body {
     flex: 1;
     overflow-y: auto;
-    padding: 18px 16px;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 14px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
     box-sizing: border-box;
 
     .drawer-filter-card {
       background: #F8FAF8;
       border: 1.5px solid #E2ECE3;
       border-radius: 14px;
-      padding: 14px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -1527,14 +1558,14 @@ input[type="date"] {
           gap: 6px;
 
           .drawer-card-icon {
-            font-size: 18px;
-            width: 18px;
-            height: 18px;
+            font-size: 17px;
+            width: 17px;
+            height: 17px;
             color: #447A44;
           }
 
           .drawer-card-label {
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 700;
             color: #1C2D1F;
           }
@@ -1545,7 +1576,7 @@ input[type="date"] {
           color: #2E7D32;
           font-size: 11px;
           font-weight: 700;
-          padding: 2px 9px;
+          padding: 2px 8px;
           border-radius: 9999px;
           border: 1px solid #C5E3C8;
         }
@@ -1563,7 +1594,7 @@ input[type="date"] {
           background: #FFFFFF;
           border: 1.5px solid #CBD5E1;
           border-radius: 10px;
-          padding: 10px 12px;
+          padding: 9px 12px;
           font-size: 13px;
           font-weight: 600;
           color: #1C2D1F;
@@ -1619,8 +1650,8 @@ input[type="date"] {
           .drawer-menu-item {
             width: 100%;
             text-align: left;
-            padding: 10px 12px;
-            font-size: 13px;
+            padding: 9px 12px;
+            font-size: 12.5px;
             font-weight: 500;
             color: #2D4830;
             border: none;
@@ -1664,13 +1695,13 @@ input[type="date"] {
     .drawer-reset-wrapper {
       display: flex;
       justify-content: center;
-      margin-top: 4px;
+      margin-top: 2px;
 
       .drawer-reset-link {
         background: none;
         border: none;
         color: #557A58;
-        font-size: 12.5px;
+        font-size: 12px;
         font-weight: 600;
         cursor: pointer;
         display: inline-flex;
@@ -1694,9 +1725,12 @@ input[type="date"] {
     }
   }
 
-  // Footer: Prominent APPLY Button (Green Theme)
+  // Footer: Prominent APPLY Button (Green Theme with Safe Area padding)
   .drawer-footer {
-    padding: 16px 20px;
+    padding-top: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid #EEF5EF;
     background: #FFFFFF;
     flex-shrink: 0;
@@ -1707,8 +1741,8 @@ input[type="date"] {
       background: #447A44;
       color: #FFFFFF;
       border: none;
-      padding: 13px 20px;
-      font-size: 14px;
+      padding: 12px 20px;
+      font-size: 13.5px;
       font-weight: 700;
       letter-spacing: 0.05em;
       text-transform: uppercase;
@@ -1738,9 +1772,11 @@ input[type="date"] {
     box-shadow: -6px 0 28px rgba(0, 0, 0, 0.5);
 
     .drawer-header {
+      background: #111C13;
       border-color: rgba(255, 255, 255, 0.08);
 
-      .drawer-title-wrap {
+      .drawer-title-wrap,
+      .drawer-title-block {
         .drawer-header-icon {
           color: #7CB342;
         }
@@ -1750,7 +1786,8 @@ input[type="date"] {
         }
       }
 
-      .drawer-close-circle-btn {
+      .drawer-close-circle-btn,
+      .drawer-close-btn {
         background: #182C1E;
         border-color: rgba(124, 179, 66, 0.25);
         color: #CBD5E1;

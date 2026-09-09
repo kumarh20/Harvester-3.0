@@ -26,6 +26,7 @@ import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../share
 import { AppNavigationService } from '../../core/services/app-navigation.service';
 import { SeasonService } from '../../core/services/season.service';
 import { UiPreferencesService } from '../../core/services/ui-preferences.service';
+import { ReminderSkeletonComponent } from '../../shared/components/skeleton/reminder-skeleton/reminder-skeleton.component';
 
 export type ReminderTabFilter = 'today' | 'tomorrow' | 'upcoming' | 'all' | 'custom';
 
@@ -46,7 +47,8 @@ export type ReminderTabFilter = 'today' | 'tomorrow' | 'upcoming' | 'all' | 'cus
     MatIconModule,
     MatProgressSpinnerModule,
     MatSelectModule,
-    MatDialogModule
+    MatDialogModule,
+    ReminderSkeletonComponent
   ],
   providers: [
     { provide: DateAdapter, useClass: CustomDateAdapter },

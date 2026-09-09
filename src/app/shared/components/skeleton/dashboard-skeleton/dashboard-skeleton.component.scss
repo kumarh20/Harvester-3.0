@@ -1,203 +1,402 @@
-.skeleton-dashboard {
-  padding: 20px;
+.skeleton-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
   animation: fadeIn 0.3s ease-in-out;
+
+  @media (min-width: 768px) {
+    gap: 22px;
+  }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes shimmer {
   0% {
-    background-position: -1000px 0;
+    background-position: -200% 0;
   }
   100% {
-    background-position: 1000px 0;
+    background-position: 200% 0;
   }
 }
 
 .skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    #f0f0f0 0%,
-    #e0e0e0 20%,
-    #f0f0f0 40%,
-    #f0f0f0 100%
+    #F1F5F9 0%,
+    #E2E8F0 50%,
+    #F1F5F9 100%
   );
-  background-size: 1000px 100%;
-  animation: shimmer 2s infinite linear;
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
 }
 
-.skeleton-balance-card {
-  @extend .skeleton-shimmer;
-  height: 120px;
-  border-radius: 16px;
-  margin-bottom: 20px;
+/* 1. Hero Header Skeleton */
+.skeleton-hero-header {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+
+  @media (min-width: 640px) {
+    padding: 18px 22px;
+    gap: 16px;
+  }
 }
 
-.skeleton-main-card {
-  background: white;
-  border-radius: 8px;
-  padding: 24px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.skeleton-header {
-  margin-bottom: 24px;
-}
-
-.skeleton-title {
-  @extend .skeleton-shimmer;
-  height: 32px;
-  width: 200px;
-  border-radius: 4px;
-  margin-bottom: 8px;
-}
-
-.skeleton-subtitle {
-  @extend .skeleton-shimmer;
-  height: 20px;
-  width: 300px;
-  border-radius: 4px;
-}
-
-.skeleton-period-selector {
-  background: #f9fafb;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
-}
-
-.skeleton-period-title {
-  @extend .skeleton-shimmer;
-  height: 24px;
-  width: 150px;
-  border-radius: 4px;
-  margin-bottom: 16px;
-}
-
-.skeleton-period-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+.skeleton-hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 12px;
 }
 
-.skeleton-period-button {
-  @extend .skeleton-shimmer;
-  height: 64px;
-  border-radius: 8px;
-}
-
-.skeleton-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.skeleton-stat-card {
-  background: #f9fafb;
-  border-radius: 8px;
-  padding: 20px;
+.skeleton-hero-title-group {
   display: flex;
-  gap: 16px;
   align-items: center;
+  gap: 10px;
+  flex: 1;
 }
 
-.skeleton-stat-icon {
+.skeleton-hero-title {
   @extend .skeleton-shimmer;
-  width: 48px;
+  height: 28px;
+  width: 180px;
+  border-radius: 6px;
+}
+
+.skeleton-hero-badge {
+  @extend .skeleton-shimmer;
+  height: 22px;
+  width: 90px;
+  border-radius: 9999px;
+}
+
+.skeleton-hero-refresh {
+  @extend .skeleton-shimmer;
+  height: 36px;
+  width: 90px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.skeleton-hero-subtitle {
+  @extend .skeleton-shimmer;
+  height: 14px;
+  width: 280px;
+  max-width: 80%;
+  border-radius: 4px;
+}
+
+.skeleton-hero-actions {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.skeleton-hero-btn {
+  @extend .skeleton-shimmer;
   height: 48px;
+  border-radius: 12px;
+
+  &.primary {
+    background: linear-gradient(90deg, #DCFCE7 0%, #BBF7D0 50%, #DCFCE7 100%);
+    background-size: 200% 100%;
+  }
+
+  &.secondary {
+    background: linear-gradient(90deg, #F1F5F9 0%, #E2E8F0 50%, #F1F5F9 100%);
+    background-size: 200% 100%;
+  }
+}
+
+/* 2. Filter Bar Skeleton */
+.skeleton-filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.skeleton-filter-chips {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.skeleton-chip {
+  @extend .skeleton-shimmer;
+  height: 36px;
+  width: 105px;
+  border-radius: 10px;
+}
+
+.skeleton-filter-btn {
+  @extend .skeleton-shimmer;
+  height: 36px;
+  width: 85px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+/* 3. Financial Hero Cards Grid */
+.skeleton-financial-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  width: 100%;
+
+  @media (min-width: 640px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+}
+
+.skeleton-financial-card {
+  border-radius: 20px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 125px;
+  box-sizing: border-box;
+
+  &.revenue-card {
+    background: #FFFFFF;
+    border: 1px solid #BBF7D0;
+    box-shadow: 0 2px 8px rgba(22, 101, 52, 0.06);
+  }
+
+  &.pending-card {
+    background: #FFFFFF;
+    border: 1px solid #FEF08A;
+    box-shadow: 0 2px 8px rgba(202, 138, 4, 0.06);
+  }
+}
+
+.skeleton-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.skeleton-circle-icon {
+  @extend .skeleton-shimmer;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.skeleton-stat-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.skeleton-stat-title {
+.skeleton-card-label {
   @extend .skeleton-shimmer;
   height: 16px;
-  width: 100px;
-  border-radius: 4px;
-}
-
-.skeleton-stat-value {
-  @extend .skeleton-shimmer;
-  height: 32px;
   width: 120px;
   border-radius: 4px;
 }
 
-.skeleton-additional-card {
-  background: #f9fafb;
-  border-radius: 8px;
-  padding: 20px;
-}
-
-.skeleton-additional-header {
+.skeleton-card-amount {
   @extend .skeleton-shimmer;
-  height: 24px;
-  width: 180px;
-  border-radius: 4px;
-  margin-bottom: 16px;
+  height: 34px;
+  width: 160px;
+  border-radius: 6px;
 }
 
-.skeleton-additional-items {
+.skeleton-card-pill {
+  @extend .skeleton-shimmer;
+  height: 22px;
+  width: 140px;
+  border-radius: 9999px;
+}
+
+/* 4. Analytics & Timeline Chart Card */
+.skeleton-chart-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
+}
+
+.skeleton-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.skeleton-chart-title-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.skeleton-square-icon {
+  @extend .skeleton-shimmer;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.skeleton-chart-title-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeleton-chart-title {
+  @extend .skeleton-shimmer;
+  height: 18px;
+  width: 160px;
+  border-radius: 4px;
+}
+
+.skeleton-chart-sub {
+  @extend .skeleton-shimmer;
+  height: 12px;
+  width: 200px;
+  border-radius: 4px;
+}
+
+.skeleton-chart-toggles {
+  display: flex;
+  gap: 8px;
+}
+
+.skeleton-toggle-group {
+  @extend .skeleton-shimmer;
+  height: 32px;
+  width: 140px;
+  border-radius: 8px;
+}
+
+.skeleton-chart-legends {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 6px 0;
+}
+
+.skeleton-legend-item {
+  @extend .skeleton-shimmer;
+  height: 16px;
+  width: 90px;
+  border-radius: 4px;
+}
+
+.skeleton-chart-bars-canvas {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  height: 180px;
+  padding: 10px 0;
+  border-bottom: 2px solid #E2E8F0;
   gap: 12px;
 }
 
-.skeleton-additional-item {
-  @extend .skeleton-shimmer;
-  height: 20px;
-  width: 100%;
-  border-radius: 4px;
+.skeleton-bar-pair {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 100%;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .skeleton-shimmer {
-    animation: none;
-    background: #f0f0f0;
+.skeleton-bar {
+  @extend .skeleton-shimmer;
+  width: 18px;
+  border-radius: 6px 6px 0 0;
+
+  &.primary {
+    background: linear-gradient(180deg, #BBF7D0 0%, #86EFAC 50%, #BBF7D0 100%);
+    background-size: 100% 200%;
   }
+
+  &.secondary {
+    background: linear-gradient(180deg, #BAE6FD 0%, #7DD3FC 50%, #BAE6FD 100%);
+    background-size: 100% 200%;
+  }
+
+  &.h-30 { height: 30%; }
+  &.h-40 { height: 40%; }
+  &.h-45 { height: 45%; }
+  &.h-50 { height: 50%; }
+  &.h-60 { height: 60%; }
+  &.h-65 { height: 65%; }
+  &.h-70 { height: 70%; }
+  &.h-75 { height: 75%; }
+  &.h-85 { height: 85%; }
+  &.h-95 { height: 95%; }
 }
 
 [data-theme="dark"] {
-  .skeleton-main-card {
-    background: #1f2937;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-
-  .skeleton-period-selector,
-  .skeleton-stat-card,
-  .skeleton-additional-card {
-    background: #111827;
-  }
-
   .skeleton-shimmer {
     background: linear-gradient(
       90deg,
-      #374151 0%,
-      #4b5563 20%,
-      #374151 40%,
-      #374151 100%
+      #1E293B 0%,
+      #334155 50%,
+      #1E293B 100%
     );
-    background-size: 1000px 100%;
+    background-size: 200% 100%;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .skeleton-shimmer {
-      background: #374151;
-    }
+  .skeleton-hero-header,
+  .skeleton-chart-card {
+    background: #1E293B;
+    border-color: #334155;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+  }
+
+  .skeleton-financial-card.revenue-card {
+    background: #1E293B;
+    border-color: #065F46;
+  }
+
+  .skeleton-financial-card.pending-card {
+    background: #1E293B;
+    border-color: #854D0E;
+  }
+
+  .skeleton-hero-btn.primary {
+    background: linear-gradient(90deg, #065F46 0%, #047857 50%, #065F46 100%);
+    background-size: 200% 100%;
+  }
+
+  .skeleton-hero-btn.secondary {
+    background: linear-gradient(90deg, #1E293B 0%, #334155 50%, #1E293B 100%);
+    background-size: 200% 100%;
+  }
+
+  .skeleton-chart-bars-canvas {
+    border-bottom-color: #334155;
+  }
+
+  .skeleton-bar.primary {
+    background: linear-gradient(180deg, #065F46 0%, #047857 50%, #065F46 100%);
+    background-size: 100% 200%;
+  }
+
+  .skeleton-bar.secondary {
+    background: linear-gradient(180deg, #0369A1 0%, #0284C7 50%, #0369A1 100%);
+    background-size: 100% 200%;
   }
 }

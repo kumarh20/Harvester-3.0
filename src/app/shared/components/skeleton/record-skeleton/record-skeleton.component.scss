@@ -1,151 +1,319 @@
-.skeleton-container {
-  padding: 20px;
+.skeleton-records-container {
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
   animation: fadeIn 0.3s ease-in-out;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes shimmer {
   0% {
-    background-position: -1000px 0;
+    background-position: -200% 0;
   }
   100% {
-    background-position: 1000px 0;
+    background-position: 200% 0;
   }
 }
 
 .skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    #f0f0f0 0%,
-    #e0e0e0 20%,
-    #f0f0f0 40%,
-    #f0f0f0 100%
+    #F1F5F9 0%,
+    #E2E8F0 50%,
+    #F1F5F9 100%
   );
-  background-size: 1000px 100%;
-  animation: shimmer 2s infinite linear;
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
 }
 
-.skeleton-search {
-  margin-bottom: 20px;
-}
-
-.skeleton-search-box {
-  @extend .skeleton-shimmer;
-  height: 56px;
-  border-radius: 4px;
+/* 1. Header Section */
+.skeleton-records-header {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   width: 100%;
 }
 
-.skeleton-records {
+.skeleton-header-top-row {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.skeleton-card {
-  background: white;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.skeleton-card-content {
-  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 
-.skeleton-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 1;
-}
-
-.skeleton-avatar {
-  @extend .skeleton-shimmer;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.skeleton-info {
+.skeleton-title-group {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.skeleton-page-title {
+  @extend .skeleton-shimmer;
+  height: 24px;
+  width: 160px;
+  border-radius: 6px;
+}
+
+.skeleton-page-subtitle {
+  @extend .skeleton-shimmer;
+  height: 14px;
+  width: 140px;
+  border-radius: 4px;
+}
+
+.skeleton-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skeleton-badge-pill {
+  @extend .skeleton-shimmer;
+  height: 28px;
+  width: 75px;
+  border-radius: 9999px;
+}
+
+/* 2. Search Bar */
+.skeleton-search-bar {
+  @extend .skeleton-shimmer;
+  height: 48px;
+  border-radius: 14px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.skeleton-search-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.skeleton-search-text {
+  height: 14px;
+  width: 200px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* 3. Filter Action Row */
+.skeleton-filter-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.skeleton-filter-chips {
+  display: flex;
+  align-items: center;
   gap: 8px;
   flex: 1;
 }
 
-.skeleton-name {
+.skeleton-chip {
   @extend .skeleton-shimmer;
-  height: 20px;
-  width: 150px;
+  height: 36px;
+  width: 100px;
+  border-radius: 10px;
+}
+
+.skeleton-filter-pill-btn {
+  @extend .skeleton-shimmer;
+  height: 36px;
+  width: 85px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+/* 4. Grouped Feed */
+.skeleton-records-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-date-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.skeleton-date-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.skeleton-date-icon {
+  @extend .skeleton-shimmer;
+  width: 18px;
+  height: 18px;
   border-radius: 4px;
 }
 
-.skeleton-contact {
+.skeleton-date-text {
+  @extend .skeleton-shimmer;
+  height: 16px;
+  width: 80px;
+  border-radius: 4px;
+}
+
+.skeleton-date-line {
+  flex: 1;
+  height: 1px;
+  background: #E2E8F0;
+}
+
+.skeleton-date-count {
+  @extend .skeleton-shimmer;
+  height: 20px;
+  width: 60px;
+  border-radius: 9999px;
+}
+
+/* Cards List */
+.skeleton-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-record-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
+}
+
+.skeleton-card-main-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.skeleton-avatar-squircle {
+  @extend .skeleton-shimmer;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, #DCFCE7 0%, #BBF7D0 50%, #DCFCE7 100%);
+  background-size: 200% 100%;
+}
+
+.skeleton-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.skeleton-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skeleton-farmer-name {
   @extend .skeleton-shimmer;
   height: 16px;
   width: 120px;
   border-radius: 4px;
 }
 
-.skeleton-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.skeleton-harvester-pill {
+  @extend .skeleton-shimmer;
+  height: 18px;
+  width: 60px;
+  border-radius: 6px;
 }
 
-.skeleton-badge {
+.skeleton-acres-text {
   @extend .skeleton-shimmer;
-  height: 28px;
-  width: 80px;
-  border-radius: 14px;
-}
-
-.skeleton-icon {
-  @extend .skeleton-shimmer;
-  width: 24px;
-  height: 24px;
+  height: 13px;
+  width: 70px;
   border-radius: 4px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .skeleton-shimmer {
-    animation: none;
-    background: #f0f0f0;
-  }
+.skeleton-card-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.skeleton-amount-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.skeleton-amount {
+  @extend .skeleton-shimmer;
+  height: 16px;
+  width: 70px;
+  border-radius: 4px;
+}
+
+.skeleton-status-badge {
+  @extend .skeleton-shimmer;
+  height: 18px;
+  width: 50px;
+  border-radius: 6px;
+}
+
+.skeleton-chevron {
+  @extend .skeleton-shimmer;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
 }
 
 [data-theme="dark"] {
-  .skeleton-card {
-    background: #1f2937;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-
   .skeleton-shimmer {
     background: linear-gradient(
       90deg,
-      #374151 0%,
-      #4b5563 20%,
-      #374151 40%,
-      #374151 100%
+      #1E293B 0%,
+      #334155 50%,
+      #1E293B 100%
     );
-    background-size: 1000px 100%;
+    background-size: 200% 100%;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .skeleton-shimmer {
-      background: #374151;
-    }
+  .skeleton-record-card {
+    background: #1E293B;
+    border-color: #334155;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  }
+
+  .skeleton-avatar-squircle {
+    background: linear-gradient(90deg, #065F46 0%, #047857 50%, #065F46 100%);
+    background-size: 200% 100%;
+  }
+
+  .skeleton-date-line {
+    background: #334155;
   }
 }

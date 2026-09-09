@@ -1,59 +1,92 @@
-<div class="skeleton-dashboard">
-  <div class="skeleton-balance-card"></div>
+<div class="skeleton-dashboard-container" id="skeleton-dashboard-root">
+  <!-- 1. Hero Header Skeleton -->
+  <div class="skeleton-hero-header">
+    <div class="skeleton-hero-top">
+      <div class="skeleton-hero-title-group">
+        <div class="skeleton-hero-title"></div>
+        <div class="skeleton-hero-badge"></div>
+      </div>
+      <div class="skeleton-hero-refresh"></div>
+    </div>
+    <div class="skeleton-hero-subtitle"></div>
+    <!-- Two hero buttons: + New Record & Land Measure -->
+    <div class="skeleton-hero-actions">
+      <div class="skeleton-hero-btn primary"></div>
+      <div class="skeleton-hero-btn secondary"></div>
+    </div>
+  </div>
 
-  <div class="skeleton-main-card">
-    <div class="skeleton-header">
-      <div class="skeleton-title"></div>
-      <div class="skeleton-subtitle"></div>
+  <!-- 2. Filter Bar Skeleton -->
+  <div class="skeleton-filter-bar">
+    <div class="skeleton-filter-chips">
+      <div class="skeleton-chip"></div>
+      <div class="skeleton-chip"></div>
+    </div>
+    <div class="skeleton-filter-btn"></div>
+  </div>
+
+  <!-- 3. Financial Hero Cards Grid (Total Billed & Pending Amount) -->
+  <div class="skeleton-financial-grid">
+    <div class="skeleton-financial-card revenue-card">
+      <div class="skeleton-card-head">
+        <div class="skeleton-circle-icon"></div>
+        <div class="skeleton-card-label"></div>
+      </div>
+      <div class="skeleton-card-amount"></div>
+      <div class="skeleton-card-pill"></div>
     </div>
 
-    <div class="skeleton-period-selector">
-      <div class="skeleton-period-title"></div>
-      <div class="skeleton-period-buttons">
-        <div class="skeleton-period-button"></div>
-        <div class="skeleton-period-button"></div>
-        <div class="skeleton-period-button"></div>
-        <div class="skeleton-period-button"></div>
+    <div class="skeleton-financial-card pending-card">
+      <div class="skeleton-card-head">
+        <div class="skeleton-circle-icon"></div>
+        <div class="skeleton-card-label"></div>
+      </div>
+      <div class="skeleton-card-amount"></div>
+    </div>
+  </div>
+
+  <!-- 4. Analytics & Timeline Chart Card -->
+  <div class="skeleton-chart-card">
+    <div class="skeleton-chart-header">
+      <div class="skeleton-chart-title-box">
+        <div class="skeleton-square-icon"></div>
+        <div class="skeleton-chart-title-lines">
+          <div class="skeleton-chart-title"></div>
+          <div class="skeleton-chart-sub"></div>
+        </div>
+      </div>
+      <div class="skeleton-chart-toggles">
+        <div class="skeleton-toggle-group"></div>
       </div>
     </div>
 
-    <div class="skeleton-stats-grid">
-      <div class="skeleton-stat-card">
-        <div class="skeleton-stat-icon"></div>
-        <div class="skeleton-stat-content">
-          <div class="skeleton-stat-title"></div>
-          <div class="skeleton-stat-value"></div>
-        </div>
-      </div>
-      <div class="skeleton-stat-card">
-        <div class="skeleton-stat-icon"></div>
-        <div class="skeleton-stat-content">
-          <div class="skeleton-stat-title"></div>
-          <div class="skeleton-stat-value"></div>
-        </div>
-      </div>
-      <div class="skeleton-stat-card">
-        <div class="skeleton-stat-icon"></div>
-        <div class="skeleton-stat-content">
-          <div class="skeleton-stat-title"></div>
-          <div class="skeleton-stat-value"></div>
-        </div>
-      </div>
-      <div class="skeleton-stat-card">
-        <div class="skeleton-stat-icon"></div>
-        <div class="skeleton-stat-content">
-          <div class="skeleton-stat-title"></div>
-          <div class="skeleton-stat-value"></div>
-        </div>
-      </div>
+    <!-- Chart Legends -->
+    <div class="skeleton-chart-legends">
+      <div class="skeleton-legend-item"></div>
+      <div class="skeleton-legend-item"></div>
     </div>
 
-    <div class="skeleton-additional-card">
-      <div class="skeleton-additional-header"></div>
-      <div class="skeleton-additional-items">
-        <div class="skeleton-additional-item"></div>
-        <div class="skeleton-additional-item"></div>
-        <div class="skeleton-additional-item"></div>
+    <!-- Chart Bars Canvas -->
+    <div class="skeleton-chart-bars-canvas">
+      <div class="skeleton-bar-pair">
+        <div class="skeleton-bar primary h-60"></div>
+        <div class="skeleton-bar secondary h-40"></div>
+      </div>
+      <div class="skeleton-bar-pair">
+        <div class="skeleton-bar primary h-85"></div>
+        <div class="skeleton-bar secondary h-65"></div>
+      </div>
+      <div class="skeleton-bar-pair">
+        <div class="skeleton-bar primary h-45"></div>
+        <div class="skeleton-bar secondary h-30"></div>
+      </div>
+      <div class="skeleton-bar-pair">
+        <div class="skeleton-bar primary h-95"></div>
+        <div class="skeleton-bar secondary h-75"></div>
+      </div>
+      <div class="skeleton-bar-pair">
+        <div class="skeleton-bar primary h-70"></div>
+        <div class="skeleton-bar secondary h-50"></div>
       </div>
     </div>
   </div>

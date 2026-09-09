@@ -1,0 +1,269 @@
+.skeleton-reminders {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  animation: fadeIn 0.3s ease-in-out;
+
+  @media (min-width: 640px) {
+    padding: 16px 20px;
+    gap: 14px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #F1F5F9 0%,
+    #E2E8F0 50%,
+    #F1F5F9 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
+/* 1. Header Bar */
+.skeleton-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 2px 0;
+}
+
+.skeleton-header-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.skeleton-title-line {
+  @extend .skeleton-shimmer;
+  height: 24px;
+  width: 140px;
+  border-radius: 6px;
+}
+
+.skeleton-subtitle-line {
+  @extend .skeleton-shimmer;
+  height: 14px;
+  width: 220px;
+  border-radius: 4px;
+}
+
+.skeleton-new-btn {
+  @extend .skeleton-shimmer;
+  height: 40px;
+  width: 80px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+/* 2. Search Bar */
+.skeleton-search-bar {
+  @extend .skeleton-shimmer;
+  height: 46px;
+  border-radius: 14px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.skeleton-search-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.skeleton-search-text {
+  height: 14px;
+  width: 180px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* 3. Filter Row */
+.skeleton-filter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.skeleton-filter-chips {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.skeleton-filter-chip {
+  @extend .skeleton-shimmer;
+  height: 36px;
+  width: 100px;
+  border-radius: 10px;
+}
+
+.skeleton-filter-btn {
+  @extend .skeleton-shimmer;
+  height: 36px;
+  width: 90px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+/* 4. Reminder Cards List */
+.skeleton-reminders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.skeleton-reminder-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.skeleton-card-farmer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.skeleton-farmer-name {
+  @extend .skeleton-shimmer;
+  height: 18px;
+  width: 130px;
+  border-radius: 4px;
+}
+
+.skeleton-tag-pill {
+  @extend .skeleton-shimmer;
+  height: 20px;
+  width: 60px;
+  border-radius: 9999px;
+}
+
+.skeleton-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.skeleton-date-acres {
+  @extend .skeleton-shimmer;
+  height: 16px;
+  width: 90px;
+  border-radius: 4px;
+}
+
+.skeleton-chevron {
+  @extend .skeleton-shimmer;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+.skeleton-card-body {
+  border-top: 1px dashed #E2E8F0;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-info-row {
+  display: flex;
+  gap: 8px;
+}
+
+.skeleton-pill {
+  @extend .skeleton-shimmer;
+  height: 26px;
+  width: 85px;
+  border-radius: 8px;
+}
+
+.skeleton-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 4px;
+}
+
+.skeleton-estimate {
+  @extend .skeleton-shimmer;
+  height: 22px;
+  width: 110px;
+  border-radius: 6px;
+}
+
+.skeleton-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.skeleton-circle-btn {
+  @extend .skeleton-shimmer;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+[data-theme="dark"] {
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      #1E293B 0%,
+      #334155 50%,
+      #1E293B 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  .skeleton-reminder-card {
+    background: #1E293B;
+    border-color: #334155;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .skeleton-card-body {
+    border-top-color: #334155;
+  }
+}

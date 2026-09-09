@@ -332,10 +332,7 @@
   <!-- Reminders Cards Feed -->
   <main class="reminders-list-container" id="reminders-list-feed">
     @if (remindersService.isLoading()) {
-      <div class="loading-state-box" id="reminders-loading">
-        <mat-spinner diameter="42"></mat-spinner>
-        <p>{{ translationService.get('common.loading') }}</p>
-      </div>
+      <app-reminder-skeleton [count]="4" id="reminders-skeleton-loader"></app-reminder-skeleton>
     } @else if (filteredReminders().length === 0) {
       <div class="empty-state-card" id="reminders-empty">
         <div class="empty-icon-circle">

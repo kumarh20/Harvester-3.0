@@ -1,25 +1,73 @@
-<div class="skeleton-container">
-  <div class="skeleton-search">
-    <div class="skeleton-search-box"></div>
+<div class="skeleton-records-container" id="skeleton-records-root">
+  <!-- 1. Header Section matching Figma Top Row -->
+  <div class="skeleton-records-header">
+    <div class="skeleton-header-top-row">
+      <div class="skeleton-title-group">
+        <div class="skeleton-page-title"></div>
+        <div class="skeleton-page-subtitle"></div>
+      </div>
+      <div class="skeleton-badges-row">
+        <div class="skeleton-badge-pill"></div>
+        <div class="skeleton-badge-pill"></div>
+      </div>
+    </div>
+
+    <!-- 2. Search Bar -->
+    <div class="skeleton-search-bar">
+      <div class="skeleton-search-icon"></div>
+      <div class="skeleton-search-text"></div>
+    </div>
+
+    <!-- 3. Filter Action Row -->
+    <div class="skeleton-filter-action-row">
+      <div class="skeleton-filter-chips">
+        <div class="skeleton-chip"></div>
+        <div class="skeleton-chip"></div>
+      </div>
+      <div class="skeleton-filter-pill-btn"></div>
+    </div>
   </div>
 
-  <div class="skeleton-records">
-    <div *ngFor="let item of skeletonArray; let i = index" class="skeleton-card">
-      <div class="skeleton-card-content">
-        <div class="skeleton-left">
-          <div class="skeleton-avatar"></div>
-          <div class="skeleton-info">
-            <div class="skeleton-name"></div>
-            <div class="skeleton-contact"></div>
+  <!-- 4. Grouped Records Feed -->
+  <div class="skeleton-records-feed">
+    <!-- Date Header 1 -->
+    <div class="skeleton-date-header">
+      <div class="skeleton-date-left">
+        <div class="skeleton-date-icon"></div>
+        <div class="skeleton-date-text"></div>
+      </div>
+      <div class="skeleton-date-line"></div>
+      <div class="skeleton-date-count"></div>
+    </div>
+
+    <!-- Record Cards List -->
+    <div class="skeleton-cards-list">
+      @for (item of skeletonArray; track $index) {
+        <div class="skeleton-record-card">
+          <div class="skeleton-card-main-row">
+            <!-- Avatar Squircle -->
+            <div class="skeleton-avatar-squircle"></div>
+
+            <!-- Farmer Name & Acres Subline -->
+            <div class="skeleton-card-details">
+              <div class="skeleton-name-row">
+                <div class="skeleton-farmer-name"></div>
+                <div class="skeleton-harvester-pill"></div>
+              </div>
+              <div class="skeleton-acres-text"></div>
+            </div>
+
+            <!-- Financial Status & Chevron -->
+            <div class="skeleton-card-right">
+              <div class="skeleton-amount-col">
+                <div class="skeleton-amount"></div>
+                <div class="skeleton-status-badge"></div>
+              </div>
+              <div class="skeleton-chevron"></div>
+            </div>
           </div>
         </div>
-        <div class="skeleton-right">
-          <div class="skeleton-badge"></div>
-          <div class="skeleton-icon"></div>
-          <div class="skeleton-icon"></div>
-          <div class="skeleton-icon"></div>
-        </div>
-      </div>
+      }
     </div>
   </div>
 </div>

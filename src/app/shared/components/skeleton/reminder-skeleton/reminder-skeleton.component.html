@@ -1,0 +1,61 @@
+<div class="skeleton-reminders" id="skeleton-reminders-view">
+  <!-- 1. Header Bar -->
+  <div class="skeleton-header-bar">
+    <div class="skeleton-header-titles">
+      <div class="skeleton-title-line"></div>
+      <div class="skeleton-subtitle-line"></div>
+    </div>
+    <div class="skeleton-new-btn"></div>
+  </div>
+
+  <!-- 2. Search Bar -->
+  <div class="skeleton-search-bar">
+    <div class="skeleton-search-icon"></div>
+    <div class="skeleton-search-text"></div>
+  </div>
+
+  <!-- 3. Filter Chips Row -->
+  <div class="skeleton-filter-row">
+    <div class="skeleton-filter-chips">
+      <div class="skeleton-filter-chip"></div>
+      <div class="skeleton-filter-chip"></div>
+    </div>
+    <div class="skeleton-filter-btn"></div>
+  </div>
+
+  <!-- 4. Reminder Cards Feed -->
+  <div class="skeleton-reminders-list">
+    @for (item of skeletonArray; track $index) {
+      <div class="skeleton-reminder-card">
+        <!-- Top Row: Farmer name, Tag, Date, Acres -->
+        <div class="skeleton-card-top">
+          <div class="skeleton-card-farmer">
+            <div class="skeleton-farmer-name"></div>
+            <div class="skeleton-tag-pill"></div>
+          </div>
+          <div class="skeleton-card-meta">
+            <div class="skeleton-date-acres"></div>
+            <div class="skeleton-chevron"></div>
+          </div>
+        </div>
+
+        <!-- Optional Expanded Body Preview for first item -->
+        @if ($index === 0) {
+          <div class="skeleton-card-body">
+            <div class="skeleton-info-row">
+              <div class="skeleton-pill"></div>
+              <div class="skeleton-pill"></div>
+            </div>
+            <div class="skeleton-bottom-row">
+              <div class="skeleton-estimate"></div>
+              <div class="skeleton-actions">
+                <div class="skeleton-circle-btn"></div>
+                <div class="skeleton-circle-btn"></div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
