@@ -8,9 +8,9 @@
   @if (!isLoading()) {
     <div class="dashboard-content-wrapper" id="dashboard-content-wrapper">
       
-      <!-- Top Android Material 3 Hero Header -->
+      <!-- Top Android Material 3 Hero Header Matching Screenshot -->
       <div class="dashboard-hero-header" id="dashboard-hero-header">
-        <!-- Top Section: Title, Status Indicator, and Quick Refresh -->
+        <!-- Top Section: Title and Quick Refresh -->
         <div class="hero-top-bar">
           <div class="hero-header-text">
             <div class="hero-title-group">
@@ -25,50 +25,58 @@
                   <mat-icon>arrow_back</mat-icon>
                 </button>
               }
-              <h1 class="hero-title">{{ translationService.get('dashboard.title') }}</h1>
-              <div class="welcome-badge">
-                <span class="pulse-dot"></span>
-                <span>{{ translationService.get('dashboard.activeOperations') }}</span>
-              </div>
+              <h1 class="hero-company-name" id="dashboard-company-name">{{ companyName() }}</h1>
             </div>
-            <p class="hero-subtitle">{{ translationService.get('dashboard.subtitle') }}</p>
+            <div class="hero-welcome-wrapper" id="dashboard-welcome-back">
+              <span class="welcome-text">Welcome back,</span>
+              <div class="user-row">
+                <span class="user-highlight">{{ userName() }}</span>
+                <span class="wave-emoji" aria-hidden="true">👏</span>
+              </div>
+              <p class="hero-tagline" id="dashboard-hero-tagline">Good farming leads to greater opportunities.</p>
+            </div>
           </div>
 
-          <!-- Top Right Utility: Refresh Button -->
+          <!-- Top Right Utility: Refresh Button (Icon only) -->
           <button 
             type="button"
             id="dashboard-refresh-btn" 
-            class="hero-refresh-btn" 
+            class="hero-refresh-btn icon-only-btn" 
             (click)="refreshData()"
             [title]="translationService.getCurrentLanguage() === 'hi' ? 'डेटा रीफ्रेश करें' : 'Refresh dashboard stats'"
             aria-label="Refresh stats">
             <mat-icon [class.spin-anim]="isLoading()">refresh</mat-icon>
-            <span class="refresh-label">{{ translationService.get('dashboard.refresh') || 'रिफ्रेश' }}</span>
           </button>
         </div>
 
-        <!-- Quick Action Buttons -->
+        <!-- Quick Action Buttons Matching Screenshot -->
         <div class="hero-header-actions" id="dashboard-action-chips">
           <button 
-            type="button"
+            type="button" 
             id="dashboard-quick-add-btn" 
             class="hero-action-btn primary-action-btn" 
             (click)="goToAddNew()"
             aria-label="Add new cutting job">
-            <span class="action-plus-circle">
-              <mat-icon>add</mat-icon>
-            </span>
-            <span class="action-label">{{ translationService.get('form.addNewRecord') }}</span>
+            <div class="action-btn-main">
+              <span class="action-plus-circle">
+                <mat-icon>add</mat-icon>
+              </span>
+              <span class="action-label">{{ translationService.get('form.addNewRecord') }}</span>
+            </div>
+            <mat-icon class="action-arrow-icon">arrow_forward</mat-icon>
           </button>
 
           <button 
-            type="button"
+            type="button" 
             id="dashboard-measure-land-btn" 
             class="hero-action-btn secondary-action-btn" 
             (click)="goToLandMeasure()"
             aria-label="Measure field on GPS or map">
-            <mat-icon class="action-icon">straighten</mat-icon>
-            <span class="action-label">{{ translationService.get('dashboard.measureField') }}</span>
+            <div class="action-btn-main">
+              <mat-icon class="action-map-icon">map</mat-icon>
+              <span class="action-label">{{ translationService.get('dashboard.measureField') }}</span>
+            </div>
+            <mat-icon class="action-arrow-icon">arrow_forward</mat-icon>
           </button>
         </div>
       </div>
@@ -383,15 +391,15 @@
             </div>
           </aside>
 
-      <!-- Financial Overview Banner (2 Modern Hero Cards Matching Screenshot) -->
+      <!-- Financial Overview Banner (2 Modern Hero Cards Matching Screenshot in Same Row) -->
       <div class="financial-hero-grid" id="dashboard-financial-cards">
-        <!-- Revenue Card (Green Card with Leaf Motif) -->
+        <!-- Revenue Card (Green card with paddy/leaf background watermark) -->
         <div class="financial-card revenue-card clickable-hero-card" id="card-total-billing" (click)="goToRecords()">
-          <!-- SVG Background Leaf Motif matching screenshot -->
-          <svg class="card-bg-motif leaf-motif" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M125 158C127 122 142 92 172 72C175 70 178 74 176 77C158 98 152 124 150 158" fill="rgba(255, 255, 255, 0.12)" />
-            <path d="M172 72C164 45 138 30 115 34C98 37 82 52 82 72C82 98 108 128 125 158C138 128 160 98 172 72Z" fill="rgba(255, 255, 255, 0.14)" />
-            <path d="M125 158C120 134 104 116 82 104C58 91 38 96 26 108C18 116 18 128 26 138C40 152 75 160 125 158Z" fill="rgba(255, 255, 255, 0.10)" />
+          <!-- Paddy / Leaf background watermark matching screenshot -->
+          <svg class="card-bg-motif leaf-motif" viewBox="0 0 130 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M55 120 C 58 95, 68 68, 95 44" stroke="#34D399" stroke-width="3" stroke-linecap="round" stroke-opacity="0.18" />
+            <path d="M68 76 C 68 76, 78 48, 105 34 C 105 34, 108 60, 94 82 C 84 96, 68 76, 68 76 Z" fill="#34D399" fill-opacity="0.22" />
+            <path d="M60 92 C 60 92, 40 84, 32 66 C 24 48, 34 36, 34 36 C 34 36, 48 44, 56 62 C 62 76, 60 92, 60 92 Z" fill="#34D399" fill-opacity="0.18" />
           </svg>
 
           <div class="financial-card-top">

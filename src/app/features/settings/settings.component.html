@@ -958,9 +958,9 @@
                                 </label>
                             </div>
                             <div class="operator-text-details">
-                                <h4 class="operator-name-txt">{{ userName() }}</h4>
+                                <h4 class="operator-name-txt" [title]="userName()">{{ userName() }}</h4>
                                 <span class="operator-phone-txt">{{ userPhone() }}</span>
-                                <span class="operator-business-txt">{{ userBusinessName() }}</span>
+                                <span class="operator-business-txt" [title]="userBusinessName()">{{ userBusinessName() }}</span>
                             </div>
                             <button type="button" class="edit-profile-action-btn" (click)="openEditProfileDialog()">
                                 <mat-icon>edit</mat-icon>

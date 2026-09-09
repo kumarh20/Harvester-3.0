@@ -338,6 +338,7 @@ html.theme-transitioning .main-content {
 .mat-mdc-button,
 .mat-mdc-raised-button,
 .mat-mdc-stroked-button,
+.mat-mdc-outlined-button,
 .mat-mdc-unelevated-button {
     border-radius: 9999px !important;
     padding: 10px 24px !important;
@@ -384,7 +385,8 @@ html.theme-transitioning .main-content {
     }
 }
 
-.mat-mdc-stroked-button {
+.mat-mdc-stroked-button,
+.mat-mdc-outlined-button {
     border: 1.5px solid #447A44 !important;
     color: #447A44 !important;
     background: transparent !important;

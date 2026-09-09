@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, effect, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect, ViewEncapsulation, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +14,7 @@ import { HarvesterService } from '../../core/services/harvester.service';
 import { UiPreferencesService } from '../../core/services/ui-preferences.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
+import { UserService } from '../../services/user/user-service';
 import { DashboardSkeletonComponent } from '../../shared/components/skeleton/dashboard-skeleton/dashboard-skeleton.component';
 import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
 import { AppNavigationService } from '../../core/services/app-navigation.service';
@@ -115,7 +116,82 @@ interface Stats {
   styleUrl: './dashboard.component.scss',
   encapsulation: ViewEncapsulation.None
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
+  public userService = inject(UserService);
+
+  // 🌾 Combine Harvester Background Slideshow for "कुल कारोबार" (Total Turnover) Card
+  // 5 seconds change duration with dissolve animation
+  readonly heroSlides = [
+    {
+      url: 'assets/slides/harvester-slide-1.png',
+      alt: 'Combine harvester cutting golden wheat crop'
+    },
+    {
+      url: 'assets/slides/harvester-slide-3.jpg',
+      alt: 'Combine machine harvesting grain crops'
+    },
+    {
+      url: 'assets/slides/harvester-slide-4.jpg',
+      alt: 'Harvest machinery cutting crop fields'
+    },
+    {
+      url: 'assets/slides/harvester-slide-5.jpg',
+      alt: 'Harvester vehicle working at sunset'
+    }
+  ];
+
+  currentSlideIndex = signal<number>(0);
+  private slideShowInterval: ReturnType<typeof setInterval> | null = null;
+
+  // Business / Company Name for stylish hero header
+  companyName = computed(() => {
+    const profile = this.userService.userProfile();
+    const busName = profile?.businessName?.trim();
+    if (busName) return busName;
+
+    const uid = profile?.uid;
+    if (uid && typeof localStorage !== 'undefined') {
+      const cached = localStorage.getItem(`user_business_name_${uid}`);
+      if (cached?.trim()) return cached.trim();
+    }
+
+    if (typeof localStorage !== 'undefined') {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('user_business_name_')) {
+          const val = localStorage.getItem(key);
+          if (val?.trim()) return val.trim();
+        }
+      }
+    }
+
+    return 'Harvester Cutting Services';
+  });
+
+  // User Name for welcome back greeting
+  userName = computed(() => {
+    const profile = this.userService.userProfile();
+    const name = profile?.name?.trim();
+    if (name && name.toLowerCase() !== 'operator') return name;
+
+    const uid = profile?.uid;
+    if (uid && typeof localStorage !== 'undefined') {
+      const cached = localStorage.getItem(`user_name_${uid}`);
+      if (cached?.trim() && cached.toLowerCase() !== 'operator') return cached.trim();
+    }
+
+    if (typeof localStorage !== 'undefined') {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('user_name_')) {
+          const val = localStorage.getItem(key);
+          if (val?.trim() && val.toLowerCase() !== 'operator') return val.trim();
+        }
+      }
+    }
+
+    return name || 'Operator';
+  });
 
   // Dual & Harvester Filter State (Unified with Records screen)
   selectedDateFilter = signal<DashboardDateFilter>('all');
@@ -734,6 +810,7 @@ export class DashboardComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.startHeroSlideshow();
     this.isLoading.set(true);
 
     try {
@@ -749,6 +826,36 @@ export class DashboardComponent implements OnInit {
       // ignore
     } finally {
       setTimeout(() => this.isLoading.set(false), 300);
+    }
+  }
+
+  startHeroSlideshow(): void {
+    if (this.slideShowInterval) {
+      clearInterval(this.slideShowInterval);
+    }
+    // 5 seconds interval per user requirement (animate dissolve)
+    this.slideShowInterval = setInterval(() => {
+      this.currentSlideIndex.update(idx => (idx + 1) % this.heroSlides.length);
+    }, 5000);
+  }
+
+  handleSlideImageError(event: Event, slideUrl: string): void {
+    const target = event.target as HTMLImageElement;
+    if (!target) return;
+    const filename = slideUrl.split('/').pop();
+    if (!target.getAttribute('data-tried-path')) {
+      target.setAttribute('data-tried-path', '1');
+      target.src = '/assets/slides/' + filename;
+    } else if (target.getAttribute('data-tried-path') === '1') {
+      target.setAttribute('data-tried-path', '2');
+      target.src = './assets/slides/' + filename;
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.slideShowInterval) {
+      clearInterval(this.slideShowInterval);
+      this.slideShowInterval = null;
     }
   }
 

@@ -36,29 +36,62 @@
 }
 
 // ==========================================
-// 1. ANDROID MATERIAL 3 HERO APP BAR / HEADER
+// 1. ANDROID MATERIAL 3 HERO APP BAR / HEADER (MATCHING SCREENSHOT)
 // ==========================================
 .dashboard-hero-header {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 20px;
-  padding: 16px 18px;
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+  justify-content: space-between;
+  min-height: 195px;
+  background-color: #F8FAFC;
+  background-image: 
+    linear-gradient(90deg, 
+      rgba(255, 255, 255, 0.90) 0%, 
+      rgba(255, 255, 255, 0.74) 36%, 
+      rgba(255, 255, 255, 0.18) 65%, 
+      rgba(255, 255, 255, 0) 100%),
+    url('/assets/slides/harvester-slide-6.png');
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: cover;
+  border: 1px solid rgba(226, 232, 240, 0.88);
+  border-radius: 24px;
+  padding: 18px 24px;
+  box-shadow: 0 4px 18px -3px rgba(15, 23, 42, 0.07);
   width: 100%;
   box-sizing: border-box;
+  overflow: hidden;
 
   @media (min-width: 640px) {
-    padding: 18px 22px;
-    gap: 16px;
+    min-height: 205px;
+    padding: 20px 28px;
+  }
+
+  @media (max-width: 540px) {
+    min-height: 175px;
+    padding: 14px 14px;
+    border-radius: 18px;
+    background-image: 
+      linear-gradient(90deg, 
+        rgba(255, 255, 255, 0.94) 0%, 
+        rgba(255, 255, 255, 0.82) 0%, 
+        rgba(255, 255, 255, 0.28) 20%, 
+        rgba(255, 255, 255, 0.1) 100%),
+      url('/assets/slides/harvester-slide-6.png');
   }
 
   [data-theme="dark"] & {
-    background: #1E293B;
-    border-color: #334155;
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+    background-color: #0F172A;
+    background-image: 
+      linear-gradient(90deg, 
+        rgba(15, 23, 42, 0.94) 0%, 
+        rgba(15, 23, 42, 0.82) 40%, 
+        rgba(15, 23, 42, 0.28) 72%, 
+        rgba(15, 23, 42, 0.05) 100%),
+      url('/assets/slides/harvester-slide-6.png');
+    border-color: rgba(51, 65, 85, 0.8);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
   }
 }
 
@@ -68,6 +101,7 @@
   justify-content: space-between;
   gap: 12px;
   width: 100%;
+  z-index: 2;
 }
 
 .hero-header-text {
@@ -80,73 +114,79 @@
   .hero-title-group {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
+    min-width: 0;
   }
 
-  .welcome-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #F0FDF4;
-    color: #15803D;
-    border: 1px solid #86EFAC;
-    font-size: 12.5px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 9999px;
-    line-height: 1.3;
-    white-space: nowrap;
-
-    .pulse-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #16A34A;
-      flex-shrink: 0;
-    }
-
-    [data-theme="dark"] & {
-      background: rgba(6, 78, 59, 0.4);
-      color: #6EE7B7;
-      border-color: rgba(16, 185, 129, 0.3);
-
-      .pulse-dot {
-        background: #34D399;
-      }
-    }
-  }
-
-  .hero-title {
-    font-size: 23px;
+  .hero-company-name {
+    font-size: clamp(21px, 3.4vw, 27px);
     font-weight: 800;
-    color: #0F172A;
+    color: #0F2027;
     margin: 0;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
-
-    @media (min-width: 640px) {
-      font-size: 26px;
-    }
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    word-break: break-word;
 
     [data-theme="dark"] & {
       color: #F8FAFC;
     }
   }
 
-  .hero-subtitle {
-    font-size: 13.5px;
-    color: #64748B;
-    margin: 4px 0 0 0;
-    line-height: 1.4;
-    font-weight: 500;
+  .hero-welcome-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-top: 2px;
 
-    @media (min-width: 640px) {
-      font-size: 14px;
+    .welcome-text {
+      font-size: clamp(13px, 2vw, 15px);
+      color: #1E293B;
+      font-weight: 600;
+      line-height: 1.25;
+
+      [data-theme="dark"] & {
+        color: #CBD5E1;
+      }
     }
 
-    [data-theme="dark"] & {
-      color: #94A3B8;
+    .user-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      .user-highlight {
+        font-size: clamp(19px, 3vw, 24px);
+        color: #047857;
+        font-weight: 800;
+        line-height: 1.2;
+
+        [data-theme="dark"] & {
+          color: #34D399;
+        }
+      }
+
+      .wave-emoji {
+        font-size: clamp(18px, 2.8vw, 23px);
+        line-height: 1;
+        display: inline-block;
+      }
+    }
+
+    .hero-tagline {
+      font-size: clamp(11.5px, 1.8vw, 13px);
+      color: #64748B;
+      font-weight: 500;
+      margin: 3px 0 0 0;
+      line-height: 1.25;
+
+      [data-theme="dark"] & {
+        color: #94A3B8;
+      }
+
+      @media (max-width: 420px) {
+        display: none;
+      }
     }
   }
 }
@@ -155,55 +195,60 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 6px 14px;
+  width: 38px;
   height: 38px;
-  border-radius: 12px;
-  background: #FFFFFF;
+  min-width: 38px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #334155;
-  border: 1.5px solid #E2E8F0;
-  font-size: 13.5px;
-  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.95);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
-  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 
   mat-icon {
-    font-size: 19px;
-    width: 19px;
-    height: 19px;
-    line-height: 19px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
     color: #334155;
-  }
-
-  .refresh-label {
-    line-height: 1;
-    font-weight: 600;
+    transition: transform 0.25s ease;
   }
 
   &:hover {
-    background: #F8FAFC;
+    background: #FFFFFF;
     color: #0F172A;
-    border-color: #CBD5E1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+
+    mat-icon {
+      color: #0F172A;
+    }
   }
 
   &:active {
-    transform: scale(0.96);
+    transform: scale(0.92);
   }
 
   [data-theme="dark"] & {
-    background: #334155;
+    background: rgba(30, 41, 59, 0.85);
     color: #F1F5F9;
-    border-color: #475569;
+    border-color: rgba(71, 85, 105, 0.6);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 
     mat-icon {
       color: #F1F5F9;
     }
 
     &:hover {
-      background: #475569;
+      background: #334155;
       color: #FFFFFF;
+      mat-icon {
+        color: #FFFFFF;
+      }
     }
   }
 }
@@ -211,41 +256,56 @@
 .hero-header-actions {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
-  align-items: stretch;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
   width: 100%;
-  margin-top: 2px;
+  margin-top: 14px;
   box-sizing: border-box;
+  z-index: 2;
 
-  @media (min-width: 480px) {
+  @media (max-width: 540px) {
     grid-template-columns: 1.1fr 0.9fr;
-    gap: 10px;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  @media (max-width: 360px) {
+    grid-template-columns: 1fr;
+    gap: 6px;
   }
 }
 
 .hero-action-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 8px;
   min-height: 42px;
   height: 42px;
-  padding: 4px 10px;
-  border-radius: 10px;
-  font-size: clamp(11.5px, 2.8vw, 13px);
-  font-weight: 600;
+  padding: 0 16px;
+  border-radius: 9999px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
   overflow: hidden;
 
-  .action-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-    line-height: 18px;
-    flex-shrink: 0;
+  @media (max-width: 540px) {
+    min-height: 38px;
+    height: 38px;
+    padding: 0 10px;
+    gap: 4px;
+  }
+
+  .action-btn-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    overflow: hidden;
+
+    @media (max-width: 540px) {
+      gap: 5px;
+    }
   }
 
   .action-label {
@@ -253,28 +313,50 @@
     line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: clamp(11.5px, 2vw, 13.5px);
+    font-weight: 700;
+  }
+
+  .action-arrow-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    .action-arrow-icon {
+      transform: translateX(3px);
+    }
   }
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
   }
 }
 
 .primary-action-btn {
-  background: #00875A;
+  background: #046A38;
   color: #FFFFFF;
-  border: 1px solid #00875A;
-  box-shadow: 0 1px 4px rgba(0, 135, 90, 0.15);
+  border: none;
+  box-shadow: 0 3px 12px rgba(4, 106, 56, 0.25);
 
   .action-plus-circle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     background: #FFFFFF;
     border-radius: 50%;
     flex-shrink: 0;
+
+    @media (max-width: 540px) {
+      width: 18px;
+      height: 18px;
+    }
 
     mat-icon {
       font-size: 15px;
@@ -282,7 +364,14 @@
       height: 15px;
       line-height: 15px;
       font-weight: 800;
-      color: #00875A;
+      color: #046A38;
+
+      @media (max-width: 540px) {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+        line-height: 13px;
+      }
     }
   }
 
@@ -290,21 +379,24 @@
     color: #FFFFFF;
   }
 
+  .action-arrow-icon {
+    color: #FFFFFF;
+  }
+
   &:hover {
-    background: #00754E;
-    box-shadow: 0 3px 8px rgba(0, 135, 90, 0.22);
+    background: #03532C;
+    box-shadow: 0 5px 16px rgba(4, 106, 56, 0.35);
     transform: translateY(-1px);
   }
 
   &:active {
-    background: #006341;
-    transform: translateY(0) scale(0.98);
+    background: #023D20;
+    transform: translateY(0) scale(0.97);
   }
 
   [data-theme="dark"] & {
     background: #059669;
-    border-color: #059669;
-    color: #FFFFFF;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
 
     .action-plus-circle {
       background: #FFFFFF;
@@ -320,47 +412,73 @@
 }
 
 .secondary-action-btn {
-  background: #F0FDF4;
-  color: #065F46;
-  border: 1px solid #86EFAC;
+  background: #FFFFFF;
+  color: #046A38;
+  border: 1.5px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
-  .action-icon {
-    color: #00875A;
+  .action-map-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    color: #046A38;
+    flex-shrink: 0;
+
+    @media (max-width: 540px) {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      line-height: 16px;
+    }
   }
 
   .action-label {
-    color: #065F46;
+    color: #046A38;
+  }
+
+  .action-arrow-icon {
+    color: #046A38;
   }
 
   &:hover {
-    background: #DCFCE7;
-    border-color: #4ADE80;
-    color: #00875A;
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
     transform: translateY(-1px);
   }
 
   &:active {
-    background: #BBF7D0;
-    transform: translateY(0) scale(0.98);
+    background: #F1F5F9;
+    transform: translateY(0) scale(0.97);
   }
 
   [data-theme="dark"] & {
-    background: rgba(6, 95, 70, 0.25);
-    color: #A7F3D0;
-    border-color: rgba(52, 211, 153, 0.4);
+    background: #1E293B;
+    color: #34D399;
+    border-color: rgba(51, 65, 85, 0.9);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 
-    .action-icon {
+    .action-map-icon {
       color: #34D399;
     }
 
     .action-label {
-      color: #A7F3D0;
+      color: #34D399;
+    }
+
+    .action-arrow-icon {
+      color: #34D399;
     }
 
     &:hover {
-      background: rgba(6, 95, 70, 0.4);
-      border-color: rgba(52, 211, 153, 0.55);
-      color: #D1FAE5;
+      background: #334155;
+      border-color: #475569;
+      color: #6EE7B7;
+
+      .action-map-icon, .action-label, .action-arrow-icon {
+        color: #6EE7B7;
+      }
     }
   }
 }
@@ -595,14 +713,17 @@
 // ==========================================
 .financial-hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   width: 100%;
   box-sizing: border-box;
 
   @media (min-width: 640px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 8px;
   }
 }
 
@@ -612,10 +733,12 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 20px;
-  padding: 18px 20px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  justify-content: space-between;
+  min-height: 140px;
+  gap: 10px;
   box-shadow: 0 4px 16px -2px rgba(35, 65, 38, 0.06);
   transition: all 0.25s ease;
   width: 100%;
@@ -628,10 +751,11 @@
     user-select: none;
   }
 
-  @media (max-width: 640px) {
-    padding: 16px 18px;
-    border-radius: 18px;
-    gap: 10px;
+  @media (max-width: 520px) {
+    padding: 12px 12px;
+    border-radius: 16px;
+    min-height: 124px;
+    gap: 6px;
   }
 
   &:hover {
@@ -642,24 +766,35 @@
   // Background motifs inside cards
   .card-bg-motif {
     position: absolute;
-    bottom: -10px;
-    right: -10px;
     pointer-events: none;
     z-index: 1;
     transition: transform 0.3s ease;
 
     &.leaf-motif {
-      width: 165px;
-      height: 140px;
+      width: 100px;
+      height: 90px;
+      bottom: -4px;
+      right: -4px;
       opacity: 0.95;
+
+      @media (max-width: 520px) {
+        width: 75px;
+        height: 68px;
+      }
     }
 
     &.graph-motif {
-      width: 130px;
-      height: 90px;
-      bottom: 2px;
-      right: 14px;
+      width: 95px;
+      height: 75px;
+      bottom: 0px;
+      right: 8px;
       opacity: 0.9;
+
+      @media (max-width: 520px) {
+        width: 70px;
+        height: 55px;
+        right: 4px;
+      }
     }
   }
 
@@ -667,47 +802,89 @@
     transform: scale(1.04);
   }
 
-  // 🌿 Dark Emerald Green Card (Matching top card in screenshot)
+  .financial-card-top,
+  .financial-card-body {
+    position: relative;
+    z-index: 2;
+  }
+
+  .financial-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+
+    .card-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+
+      @media (max-width: 520px) {
+        gap: 5px;
+      }
+    }
+  }
+
+  // 🌿 Dark Forest/Emerald Green Card with Paddy Background Watermark (Matching SS "कुल कारोबार" card)
   &.revenue-card {
-    background: linear-gradient(135deg, #237A47 0%, #1A6438 100%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    box-shadow: 0 6px 20px -2px rgba(26, 100, 56, 0.32);
+    background: #046A38 !important;
+    background: linear-gradient(145deg, #056A38 0%, #03532C 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 4px 16px -2px rgba(4, 106, 56, 0.25);
+    color: #FFFFFF;
 
     .card-metric-label {
       color: #FFFFFF !important;
-      font-size: 14px !important;
+      font-size: clamp(12px, 2.2vw, 14.5px) !important;
       font-weight: 700 !important;
-      letter-spacing: 0.2px;
-      text-transform: none !important;
+      letter-spacing: 0.1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .financial-main-amount {
       color: #FFFFFF !important;
-      font-size: clamp(28px, 6.5vw, 36px) !important;
-      font-weight: 900 !important;
-      letter-spacing: -0.5px;
-      line-height: 1.1;
-      position: relative;
-      z-index: 2;
+      font-size: clamp(20px, 4.4vw, 30px) !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.3px;
+      line-height: 1.15;
+      margin-bottom: 6px;
+
+      @media (max-width: 520px) {
+        margin-bottom: 4px;
+      }
     }
 
     .financial-sub-badge {
-      background: rgba(255, 255, 255, 0.2) !important;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.18) !important;
       color: #FFFFFF !important;
-      padding: 5px 12px;
+      padding: 4px 10px;
       border-radius: 9999px;
       width: fit-content;
-      font-size: 13px;
+      font-size: clamp(10.5px, 2vw, 12.5px);
       font-weight: 600;
-      backdrop-filter: blur(4px);
-      position: relative;
-      z-index: 2;
+      white-space: nowrap;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.20);
+
+      @media (max-width: 520px) {
+        padding: 2px 7px;
+        gap: 3px;
+      }
 
       mat-icon {
-        color: #FFFFFF;
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
+        color: #A7F3D0;
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+        line-height: 14px;
       }
     }
 
@@ -715,33 +892,54 @@
       background: rgba(255, 255, 255, 0.18) !important;
       color: #FFFFFF !important;
       border-radius: 12px;
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.20);
+
+      @media (max-width: 520px) {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+      }
 
       mat-icon {
-        font-size: 22px;
-        width: 22px;
-        height: 22px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
         color: #FFFFFF;
+
+        @media (max-width: 520px) {
+          font-size: 17px;
+          width: 17px;
+          height: 17px;
+          line-height: 17px;
+        }
       }
     }
 
     .card-arrow-icon {
       color: rgba(255, 255, 255, 0.85);
-      font-size: 22px;
-      width: 22px;
-      height: 22px;
-      position: relative;
-      z-index: 2;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+      flex-shrink: 0;
     }
 
     [data-theme="dark"] & {
-      background: linear-gradient(135deg, #185832 0%, #103F22 100%) !important;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      background: linear-gradient(145deg, #04522B 0%, #02381D 100%) !important;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
     }
   }
 
-  // 🌾 Soft Cream / Warm Off-White Card (Matching bottom card in screenshot)
+  // 🌾 Soft Cream / Warm Off-White Card (Matching SS "कुल बकाया राशि" card)
   &.pending-card {
     background: #FFFDF8 !important;
     border: 1.5px solid #F6EBDD !important;
@@ -749,18 +947,20 @@
 
     .card-metric-label {
       color: #1A3826 !important;
-      font-size: 14px !important;
-      font-weight: 800 !important;
-      letter-spacing: 0.2px;
-      text-transform: none !important;
+      font-size: clamp(12px, 2.2vw, 14.5px) !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .financial-main-amount {
       color: #D97706 !important;
-      font-size: clamp(28px, 6.5vw, 36px) !important;
-      font-weight: 900 !important;
-      letter-spacing: -0.5px;
-      line-height: 1.1;
+      font-size: clamp(20px, 4.4vw, 30px) !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.3px;
+      line-height: 1.15;
       position: relative;
       z-index: 2;
     }
@@ -769,22 +969,41 @@
       background: #FEF3C7 !important;
       color: #D97706 !important;
       border-radius: 12px;
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      @media (max-width: 520px) {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+      }
 
       mat-icon {
-        font-size: 22px;
-        width: 22px;
-        height: 22px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
         color: #D97706;
+
+        @media (max-width: 520px) {
+          font-size: 17px;
+          width: 17px;
+          height: 17px;
+          line-height: 17px;
+        }
       }
     }
 
     .card-arrow-icon {
       color: #64748B;
-      font-size: 22px;
-      width: 22px;
-      height: 22px;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
       position: relative;
       z-index: 2;
     }

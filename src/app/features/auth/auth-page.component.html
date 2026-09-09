@@ -74,11 +74,11 @@
                 </div>
 
                 <div class="welcome-actions">
-                    <button class="action-button primary" (click)="setState('LOGIN')" mat-raised-button color="primary">
+                    <button class="action-button primary signin-btn" (click)="setState('LOGIN')" mat-raised-button color="primary">
                         <mat-icon style="margin-right: 6px;">login</mat-icon>
                         {{ translationService.get('auth.signIn') }}
                     </button>
-                    <button class="action-button secondary" (click)="setState('SIGNUP')" mat-stroked-button color="primary">
+                    <button class="action-button primary signup-btn" (click)="setState('SIGNUP')" mat-raised-button color="primary">
                         <mat-icon style="margin-right: 6px;">person_add</mat-icon>
                         {{ translationService.get('auth.signUp') }}
                     </button>
