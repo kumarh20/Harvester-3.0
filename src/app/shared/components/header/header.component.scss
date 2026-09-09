@@ -88,34 +88,29 @@
     position: relative;
     width: 36px;
     height: 30px;
+    min-width: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     color: #FFFFFF;
-    background: transparent;
     transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 
     @media (min-width: 640px) {
-        width: 40px;
-        height: 32px;
+        width: 42px;
+        height: 34px;
+        min-width: 42px;
     }
 
     &:hover {
-        transform: scale(1.1) translateY(-1px);
-    }
-
-    [data-theme="dark"] &,
-    .dark &,
-    :host-context(.dark) & {
-        color: #FFFFFF;
+        transform: scale(1.1) rotate(-2deg);
     }
 
     .brand-harvester-svg {
         width: 100%;
         height: 100%;
         object-fit: contain;
-        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
         transition: transform 0.2s ease;
     }
 }
@@ -130,92 +125,127 @@
     .brand-title-row {
         display: flex;
         align-items: center;
-        gap: 5px;
+        line-height: 1;
 
-        .brand-title {
+        .brand-word-harvester {
             font-size: 15px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            line-height: 1.15;
+            font-weight: 900;
+            letter-spacing: 1.2px;
+            line-height: 1;
             color: #FFFFFF;
-            background: linear-gradient(180deg, #FFFFFF 0%, #E2E8F0 100%);
+            background: linear-gradient(180deg, #FFFFFF 0%, #F0FDF4 45%, #86EFAC 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
             white-space: nowrap;
 
             @media (min-width: 640px) {
-                font-size: 18px;
-                letter-spacing: 0.6px;
+                font-size: 19px;
+                letter-spacing: 1.6px;
+            }
+
+            .letter-a-wrap {
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                vertical-align: baseline;
+
+                .leaf-in-a-svg {
+                    position: absolute;
+                    top: 48%;
+                    left: 48%;
+                    transform: translate(-50%, -50%) rotate(10deg);
+                    width: 7.5px;
+                    height: 10.5px;
+                    pointer-events: none;
+                    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+
+                    @media (min-width: 640px) {
+                        width: 9.5px;
+                        height: 13px;
+                    }
+                }
+            }
+        }
+    }
+
+    .brand-wala-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 4px;
+        margin-top: 2px;
+        line-height: 1;
+
+        @media (min-width: 640px) {
+            gap: 5px;
+            margin-top: 2.5px;
+        }
+
+        .brand-word-wala {
+            font-size: 10.5px;
+            font-weight: 900;
+            letter-spacing: 2.5px;
+            line-height: 1;
+            color: #4ADE80;
+            text-shadow: 0 0 8px rgba(74, 222, 128, 0.45);
+            white-space: nowrap;
+
+            @media (min-width: 640px) {
+                font-size: 12.5px;
+                letter-spacing: 3.2px;
             }
         }
 
-        .brand-pro-badge {
-            font-size: 8.5px;
-            font-weight: 800;
-            color: #78350F;
-            background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 100%);
-            padding: 1px 5px;
-            border-radius: 6px;
-            box-shadow: 
-                0 2px 6px rgba(245, 158, 11, 0.35),
-                inset 0 1px 0 rgba(255, 255, 255, 0.6);
-            letter-spacing: 0.4px;
-            line-height: 1.2;
-            flex-shrink: 0;
+        .brand-wala-line {
+            height: 1.5px;
+            border-radius: 1px;
+            min-width: 6px;
+            flex: 1;
+            max-width: 18px;
+
+            @media (min-width: 640px) {
+                max-width: 26px;
+                min-width: 8px;
+            }
+
+            &.left {
+                background: linear-gradient(90deg, rgba(74, 222, 128, 0.15) 0%, #4ADE80 100%);
+            }
+
+            &.right {
+                background: linear-gradient(90deg, #4ADE80 0%, rgba(74, 222, 128, 0.15) 100%);
+            }
         }
     }
 
     .brand-tagline-row {
         display: flex;
         align-items: center;
-        gap: 5px;
-        margin-top: 1px;
+        margin-top: 2.5px;
+        line-height: 1;
 
-        .live-status-dot {
-            position: relative;
-            width: 6px;
-            height: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-
-            .pulse-ring {
-                position: absolute;
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                background: rgba(16, 185, 129, 0.45);
-                animation: beaconPing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-            }
-
-            .core-dot {
-                width: 6px;
-                height: 6px;
-                border-radius: 50%;
-                background: #10B981;
-                box-shadow: 0 0 6px #10B981;
-            }
-        }
-
-        .brand-tagline {
-            font-size: 10px;
-            font-weight: 500;
-            color: rgba(167, 243, 208, 0.9);
-            letter-spacing: 0.2px;
+        .brand-tagline-text {
+            font-size: 8px;
+            font-weight: 600;
+            letter-spacing: 0.6px;
+            color: #E2E8F0;
+            text-transform: uppercase;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 120px;
+            opacity: 0.92;
+            line-height: 1;
 
             @media (min-width: 480px) {
-                max-width: 200px;
-                font-size: 11px;
+                font-size: 9px;
+                letter-spacing: 0.8px;
             }
 
-            @media (min-width: 768px) {
-                max-width: 320px;
+            @media (min-width: 640px) {
+                font-size: 9.5px;
+                letter-spacing: 1px;
             }
         }
     }
