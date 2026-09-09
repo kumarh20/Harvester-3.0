@@ -80,6 +80,7 @@ export class AuthPageComponent implements OnDestroy {
 
   // ---------- SIGN UP STATE (WhatsApp OTP) ----------
   signupName = signal('');
+  signupBusinessName = signal('');
   signupPhone = signal('');
   signupAgreeTerms = signal(false);
   signupOtpSent = signal(false);
@@ -232,10 +233,16 @@ export class AuthPageComponent implements OnDestroy {
   // ==========================================
   async sendSignupOtp(): Promise<void> {
     const cleanName = String(this.signupName() || '').trim();
+    const cleanBusinessName = String(this.signupBusinessName() || '').trim();
     const cleanPhone = String(this.signupPhone() || '').replace(/\D/g, '').slice(-10);
 
     if (!cleanName || cleanName.length < 2) {
       this.toastService.warning(this.translationService.get('auth.fullNameRequired'));
+      return;
+    }
+
+    if (!cleanBusinessName || cleanBusinessName.length < 2) {
+      this.toastService.warning(this.translationService.get('auth.companyNameRequired'));
       return;
     }
 
@@ -297,6 +304,7 @@ export class AuthPageComponent implements OnDestroy {
 
   async verifySignupOtp(): Promise<void> {
     const cleanName = String(this.signupName() || '').trim();
+    const cleanBusinessName = String(this.signupBusinessName() || '').trim();
     const cleanPhone = String(this.signupPhone() || '').replace(/\D/g, '').slice(-10);
     const cleanOtp = String(this.signupOtp() || '').trim();
 
@@ -313,7 +321,9 @@ export class AuthPageComponent implements OnDestroy {
         this.clearSignupTimers();
         const currentUser = this.authService.getCurrentUser();
         if (currentUser) {
-          await this.userService.createUser(currentUser.uid, cleanName, cleanPhone);
+          await this.userService.createUser(currentUser.uid, cleanName, cleanPhone, {
+            businessName: cleanBusinessName
+          });
           await this.userService.loadUserProfile(currentUser.uid, cleanPhone);
         }
         this.toastService.success('Account created successfully');

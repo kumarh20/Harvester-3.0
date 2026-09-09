@@ -226,6 +226,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     const dialogRef = this.matDialog.open(ProfileDialogComponent, {
       width: '440px',
+      maxWidth: '92vw',
       data: dialogData,
       panelClass: 'custom-dialog-container'
     });

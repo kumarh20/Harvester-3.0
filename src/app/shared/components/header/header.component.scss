@@ -657,13 +657,13 @@
     right: 0;
     z-index: 1020;
     pointer-events: auto;
-    width: 275px;
+    width: 238px;
     max-width: calc(100vw - 20px);
     background: #FFFFFF;
     border-radius: 18px;
     box-shadow: 0 14px 36px -4px rgba(15, 23, 42, 0.22), 0 4px 12px rgba(0, 0, 0, 0.06);
     border: 1px solid #E2E8F0;
-    padding: 12px 14px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -886,11 +886,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 6px 8px;
+    padding: 5px 6px;
     border-radius: 12px;
     background: #F1F5F9;
     border: 1px solid #E2E8F0;
-    gap: 8px;
+    gap: 6px;
     transition: all 0.2s ease;
 
     .dark-dropdown &,
@@ -902,13 +902,19 @@
     }
 
     .language-toggle-3d {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
         background: #FFFFFF;
         border: 1px solid #CBD5E1;
         color: #0F172A;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         height: 30px;
-        padding: 2px 8px;
+        padding: 0 8px;
         border-radius: 16px;
+        white-space: nowrap;
 
         .language-globe-icon {
             color: #059669;
@@ -977,6 +983,7 @@
     }
 
     .popup-refresh-btn {
+        flex: 1.15;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -992,7 +999,6 @@
         font-weight: 700;
         cursor: pointer;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        flex-shrink: 0;
         white-space: nowrap;
 
         mat-icon {

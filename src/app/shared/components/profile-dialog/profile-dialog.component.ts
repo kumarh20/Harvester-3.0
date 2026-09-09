@@ -48,12 +48,13 @@ export class ProfileDialogComponent {
   onSave(): void {
     const trimmedName = this.name.trim();
     const trimmedPhone = this.phone.trim();
-    if (!trimmedName) return;
+    const trimmedBusiness = this.businessName.trim();
+    if (!trimmedName || !trimmedBusiness) return;
 
     this.dialogRef.close({
       name: trimmedName,
       phone: trimmedPhone,
-      businessName: this.businessName.trim()
+      businessName: trimmedBusiness
     });
   }
 

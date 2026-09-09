@@ -463,6 +463,9 @@ export interface Translations {
     fullNameLabel: string;
     fullNamePlaceholder: string;
     fullNameRequired: string;
+    companyNameLabel: string;
+    companyNamePlaceholder: string;
+    companyNameRequired: string;
     nameMinLength: string;
     nameMaxLength: string;
     createPasswordPlaceholder: string;
@@ -924,8 +927,8 @@ const HINDI_TRANSLATIONS: Translations = {
     fullNamePlaceholder: 'अपना पूरा नाम दर्ज करें',
     mobileLabel: 'मोबाइल नंबर *',
     mobilePlaceholder: '10 अंकों का मोबाइल नंबर',
-    farmBusinessLabel: 'फार्म / व्यवसाय का नाम (वैकल्पिक)',
-    farmBusinessPlaceholder: 'उदा. किसान हार्वेस्टर वर्क्स'
+    farmBusinessLabel: 'फार्म / व्यवसाय का नाम *',
+    farmBusinessPlaceholder: 'उदा. लालश हार्वेस्टर्स'
   },
   auth: {
     back: 'वापस',
@@ -975,6 +978,9 @@ const HINDI_TRANSLATIONS: Translations = {
     fullNameLabel: 'पूरा नाम',
     fullNamePlaceholder: 'पूरा नाम दर्ज करें',
     fullNameRequired: 'पूरा नाम आवश्यक है',
+    companyNameLabel: 'फार्म / व्यवसाय का नाम *',
+    companyNamePlaceholder: 'उदा. लालश हार्वेस्टर्स',
+    companyNameRequired: 'फार्म या कंपनी का नाम आवश्यक है',
     nameMinLength: 'नाम कम से कम 2 वर्णों का होना चाहिए',
     nameMaxLength: 'नाम 50 वर्णों से अधिक नहीं हो सकता',
     createPasswordPlaceholder: 'एक सुरक्षित पासवर्ड बनाएं',
@@ -1434,8 +1440,8 @@ const ENGLISH_TRANSLATIONS: Translations = {
     fullNamePlaceholder: 'Enter your full name',
     mobileLabel: 'Mobile Number *',
     mobilePlaceholder: 'Enter 10-digit mobile number',
-    farmBusinessLabel: 'Farm / Business Name (Optional)',
-    farmBusinessPlaceholder: 'e.g. Kisan Harvester Works'
+    farmBusinessLabel: 'Farm / Business / Company Name *',
+    farmBusinessPlaceholder: 'e.g. Lalesh Harvesters'
   },
   auth: {
     back: 'Back',
@@ -1485,6 +1491,9 @@ const ENGLISH_TRANSLATIONS: Translations = {
     fullNameLabel: 'Full Name',
     fullNamePlaceholder: 'Enter full name',
     fullNameRequired: 'Full name is required',
+    companyNameLabel: 'Farm / Business / Company Name *',
+    companyNamePlaceholder: 'e.g. Lalesh Harvesters',
+    companyNameRequired: 'Farm or Company name is required',
     nameMinLength: 'Name must be at least 2 characters',
     nameMaxLength: 'Name cannot exceed 50 characters',
     createPasswordPlaceholder: 'Create a password',

@@ -245,14 +245,21 @@
                     @if (!signupOtpSent()) {
                     <!-- Full Name Field -->
                     <mat-form-field appearance="outline" class="auth-form-field">
-                        <mat-label>{{ translationService.get('auth.fullNameLabel') }}</mat-label>
+                        <mat-label>{{ translationService.get('auth.fullNameLabel') }} *</mat-label>
                         <input matInput type="text" [ngModel]="signupName()" (ngModelChange)="signupName.set($event)" [placeholder]="translationService.get('auth.fullNamePlaceholder')">
                         <mat-icon matPrefix>person</mat-icon>
                     </mat-form-field>
 
+                    <!-- Company / Farm Name Field (MANDATORY) -->
+                    <mat-form-field appearance="outline" class="auth-form-field">
+                        <mat-label>{{ translationService.get('auth.companyNameLabel') }}</mat-label>
+                        <input matInput type="text" [ngModel]="signupBusinessName()" (ngModelChange)="signupBusinessName.set($event)" [placeholder]="translationService.get('auth.companyNamePlaceholder')">
+                        <mat-icon matPrefix>agriculture</mat-icon>
+                    </mat-form-field>
+
                     <!-- Phone Number Field -->
                     <mat-form-field appearance="outline" class="auth-form-field">
-                        <mat-label>{{ translationService.get('auth.phoneLabel') }}</mat-label>
+                        <mat-label>{{ translationService.get('auth.phoneLabel') }} *</mat-label>
                         <input matInput type="tel" [ngModel]="signupPhone()" (ngModelChange)="signupPhone.set($event)" [placeholder]="translationService.get('auth.phonePlaceholder')" maxlength="10" inputmode="numeric">
                         <mat-icon matPrefix>phone</mat-icon>
                         <span matPrefix class="phone-prefix">+91</span>
@@ -273,7 +280,7 @@
 
                     <!-- Send OTP & Register Button -->
                     <button type="button" class="submit-button whatsapp-submit-btn" 
-                            [disabled]="signupLoading() || !signupName() || signupName().length < 2 || !signupPhone() || signupPhone().length !== 10 || !signupAgreeTerms()" 
+                            [disabled]="signupLoading() || !signupName() || signupName().length < 2 || !signupBusinessName() || signupBusinessName().trim().length < 2 || !signupPhone() || signupPhone().length !== 10 || !signupAgreeTerms()" 
                             (click)="sendSignupOtp()"
                             mat-raised-button color="primary">
                         @if (!signupLoading()) {

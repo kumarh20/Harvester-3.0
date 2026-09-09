@@ -42,7 +42,7 @@
     <button mat-button type="button" class="btn-cancel" (click)="onCancel()">
       {{ translationService.get('common.cancel') }}
     </button>
-    <button mat-raised-button color="primary" type="button" class="btn-save" [disabled]="!name.trim()" (click)="onSave()">
+    <button mat-raised-button color="primary" type="button" class="btn-save" [disabled]="!name.trim() || !businessName.trim()" (click)="onSave()">
       <mat-icon>check</mat-icon>
       {{ translationService.get('common.save') }}
     </button>

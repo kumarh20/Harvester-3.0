@@ -87,7 +87,8 @@
                                 <span>+ {{ translationService.getCurrentLanguage() === 'hi' ? 'रिमाइंडर' : 'Reminder' }}</span>
                             </button>
                             <button type="button" class="kisan-add-record-text-btn" (click)="addRecordForSelectedFarmer()" id="btn-kisan-add-record">
-                                + {{ translationService.getCurrentLanguage() === 'hi' ? 'रिकॉर्ड जोड़ें' : 'Add Record' }}
+                                <mat-icon>add_circle</mat-icon>
+                                <span>+ {{ translationService.getCurrentLanguage() === 'hi' ? 'रिकॉर्ड जोड़ें' : 'Add Record' }}</span>
                             </button>
                         </div>
                     </div>
@@ -853,10 +854,66 @@
                             <div class="accent-stripe-light"></div>
                         </div>
 
-                        <!-- Main Title (Harvester Wala Bill) -->
-                        <div class="prof-bill-title-container">
-                            <h1 class="prof-bill-main-title">Harvester Wala</h1>
-                            <p class="prof-bill-company-line">{{ getBillCompanyLine(bill) }}</p>
+                        <!-- Official Bill Header Section (Company Name at top + App Logo) -->
+                        <div class="prof-bill-header-row">
+                            <!-- App Brand Logo (Identical to header brand group) -->
+                            <div class="bill-brand-lockup">
+                                <div class="bill-brand-icon">
+                                    <svg class="brand-harvester-svg" viewBox="0 0 70 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Harvester Wala Logo">
+                                        <path d="M 23 10.5 L 11 10.5 L 7.5 14.5" stroke="#1B5E20" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M 23 13.5 L 12.2 13.5 L 9.8 16.5" stroke="#1B5E20" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <line x1="7.5" y1="14.5" x2="9.8" y2="16.5" stroke="#1B5E20" stroke-width="2.2" stroke-linecap="round"/>
+
+                                        <rect x="23" y="9.5" width="22" height="9.5" rx="1" stroke="#1B5E20" stroke-width="2.2" stroke-linejoin="round"/>
+
+                                        <path d="M 45 11 L 55 11 L 51 27 L 45 27 Z" stroke="#1B5E20" stroke-width="2.2" stroke-linejoin="round"/>
+                                        <path d="M 47.5 13.5 L 53 13.5 L 50 24.5 L 47.5 24.5 Z" stroke="#1B5E20" stroke-width="1.8" stroke-linejoin="round"/>
+
+                                        <rect x="15" y="19" width="30" height="8" rx="1" stroke="#1B5E20" stroke-width="2.2" stroke-linejoin="round"/>
+                                        <line x1="19" y1="21.5" x2="19" y2="24.8" stroke="#1B5E20" stroke-width="2" stroke-linecap="round"/>
+                                        <line x1="22" y1="21.5" x2="22" y2="24.8" stroke="#1B5E20" stroke-width="2" stroke-linecap="round"/>
+                                        <line x1="25" y1="21.5" x2="25" y2="24.8" stroke="#1B5E20" stroke-width="2" stroke-linecap="round"/>
+
+                                        <path d="M 13.5 27 L 46.5 27 L 46.5 35.5 L 13.5 35.5 Z" stroke="#1B5E20" stroke-width="2.2" stroke-linejoin="round"/>
+                                        <line x1="20.5" y1="33" x2="35.5" y2="33" stroke="#1B5E20" stroke-width="1.8" stroke-linecap="round"/>
+
+                                        <line x1="46.5" y1="28.5" x2="55" y2="35.5" stroke="#1B5E20" stroke-width="2.2" stroke-linecap="round"/>
+                                        <polygon points="55,30 65.5,39 55,39" stroke="#1B5E20" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+
+                                        <circle cx="13.5" cy="37" r="5.2" stroke="#1B5E20" stroke-width="2.2"/>
+                                        <circle cx="13.5" cy="37" r="2.2" stroke="#F57F17" stroke-width="1.8"/>
+
+                                        <circle cx="43.5" cy="36" r="6.8" stroke="#1B5E20" stroke-width="2.2"/>
+                                        <circle cx="43.5" cy="36" r="3" stroke="#F57F17" stroke-width="1.8"/>
+                                    </svg>
+                                </div>
+                                <div class="bill-brand-text">
+                                    <div class="bill-brand-title">
+                                        H<span class="letter-a-box"><span class="letter-a-glyph">A</span><svg class="leaf-overlay" viewBox="0 0 24 24" fill="none"><path d="M12 2C7 6 6 13 10 18C13 14 15 8 12 2Z" fill="#16A34A"/><path d="M10 17Q11.5 10 12 4" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round"/></svg></span>RVESTER
+                                    </div>
+                                    <div class="bill-brand-sub">
+                                        <span class="dash"></span><span class="wala">WALA</span><span class="dash"></span>
+                                    </div>
+                                    <div class="bill-brand-tag">SMART FARMING</div>
+                                </div>
+                            </div>
+
+                            <!-- Primary: Company Name at the very top -->
+                            <div class="prof-bill-company-header">
+                                <h1 class="prof-bill-company-name">{{ getBillCompanyName(bill) }}</h1>
+                                <p class="prof-bill-company-desc">कंबाइन फसल कटाई सेवा • Agricultural Harvesting Services</p>
+                                <p class="prof-bill-company-contact-line">
+                                    <span>📞 +91 {{ getBillPhone(bill) }}</span>
+                                    <span class="sep">•</span>
+                                    <span>🚜 {{ bill.harvester || 'Harvester Fleet' }}</span>
+                                </p>
+                            </div>
+
+                            <!-- Official Invoice Stamp/Badge -->
+                            <div class="prof-bill-badge-wrapper">
+                                <span class="prof-bill-tag">INVOICE</span>
+                                <span class="prof-bill-subtag">मूल बिल प्रति</span>
+                            </div>
                         </div>
 
                         <!-- Invoice & Customer Meta Details -->

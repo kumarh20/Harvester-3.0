@@ -62,11 +62,12 @@ export class UserService {
       }
 
       if (data) {
+        const localCachedBusiness = localStorage.getItem(`user_business_name_${uid}`) || '';
         const profile: UserProfileData = {
           uid,
           name: data.name || localCachedName || 'Operator',
           phone: data.phone || cleanPhone || '',
-          businessName: data.businessName || '',
+          businessName: data.businessName || localCachedBusiness || '',
           photoURL: data.photoURL || localCachedPhoto || ''
         };
 
@@ -75,6 +76,9 @@ export class UserService {
         }
         if (profile.name) {
           localStorage.setItem(`user_name_${uid}`, profile.name);
+        }
+        if (profile.businessName) {
+          localStorage.setItem(`user_business_name_${uid}`, profile.businessName);
         }
 
         this.userProfile.set(profile);
@@ -120,21 +124,31 @@ export class UserService {
     return data?.["uid"] ? { uid: data["uid"] as string } : null;
   }
 
-  async createUser(uid: string, name: string, phone: string) {
+  async createUser(uid: string, name: string, phone: string, extra?: { businessName?: string; photoURL?: string }) {
     const ref = doc(this.firestore, `users/${uid}`);
     await setDoc(ref, {
       uid,
       name,
       phone,
+      ...(extra?.businessName ? { businessName: extra.businessName } : {}),
+      ...(extra?.photoURL ? { photoURL: extra.photoURL } : {}),
       createdAt: serverTimestamp(),
       lastLoginAt: serverTimestamp()
     });
+
+    if (extra?.businessName) {
+      localStorage.setItem(`user_business_name_${uid}`, extra.businessName);
+    }
+    if (name) {
+      localStorage.setItem(`user_name_${uid}`, name);
+    }
 
     this.userProfile.set({
       uid,
       name,
       phone,
-      photoURL: ''
+      businessName: extra?.businessName || '',
+      photoURL: extra?.photoURL || ''
     });
   }
 
@@ -154,6 +168,7 @@ export class UserService {
     };
     if (extra?.businessName !== undefined) {
       updateData.businessName = extra.businessName;
+      localStorage.setItem(`user_business_name_${uid}`, extra.businessName);
     }
     if (extra?.photoURL !== undefined) {
       updateData.photoURL = extra.photoURL;

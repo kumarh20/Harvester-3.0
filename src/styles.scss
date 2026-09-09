@@ -498,30 +498,51 @@ body,
 /* Material Dialog & Modal Overlay Styles */
 
 .cdk-overlay-container {
-    z-index: 100000 !important;
+    z-index: 100010 !important;
 }
 
 .cdk-overlay-backdrop {
-    z-index: 100000 !important;
+    z-index: 100010 !important;
+    background: rgba(0, 0, 0, 0.65) !important;
 }
 
 .cdk-global-overlay-wrapper {
-    z-index: 100001 !important;
+    z-index: 100011 !important;
 }
 
 .custom-dialog-container {
-    z-index: 100002 !important;
+    z-index: 100012 !important;
+    max-width: 94vw !important;
+
     .mat-mdc-dialog-container {
-        border-radius: 16px !important;
+        border-radius: 20px !important;
         padding: 0 !important;
-        overflow: hidden;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
-        [data-theme="dark"] & {
-            background: var(--bg-card) !important;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(21, 101, 192, 0.15) !important;
-        }
+        overflow: hidden !important;
+        background: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35) !important;
+
         .mat-mdc-dialog-surface {
-            background: transparent !important;
+            background: inherit !important;
+        }
+    }
+}
+
+[data-theme="dark"],
+.dark,
+body.dark,
+body[data-theme="dark"],
+html[data-theme="dark"],
+html.dark {
+    .custom-dialog-container {
+        .mat-mdc-dialog-container {
+            background: #182C1E !important;
+            border: 1px solid rgba(124, 179, 66, 0.25) !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(16, 185, 129, 0.1) !important;
+
+            .mat-mdc-dialog-surface {
+                background: inherit !important;
+            }
         }
     }
 }

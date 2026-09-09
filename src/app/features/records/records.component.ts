@@ -863,6 +863,25 @@ export class RecordsComponent implements OnInit, OnDestroy {
     return `${words} Rupees Only`;
   }
 
+  getBillCompanyName(bill: Record): string {
+    const profileBusName = this.userService.userProfile()?.businessName?.trim();
+    if (profileBusName) return profileBusName;
+
+    const uid = this.userService.userProfile()?.uid;
+    if (uid && typeof localStorage !== 'undefined') {
+      const cached = localStorage.getItem(`user_business_name_${uid}`);
+      if (cached?.trim()) return cached.trim();
+    }
+
+    return 'Harvester Cutting Services';
+  }
+
+  getBillPhone(bill: Record): string {
+    const profilePhone = this.userService.userProfile()?.phone?.trim();
+    if (profilePhone) return profilePhone;
+    return bill.contactNumber || 'XXXXXXXXXX';
+  }
+
   getBillCompanyLine(bill: Record): string {
     const parts: string[] = [];
     const busName = this.userService.userProfile()?.businessName?.trim() || 'Harvester Cutting Services';
