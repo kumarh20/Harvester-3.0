@@ -37,6 +37,7 @@
     /* Light Theme Colors - Soft Organic Sage Canvas & Crisp White Cards */
     --bg-primary: #EEF5EF;
     --bg-secondary: #E3EDE4;
+    --bg-surface: #F8FAF9;
     --bg-card: #FFFFFF;
     --bg-gradient: linear-gradient(135deg, #447A44 0%, #356335 100%);
     --bg-gradient-light: linear-gradient(135deg, #F0F6F1 0%, #E2ECE3 100%);
@@ -100,11 +101,15 @@
 
 /* Dark Theme - Deep Forest Moss & Night Harvest */
 
-[data-theme="dark"] {
+[data-theme="dark"],
+.dark,
+body[data-theme="dark"],
+body.dark {
     /* Background Colors */
     --bg-primary: #0F1C12;
     --bg-secondary: #16271A;
     --bg-tertiary: #1E3323;
+    --bg-surface: #122215;
     --bg-card: #182C1E;
     
     /* Gradient Backgrounds */
@@ -152,6 +157,35 @@
     --accent-tertiary: #447A44;
 }
 
+/* Global Skeleton Dark Theme Handling */
+[data-theme="dark"],
+.dark {
+    .skeleton-shimmer {
+        background: linear-gradient(
+            90deg,
+            #142417 0%,
+            #1F3824 50%,
+            #142417 100%
+        ) !important;
+        background-size: 200% 100% !important;
+    }
+
+    .skeleton-hero-header,
+    .skeleton-chart-card,
+    .skeleton-record-card,
+    .skeleton-reminder-card,
+    .skeleton-financial-card {
+        background: #182C1E !important;
+        border-color: rgba(124, 179, 66, 0.2) !important;
+        box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    .skeleton-search-bar {
+        background: #182C1E !important;
+        border-color: rgba(124, 179, 66, 0.2) !important;
+    }
+}
+
 
 /* Global Styles */
 
@@ -170,6 +204,9 @@ body {
     font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {

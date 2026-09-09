@@ -50,6 +50,7 @@ export class HeaderComponent implements OnInit {
   userProfile = computed(() => this.userService.userProfile());
   isProfileMenuOpen = signal<boolean>(false);
   isUploadingPhoto = signal<boolean>(false);
+  isReloading = signal<boolean>(false);
   currentUrl = signal<string>(this.router.url);
 
   @ViewChild('photoFileInput') photoFileInput?: ElementRef<HTMLInputElement>;
@@ -148,6 +149,25 @@ export class HeaderComponent implements OnInit {
 
   onLanguageToggle(): void {
     this.languageToggle.emit();
+  }
+
+  onReloadApp(): void {
+    if (this.isReloading()) return;
+    this.isReloading.set(true);
+    
+    this.toastService.info(
+      this.translationService.getCurrentLanguage() === 'hi'
+        ? 'ऐप रीफ्रेश हो रहा है...'
+        : 'Refreshing app...'
+    );
+
+    setTimeout(() => {
+      this.closeProfileMenu();
+    }, 200);
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 400);
   }
 
   getCurrentLanguage(): string {

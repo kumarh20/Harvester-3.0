@@ -246,24 +246,38 @@
   border-radius: 8px;
 }
 
-[data-theme="dark"] {
+:host-context([data-theme="dark"]),
+:host-context(.dark),
+:host-context(body[data-theme="dark"]),
+[data-theme="dark"],
+.dark {
   .skeleton-shimmer {
     background: linear-gradient(
       90deg,
-      #1E293B 0%,
-      #334155 50%,
-      #1E293B 100%
+      #142417 0%,
+      #1F3824 50%,
+      #142417 100%
     );
     background-size: 200% 100%;
   }
 
+  .skeleton-search-bar {
+    background: #182C1E;
+    border-color: rgba(124, 179, 66, 0.18);
+  }
+
+  .skeleton-search-icon,
+  .skeleton-search-text {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
   .skeleton-reminder-card {
-    background: #1E293B;
-    border-color: #334155;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    background: #182C1E;
+    border-color: rgba(124, 179, 66, 0.18);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   }
 
   .skeleton-card-body {
-    border-top-color: #334155;
+    border-top-color: rgba(124, 179, 66, 0.18);
   }
 }

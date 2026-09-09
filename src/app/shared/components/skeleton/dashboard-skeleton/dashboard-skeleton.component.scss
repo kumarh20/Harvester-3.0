@@ -348,55 +348,61 @@
   &.h-95 { height: 95%; }
 }
 
-[data-theme="dark"] {
+:host-context([data-theme="dark"]),
+:host-context(.dark),
+:host-context(body[data-theme="dark"]),
+[data-theme="dark"],
+.dark {
   .skeleton-shimmer {
     background: linear-gradient(
       90deg,
-      #1E293B 0%,
-      #334155 50%,
-      #1E293B 100%
+      #142417 0%,
+      #1F3824 50%,
+      #142417 100%
     );
     background-size: 200% 100%;
   }
 
   .skeleton-hero-header,
   .skeleton-chart-card {
-    background: #1E293B;
-    border-color: #334155;
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+    background: #182C1E;
+    border-color: rgba(124, 179, 66, 0.2);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
   }
 
   .skeleton-financial-card.revenue-card {
-    background: #1E293B;
-    border-color: #065F46;
+    background: #182C1E;
+    border-color: rgba(124, 179, 66, 0.35);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   }
 
   .skeleton-financial-card.pending-card {
-    background: #1E293B;
-    border-color: #854D0E;
+    background: #182C1E;
+    border-color: rgba(242, 139, 39, 0.35);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   }
 
   .skeleton-hero-btn.primary {
-    background: linear-gradient(90deg, #065F46 0%, #047857 50%, #065F46 100%);
+    background: linear-gradient(90deg, #1E3F27 0%, #2D5E39 50%, #1E3F27 100%);
     background-size: 200% 100%;
   }
 
   .skeleton-hero-btn.secondary {
-    background: linear-gradient(90deg, #1E293B 0%, #334155 50%, #1E293B 100%);
+    background: linear-gradient(90deg, #142417 0%, #1F3824 50%, #142417 100%);
     background-size: 200% 100%;
   }
 
   .skeleton-chart-bars-canvas {
-    border-bottom-color: #334155;
+    border-bottom-color: rgba(124, 179, 66, 0.2);
   }
 
   .skeleton-bar.primary {
-    background: linear-gradient(180deg, #065F46 0%, #047857 50%, #065F46 100%);
+    background: linear-gradient(180deg, #2E6539 0%, #448F53 50%, #2E6539 100%);
     background-size: 100% 200%;
   }
 
   .skeleton-bar.secondary {
-    background: linear-gradient(180deg, #0369A1 0%, #0284C7 50%, #0369A1 100%);
+    background: linear-gradient(180deg, #1E3D32 0%, #2D5849 50%, #1E3D32 100%);
     background-size: 100% 200%;
   }
 }
