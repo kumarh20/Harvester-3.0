@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed, effect, ViewEncapsulation, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, effect, ViewEncapsulation, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -116,32 +116,8 @@ interface Stats {
   styleUrl: './dashboard.component.scss',
   encapsulation: ViewEncapsulation.None
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent implements OnInit {
   public userService = inject(UserService);
-
-  // 🌾 Combine Harvester Background Slideshow for "कुल कारोबार" (Total Turnover) Card
-  // 5 seconds change duration with dissolve animation
-  readonly heroSlides = [
-    {
-      url: 'assets/slides/harvester-slide-1.png',
-      alt: 'Combine harvester cutting golden wheat crop'
-    },
-    {
-      url: 'assets/slides/harvester-slide-3.jpg',
-      alt: 'Combine machine harvesting grain crops'
-    },
-    {
-      url: 'assets/slides/harvester-slide-4.jpg',
-      alt: 'Harvest machinery cutting crop fields'
-    },
-    {
-      url: 'assets/slides/harvester-slide-5.jpg',
-      alt: 'Harvester vehicle working at sunset'
-    }
-  ];
-
-  currentSlideIndex = signal<number>(0);
-  private slideShowInterval: ReturnType<typeof setInterval> | null = null;
 
   // Business / Company Name for stylish hero header
   companyName = computed(() => {
@@ -810,7 +786,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    this.startHeroSlideshow();
     this.isLoading.set(true);
 
     try {
@@ -829,33 +804,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  startHeroSlideshow(): void {
-    if (this.slideShowInterval) {
-      clearInterval(this.slideShowInterval);
-    }
-    // 5 seconds interval per user requirement (animate dissolve)
-    this.slideShowInterval = setInterval(() => {
-      this.currentSlideIndex.update(idx => (idx + 1) % this.heroSlides.length);
-    }, 5000);
-  }
-
-  handleSlideImageError(event: Event, slideUrl: string): void {
+  handleHeroBgError(event: Event): void {
     const target = event.target as HTMLImageElement;
     if (!target) return;
-    const filename = slideUrl.split('/').pop();
-    if (!target.getAttribute('data-tried-path')) {
-      target.setAttribute('data-tried-path', '1');
-      target.src = '/assets/slides/' + filename;
-    } else if (target.getAttribute('data-tried-path') === '1') {
-      target.setAttribute('data-tried-path', '2');
-      target.src = './assets/slides/' + filename;
-    }
-  }
-
-  ngOnDestroy(): void {
-    if (this.slideShowInterval) {
-      clearInterval(this.slideShowInterval);
-      this.slideShowInterval = null;
+    if (!target.getAttribute('data-tried')) {
+      target.setAttribute('data-tried', '1');
+      target.src = './assets/slides/harvester-slide-6.png';
     }
   }
 

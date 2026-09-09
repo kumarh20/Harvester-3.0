@@ -45,16 +45,6 @@
   justify-content: space-between;
   min-height: 195px;
   background-color: #F8FAFC;
-  background-image: 
-    linear-gradient(90deg, 
-      rgba(255, 255, 255, 0.90) 0%, 
-      rgba(255, 255, 255, 0.74) 36%, 
-      rgba(255, 255, 255, 0.18) 65%, 
-      rgba(255, 255, 255, 0) 100%),
-    url('/assets/slides/harvester-slide-6.png');
-  background-repeat: no-repeat;
-  background-position: right center;
-  background-size: cover;
   border: 1px solid rgba(226, 232, 240, 0.88);
   border-radius: 24px;
   padding: 18px 24px;
@@ -72,26 +62,63 @@
     min-height: 175px;
     padding: 14px 14px;
     border-radius: 18px;
-    background-image: 
-      linear-gradient(90deg, 
-        rgba(255, 255, 255, 0.94) 0%, 
-        rgba(255, 255, 255, 0.82) 0%, 
-        rgba(255, 255, 255, 0.28) 20%, 
-        rgba(255, 255, 255, 0.1) 100%),
-      url('/assets/slides/harvester-slide-6.png');
   }
 
   [data-theme="dark"] & {
     background-color: #0F172A;
-    background-image: 
-      linear-gradient(90deg, 
-        rgba(15, 23, 42, 0.94) 0%, 
-        rgba(15, 23, 42, 0.82) 40%, 
-        rgba(15, 23, 42, 0.28) 72%, 
-        rgba(15, 23, 42, 0.05) 100%),
-      url('/assets/slides/harvester-slide-6.png');
     border-color: rgba(51, 65, 85, 0.8);
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
+  }
+}
+
+// Background media container with relative image & gradient overlay
+.hero-bg-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+  z-index: 1;
+
+  .hero-bg-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: right 30%;
+    display: block;
+    user-select: none;
+  }
+
+  .hero-bg-gradient-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, 
+      rgba(255, 255, 255, 0.94) 0%, 
+      rgba(255, 255, 255, 0.82) 36%, 
+      rgba(255, 255, 255, 0.20) 66%, 
+      rgba(255, 255, 255, 0.02) 100%);
+  }
+
+  @media (max-width: 540px) {
+    .hero-bg-gradient-overlay {
+      background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0.95) 0%, 
+        rgba(255, 255, 255, 0.86) 24%, 
+        rgba(255, 255, 255, 0.32) 58%, 
+        rgba(255, 255, 255, 0.08) 100%);
+    }
+  }
+
+  [data-theme="dark"] & {
+    .hero-bg-gradient-overlay {
+      background: linear-gradient(90deg, 
+        rgba(15, 23, 42, 0.95) 0%, 
+        rgba(15, 23, 42, 0.86) 38%, 
+        rgba(15, 23, 42, 0.30) 70%, 
+        rgba(15, 23, 42, 0.05) 100%);
+    }
   }
 }
 

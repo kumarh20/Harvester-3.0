@@ -10,6 +10,18 @@
       
       <!-- Top Android Material 3 Hero Header Matching Screenshot -->
       <div class="dashboard-hero-header" id="dashboard-hero-header">
+        <!-- Harvester Background Photo & Gradient Overlay (Relative path for GitHub Pages and Mobile) -->
+        <div class="hero-bg-media" aria-hidden="true">
+          <img 
+            src="assets/slides/harvester-slide-6.png" 
+            alt="" 
+            class="hero-bg-photo" 
+            loading="eager" 
+            referrerpolicy="no-referrer"
+            (error)="handleHeroBgError($event)" />
+          <div class="hero-bg-gradient-overlay"></div>
+        </div>
+
         <!-- Top Section: Title and Quick Refresh -->
         <div class="hero-top-bar">
           <div class="hero-header-text">
