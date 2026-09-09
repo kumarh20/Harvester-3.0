@@ -9,14 +9,28 @@
         @if (selectedFarmer()) {
             <!-- Dedicated Kisan Records Detail Page View Matching Screenshot -->
             <div class="kisan-records-page" id="kisan-records-page">
-                <!-- Forest Green Header Section -->
+                <!-- Forest Green Header Section Matching User Design Screenshot -->
                 <div class="kisan-header-hero" id="kisan-header-hero">
+                    <!-- Background Farm Landscape with Combine Harvester & Emerald Gradient Overlay -->
+                    <div class="kisan-hero-backdrop" aria-hidden="true">
+                        <img 
+                            src="assets/slides/harvester-slide-6.png" 
+                            alt="" 
+                            class="kisan-hero-img" 
+                            loading="eager" 
+                            referrerpolicy="no-referrer" />
+                        <div class="kisan-hero-gradient"></div>
+                    </div>
+
                     <!-- Top Navigation Bar -->
                     <div class="kisan-nav-bar">
                         <button type="button" class="kisan-round-btn" (click)="closeKisanRecords()" [title]="translationService.getCurrentLanguage() === 'hi' ? 'रिकॉर्ड्स पर वापस' : 'Back to Records'" id="btn-kisan-back">
                             <mat-icon>chevron_left</mat-icon>
                         </button>
-                        <h1 class="kisan-header-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'किसान रिकॉर्ड' : 'Kisan Record' }}</h1>
+                        <div class="kisan-title-block">
+                            <h1 class="kisan-header-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'किसान रिकॉर्ड' : 'Kisan Record' }}</h1>
+                            <span class="kisan-header-subtitle">{{ translationService.getCurrentLanguage() === 'hi' ? 'खेती की प्रगति, किसान के साथ' : 'Progress with farmer' }}</span>
+                        </div>
                         <button type="button" class="kisan-round-btn" [matMenuTriggerFor]="kisanMenu" [title]="translationService.getCurrentLanguage() === 'hi' ? 'विकल्प' : 'Options'" id="btn-kisan-menu">
                             <mat-icon>more_vert</mat-icon>
                         </button>
@@ -57,19 +71,28 @@
                         }
                     </div>
 
-                    <!-- 3 Stat Boxes Row -->
+                    <!-- 3 Stat Boxes Row Matching Screenshot -->
                     <div class="kisan-stats-trio">
                         <div class="kisan-stat-box stat-total">
-                            <span class="stat-box-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल' : 'TOTAL' }}</span>
+                            <div class="stat-box-header">
+                                <mat-icon class="stat-box-icon">eco</mat-icon>
+                                <span class="stat-box-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल' : 'Total' }}</span>
+                            </div>
                             <span class="stat-box-val">{{ formatCurrency(selectedFarmerSummary().totalAmount) }}</span>
                         </div>
                         <div class="kisan-stat-box stat-paid">
-                            <span class="stat-box-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'जमा' : 'PAID' }}</span>
+                            <div class="stat-box-header">
+                                <mat-icon class="stat-box-icon">paid</mat-icon>
+                                <span class="stat-box-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'जमा' : 'Paid' }}</span>
+                            </div>
                             <span class="stat-box-val">{{ formatCurrency(selectedFarmerSummary().paidAmount) }}</span>
                         </div>
                         <div class="kisan-stat-box stat-pending">
-                            <span class="stat-box-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'बाकी' : 'PENDING' }}</span>
-                            <span class="stat-box-val">{{ formatCurrency(selectedFarmerSummary().pendingAmount) }}</span>
+                            <div class="stat-box-header">
+                                <mat-icon class="stat-box-icon gold-icon">account_balance_wallet</mat-icon>
+                                <span class="stat-box-label gold-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'बाकी' : 'Pending' }}</span>
+                            </div>
+                            <span class="stat-box-val gold-val">{{ formatCurrency(selectedFarmerSummary().pendingAmount) }}</span>
                         </div>
                     </div>
                 </div>
