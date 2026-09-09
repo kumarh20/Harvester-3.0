@@ -3,13 +3,50 @@
         <!-- 3D Brand Logo & Title -->
         <div class="brand-group" id="header-brand-group">
             <div class="brand-icon-wrapper" id="header-brand-icon">
-                <mat-icon class="brand-tractor-icon">agriculture</mat-icon>
-                <div class="brand-gloss-sheen"></div>
+                <!-- Precision Monoline Combine Harvester Icon (Exact Reference Match) -->
+                <svg class="brand-harvester-svg" viewBox="0 0 70 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Harvester Wala Logo">
+                    <!-- Rear Unloading Pipe (Outlined Tube) -->
+                    <path d="M 23 10.5 L 11 10.5 L 7.5 14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M 23 13.2 L 12.2 13.2 L 9.8 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="7.5" y1="14.5" x2="9.8" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+
+                    <!-- Top Grain Tank -->
+                    <rect x="23" y="9.5" width="22" height="9.5" rx="0.8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+
+                    <!-- Driver Cabin -->
+                    <path d="M 45 11 L 55 11 L 51 27 L 45 27 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <!-- Cabin Window Pane -->
+                    <path d="M 47.5 13.5 L 53 13.5 L 50 24.5 L 47.5 24.5 Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+
+                    <!-- Middle Body Compartment -->
+                    <rect x="15" y="19" width="30" height="8" rx="0.8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <!-- 3 Vertical Air Vent Slits -->
+                    <line x1="19" y1="21.5" x2="19" y2="24.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="22" y1="21.5" x2="22" y2="24.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="25" y1="21.5" x2="25" y2="24.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+
+                    <!-- Lower Chassis Box -->
+                    <path d="M 13.5 27 L 46.5 27 L 46.5 35.5 L 13.5 35.5 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <!-- Chassis Floor Guide Line -->
+                    <line x1="20.5" y1="33" x2="35.5" y2="33" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+
+                    <!-- Front Cutting Feeder Arm -->
+                    <line x1="46.5" y1="28.5" x2="55" y2="35.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <!-- Front Triangle Cutter Wedge / Snout -->
+                    <polygon points="55,30 65.5,39 55,39" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+
+                    <!-- Small Rear Wheel (Left) -->
+                    <circle cx="13.5" cy="37" r="5.2" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="13.5" cy="37" r="2.2" stroke="currentColor" stroke-width="1.8"/>
+
+                    <!-- Big Front Wheel (Right) -->
+                    <circle cx="43.5" cy="36" r="6.8" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="43.5" cy="36" r="3" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
             </div>
             <div class="brand-text-wrapper">
                 <div class="brand-title-row">
-                    <span class="brand-title">HARVESTER</span>
-                    <span class="brand-pro-badge">PRO</span>
+                    <span class="brand-title">HARVESTER WALA</span>
                 </div>
                 <div class="brand-tagline-row">
                     <span class="live-status-dot">
@@ -24,49 +61,6 @@
         <!-- Header Actions (Visible ONLY after login & not on auth/login pages) -->
         @if (showUserActions()) {
             <div class="header-actions" id="header-actions-bar">
-                <!-- 3D Frosted Glass Language Toggle -->
-                <button 
-                    type="button"
-                    id="header-language-toggle-btn"
-                    class="language-toggle-3d" 
-                    (click)="onLanguageToggle()" 
-                    [title]="getCurrentLanguage() === 'hi' ? translationService.get('settings.languageEnglish') : translationService.get('settings.languageHindi')"
-                    aria-label="Toggle language">
-                    <mat-icon class="language-globe-icon">translate</mat-icon>
-                    <span class="language-code">{{ getCurrentLanguage() === 'hi' ? 'हि' : 'EN' }}</span>
-                </button>
-
-                <!-- 3D Neomorphic Theme Toggle (Daylight & Dark Mode with Smooth Physics Animation) -->
-                <button 
-                    type="button"
-                    id="header-theme-toggle-btn"
-                    class="theme-toggle-3d" 
-                    [class.is-dark]="isDarkMode()"
-                    (click)="onThemeToggle()" 
-                    [title]="isDarkMode() ? 'Switch to Daylight / Light Mode' : 'Switch to Dark Mode'"
-                    aria-label="Toggle dark and light theme">
-                    <div class="toggle-track" [class.dark-track]="isDarkMode()">
-                        <div class="toggle-thumb" [class.dark-thumb]="isDarkMode()">
-                            <!-- Sun Icon (Daylight) -->
-                            <svg class="theme-icon light-icon" [class.active-icon]="!isDarkMode()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="5"></circle>
-                                <line x1="12" y1="1" x2="12" y2="3"></line>
-                                <line x1="12" y1="21" x2="12" y2="23"></line>
-                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                                <line x1="1" y1="12" x2="3" y2="12"></line>
-                                <line x1="21" y1="12" x2="23" y2="12"></line>
-                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                            </svg>
-                            <!-- Moon Icon (Night) -->
-                            <svg class="theme-icon dark-icon" [class.active-icon]="isDarkMode()" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
-                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </button>
-
                 <!-- 3D Instagram Story Ring Profile Pill & Dropdown -->
                 <div class="profile-pill-wrapper" id="header-profile-menu-container">
                     <button 
@@ -127,7 +121,7 @@
                             (click)="closeProfileMenu()" 
                             aria-hidden="true"></div>
 
-                        <div class="profile-dropdown-card" id="header-profile-dropdown" role="menu">
+                        <div class="profile-dropdown-card" [class.dark-dropdown]="isDarkMode()" id="header-profile-dropdown" role="menu">
                             <!-- Top Profile Info & Avatar (Clickable to open profile page) -->
                             <div class="profile-card-top" (click)="navigateToProfile()" role="button" tabindex="0" title="Go to Profile Page">
                                 <div class="dropdown-avatar-wrapper">
@@ -170,15 +164,51 @@
                                 <mat-icon class="dropdown-profile-arrow">chevron_right</mat-icon>
                             </div>
 
-                            <!-- Upload / Change Photo CTA Strip -->
-                            <div class="photo-upload-strip">
+                            <div class="dropdown-divider"></div>
+
+                            <!-- Single Quick Bar: Language Toggle & Theme Mode Toggle in 1 Row (Same as Header) -->
+                            <div class="dropdown-quick-bar" id="header-dropdown-quick-bar">
+                                <!-- 3D Frosted Glass Language Toggle -->
                                 <button 
-                                    type="button" 
-                                    class="upload-photo-cta-btn" 
-                                    (click)="triggerPhotoUpload($event)"
-                                    id="header-dropdown-upload-btn">
-                                    <mat-icon>{{ userPhotoURL() ? 'cached' : 'add_a_photo' }}</mat-icon>
-                                    <span>{{ userPhotoURL() ? (translationService.getCurrentLanguage() === 'hi' ? 'फोटो बदलें' : 'Change Photo') : (translationService.getCurrentLanguage() === 'hi' ? 'फोटो अपलोड करें' : 'Upload Photo') }}</span>
+                                    type="button"
+                                    id="header-popup-language-btn"
+                                    class="language-toggle-3d" 
+                                    (click)="onLanguageToggle()" 
+                                    [title]="getCurrentLanguage() === 'hi' ? translationService.get('settings.languageEnglish') : translationService.get('settings.languageHindi')"
+                                    aria-label="Toggle language">
+                                    <mat-icon class="language-globe-icon">translate</mat-icon>
+                                    <span class="language-code">{{ getCurrentLanguage() === 'hi' ? 'हि' : 'EN' }}</span>
+                                </button>
+
+                                <!-- 3D Neomorphic Theme Toggle -->
+                                <button 
+                                    type="button"
+                                    id="header-popup-theme-btn"
+                                    class="theme-toggle-3d" 
+                                    [class.is-dark]="isDarkMode()"
+                                    (click)="onThemeToggle()" 
+                                    [title]="isDarkMode() ? 'Switch to Daylight / Light Mode' : 'Switch to Dark Mode'"
+                                    aria-label="Toggle dark and light theme">
+                                    <div class="toggle-track" [class.dark-track]="isDarkMode()">
+                                        <div class="toggle-thumb" [class.dark-thumb]="isDarkMode()">
+                                            <!-- Sun Icon (Daylight) -->
+                                            <svg class="theme-icon light-icon" [class.active-icon]="!isDarkMode()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="5"></circle>
+                                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                            </svg>
+                                            <!-- Moon Icon (Night) -->
+                                            <svg class="theme-icon dark-icon" [class.active-icon]="isDarkMode()" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
                                 </button>
                             </div>
 
@@ -192,7 +222,7 @@
                                     (click)="navigateToProfile()"
                                     id="header-dropdown-edit-profile-btn">
                                     <mat-icon class="item-icon">person</mat-icon>
-                                    <span>{{ translationService.get('nav.profile') }} ({{ translationService.get('settings.profileEdit') }})</span>
+                                    <span>{{ translationService.get('nav.profile') }}</span>
                                 </button>
 
                                 <button 
