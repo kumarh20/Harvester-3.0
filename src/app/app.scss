@@ -37,12 +37,12 @@
     --text-on-primary: #FFFFFF;
     --border-color: rgba(13, 56, 30, 0.14);
     
-    /* Navigation Footer Colors - Deep Forest Green Dock */
-    --nav-bg: #062612;
-    --nav-border: rgba(255, 255, 255, 0.14);
-    --nav-icon-active: #FFFFFF;
-    --nav-icon-inactive: rgba(255, 255, 255, 0.65);
-    --nav-icon-hover: #FFFFFF;
+    /* Navigation Footer Colors - Pure Crisp White Dock with Avocado Green Active Items */
+    --nav-bg: #FFFFFF;
+    --nav-border: rgba(68, 122, 68, 0.12);
+    --nav-icon-active: #447A44;
+    --nav-icon-inactive: #8FA092;
+    --nav-icon-hover: #356335;
     
     /* Shadows - Soft Organic Elevation */
     --shadow-sm: 0 1px 3px rgba(6, 38, 18, 0.06);
@@ -101,11 +101,11 @@
     --text-secondary: #B1C8B4;
     --text-muted: #7E9682;
     /* Navigation Colors - Dark Theme */
-    --nav-bg: #142417;
-    --nav-border: rgba(124, 179, 66, 0.2);
-    --nav-icon-active: #7CB342;
-    --nav-icon-inactive: #7E9682;
-    --nav-icon-hover: #A5D6A7;
+    --nav-bg: #062612;
+    --nav-border: rgba(255, 255, 255, 0.14);
+    --nav-icon-active: #FFFFFF;
+    --nav-icon-inactive: rgba(255, 255, 255, 0.65);
+    --nav-icon-hover: #FFFFFF;
     /* Shadows - Dark Theme */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
     --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.7);
