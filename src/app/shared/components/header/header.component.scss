@@ -26,26 +26,26 @@
     padding-top: env(safe-area-inset-top);
     display: flex;
     align-items: center;
-    background-color: #2e562f;
+    background-color: #062612;
     transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 
-    // Rich Organic Avocado Forest Glassmorphism (matching image.png)
-    background: linear-gradient(135deg, rgba(46, 86, 47, 1) 0%, rgba(53, 99, 53, 0.97) 50%, rgba(35, 66, 36, 0.98) 100%);
+    // Deep Forest Green Glassmorphism (matching Kisan Record header & notch)
+    background: linear-gradient(135deg, rgba(6, 38, 18, 0.98) 0%, rgba(13, 56, 30, 0.96) 50%, rgba(4, 28, 14, 0.99) 100%);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: 
-        0 10px 30px -4px rgba(25, 50, 28, 0.35),
-        0 2px 8px rgba(0, 0, 0, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        0 10px 30px -4px rgba(4, 28, 14, 0.5),
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 
     [data-theme="dark"] & {
-        background: linear-gradient(135deg, rgba(16, 32, 20, 0.98) 0%, rgba(22, 42, 28, 0.97) 50%, rgba(14, 25, 17, 0.99) 100%);
-        border-bottom: 1px solid rgba(124, 179, 66, 0.22);
+        background: linear-gradient(135deg, rgba(4, 24, 12, 0.99) 0%, rgba(6, 38, 18, 0.98) 50%, rgba(3, 18, 9, 1) 100%);
+        border-bottom: 1px solid rgba(74, 222, 128, 0.22);
         box-shadow: 
-            0 12px 36px -4px rgba(0, 0, 0, 0.7),
+            0 12px 36px -4px rgba(0, 0, 0, 0.8),
             inset 0 1px 0 rgba(255, 255, 255, 0.14),
-            0 0 24px rgba(124, 179, 66, 0.12);
+            0 0 24px rgba(74, 222, 128, 0.12);
     }
 }
 

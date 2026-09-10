@@ -212,12 +212,7 @@ export class RecordsComponent implements OnInit, OnDestroy {
     if (typeof document === 'undefined') return;
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
-      if (isOpen) {
-        metaTheme.setAttribute('content', '#062612');
-      } else {
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        metaTheme.setAttribute('content', isDark ? '#0F1C12' : '#2e562f');
-      }
+      metaTheme.setAttribute('content', '#062612');
     }
   }
 
