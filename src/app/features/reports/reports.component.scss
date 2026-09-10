@@ -1,0 +1,1288 @@
+// ============================================================================
+// REPORTS COMPONENT STYLES - 100% MATCH TO APPLICATION THEME & SCREENSHOT
+// ============================================================================
+
+.reports-page-wrapper {
+  min-height: 100vh;
+  background-color: #F8FAFC;
+  padding-bottom: 90px;
+  box-sizing: border-box;
+
+  [data-theme="dark"] & {
+    background-color: #0B1320;
+    color: #F8FAFC;
+  }
+}
+
+// ------------------------------------------
+// TOP NAVIGATION HEADER (STICKY WITH BACK & FILTER)
+// ------------------------------------------
+.reports-nav-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+  padding: 10px 16px;
+
+  [data-theme="dark"] & {
+    background: rgba(15, 23, 42, 0.96);
+    border-bottom-color: rgba(51, 65, 85, 0.85);
+  }
+
+  .reports-header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    .header-left-cluster {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .figma-filter-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border-radius: 9999px;
+      background: #447A44;
+      color: #FFFFFF;
+      border: none;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(68, 122, 68, 0.32);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+
+      &:hover {
+        background: #356335;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(68, 122, 68, 0.42);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+
+      .filter-btn-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .filter-btn-text {
+        text-transform: uppercase;
+        line-height: 1;
+      }
+
+      .filter-btn-badge {
+        background: #FFFFFF;
+        color: #356335;
+        font-size: 10px;
+        font-weight: 800;
+        border-radius: 9999px;
+        padding: 1px 6px;
+        min-width: 16px;
+        text-align: center;
+        line-height: 1.2;
+      }
+
+      [data-theme="dark"] & {
+        background: #5A935A;
+        box-shadow: 0 2px 8px rgba(90, 147, 90, 0.4);
+
+        &:hover {
+          background: #447A44;
+        }
+
+        .filter-btn-badge {
+          background: #FFFFFF;
+          color: #244624;
+        }
+      }
+    }
+  }
+
+  .header-back-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F1F5F9;
+    border: none;
+    color: #1E293B;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+    flex-shrink: 0;
+
+    [data-theme="dark"] & {
+      background: #1E293B;
+      color: #F8FAFC;
+    }
+
+    &:hover {
+      background: #E2E8F0;
+      transform: scale(1.04);
+      [data-theme="dark"] & {
+        background: #334155;
+      }
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .header-text-block {
+    min-width: 0;
+
+    .page-main-heading {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0F172A;
+      margin: 0;
+      line-height: 1.2;
+
+      [data-theme="dark"] & {
+        color: #F8FAFC;
+      }
+    }
+
+    .page-sub-heading {
+      font-size: 11px;
+      color: #64748B;
+      margin: 2px 0 0 0;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      [data-theme="dark"] & {
+        color: #94A3B8;
+      }
+    }
+  }
+}
+
+// ------------------------------------------
+// MAIN CONTAINER
+// ------------------------------------------
+.reports-main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+
+  @media (min-width: 640px) {
+    padding: 20px;
+    gap: 18px;
+  }
+}
+
+// ------------------------------------------
+// 1. TOP ANALYTICS & CHARTS GRID (2 CARDS)
+// ------------------------------------------
+.analytics-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @media (min-width: 900px) {
+    grid-template-columns: 1.7fr 1fr;
+    gap: 18px;
+  }
+}
+
+// Universal Chart Card Container (Pristine rounded card matching screenshot)
+.chart-card-container {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+  box-sizing: border-box;
+
+  @media (min-width: 640px) {
+    padding: 18px 22px;
+  }
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+    border-color: #334155;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  }
+}
+
+// Card Header
+.chart-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (min-width: 500px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.chart-header-title-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .chart-title-icon-wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    &.trend-icon {
+      background: #EFF6FF;
+      color: #2563EB;
+
+      [data-theme="dark"] & {
+        background: rgba(37, 99, 235, 0.2);
+        color: #60A5FA;
+      }
+    }
+
+    &.recovery-icon {
+      background: #F0FDF4;
+      color: #16A34A;
+
+      [data-theme="dark"] & {
+        background: rgba(22, 163, 74, 0.2);
+        color: #4ADE80;
+      }
+    }
+
+    &.machine-chart-icon {
+      background: #F0FDF4;
+      color: #059669;
+
+      [data-theme="dark"] & {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34D399;
+      }
+    }
+
+    &.season-report-icon {
+      background: #ECFDF5;
+      color: #059669;
+
+      [data-theme="dark"] & {
+        background: rgba(5, 150, 105, 0.2);
+        color: #34D399;
+      }
+    }
+  }
+
+  .chart-main-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+
+    [data-theme="dark"] & {
+      color: #F8FAFC;
+    }
+  }
+
+  .chart-sub-title {
+    font-size: 11px;
+    color: #64748B;
+    margin: 2px 0 0 0;
+
+    [data-theme="dark"] & {
+      color: #94A3B8;
+    }
+  }
+}
+
+.chart-controls-cluster {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chart-metric-toggle-group {
+  display: inline-flex;
+  background: #F1F5F9;
+  padding: 3px;
+  border-radius: 9999px;
+  gap: 2px;
+
+  [data-theme="dark"] & {
+    background: #0B1120;
+    border: 1px solid #334155;
+  }
+}
+
+.metric-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: #64748B;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+
+  &.active {
+    background: #FFFFFF;
+    color: #059669;
+    font-weight: 700;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+
+    [data-theme="dark"] & {
+      background: #334155;
+      color: #34D399;
+    }
+  }
+
+  [data-theme="dark"] & {
+    color: #94A3B8;
+  }
+}
+
+// ------------------------------------------
+// MID LEGEND BAR (CENTERED / SCREENSHOT-STYLE)
+// ------------------------------------------
+.chart-mid-legend-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 4px 0;
+  width: 100%;
+
+  .legend-indicator-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .legend-box-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0;
+
+      &.primary-dot {
+        background: #10B981;
+        box-shadow: 0 1px 3px rgba(16, 185, 129, 0.35);
+
+        [data-theme="dark"] & {
+          background: #34D399;
+        }
+      }
+
+      &.secondary-dot {
+        background: #3B82F6;
+        box-shadow: 0 1px 3px rgba(59, 130, 246, 0.35);
+
+        [data-theme="dark"] & {
+          background: #60A5FA;
+        }
+      }
+    }
+
+    .legend-box-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      white-space: nowrap;
+
+      [data-theme="dark"] & {
+        color: #CBD5E1;
+      }
+    }
+  }
+}
+
+// ------------------------------------------
+// MODERN BAR CHART STAGE (MATCHING SCREENSHOT)
+// ------------------------------------------
+.chart-body-area {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modern-bar-chart-stage {
+  width: 100%;
+  position: relative;
+  padding-top: 10px;
+}
+
+.chart-plot-area {
+  display: flex;
+  width: 100%;
+  height: 200px;
+  position: relative;
+  box-sizing: border-box;
+
+  @media (min-width: 640px) {
+    height: 220px;
+  }
+}
+
+// Left Y-Axis Ticks (100%, 75%, 50%, 25%, 0%)
+.y-axis-labels-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 34px;
+  flex-shrink: 0;
+  height: 100%;
+  padding-bottom: 24px;
+  box-sizing: border-box;
+
+  .y-axis-tick {
+    font-size: 11px;
+    font-weight: 500;
+    color: #94A3B8;
+    line-height: 1;
+    text-align: right;
+    padding-right: 8px;
+    user-select: none;
+
+    [data-theme="dark"] & {
+      color: #64748B;
+    }
+  }
+}
+
+// Grid Lines & Bars Area
+.chart-grid-canvas {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+}
+
+// 5 Horizontal Dashed Lines
+.chart-grid-lines-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 1;
+
+  .grid-horizontal-line {
+    width: 100%;
+    border-top: 1px dashed #E2E8F0;
+
+    &.baseline {
+      border-top-style: solid;
+      border-top-color: #CBD5E1;
+    }
+
+    [data-theme="dark"] & {
+      border-top-color: #1E293B;
+
+      &.baseline {
+        border-top-color: #334155;
+      }
+    }
+  }
+}
+
+// Bars Layer
+.chart-bars-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  z-index: 2;
+  box-sizing: border-box;
+  padding: 0 4px;
+}
+
+.chart-bar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  flex: 1;
+  max-width: 68px;
+  min-width: 28px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+
+    .bar-pair-popover {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(-6px);
+      pointer-events: auto;
+    }
+
+    .bar-pill {
+      filter: brightness(1.1);
+    }
+  }
+
+  &.is-active {
+    .bar-pair-popover {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(-6px);
+    }
+
+    .bar-pill {
+      filter: brightness(1.15);
+      box-shadow: 0 -2px 10px rgba(16, 185, 129, 0.4);
+    }
+
+    .x-axis-label {
+      color: #059669;
+      font-weight: 700;
+
+      [data-theme="dark"] & {
+        color: #34D399;
+      }
+    }
+  }
+}
+
+// Floating Tooltip Popover
+.bar-pair-popover {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: #0F172A;
+  color: #FFFFFF;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 4px 4px 0;
+    border-style: solid;
+    border-color: #0F172A transparent;
+  }
+
+  .popover-val {
+    line-height: 1.2;
+
+    &.p-val {
+      color: #34D399;
+      font-weight: 700;
+    }
+
+    &.s-val {
+      color: #93C5FD;
+      font-size: 9.5px;
+    }
+  }
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+
+    &::after {
+      border-color: #1E293B transparent;
+    }
+  }
+}
+
+// Dual Bars Container
+.bar-pair-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: calc(100% - 24px);
+  position: relative;
+
+  @media (min-width: 640px) {
+    gap: 6px;
+  }
+}
+
+// Individual Pill Bar
+.bar-pill {
+  width: 10px;
+  max-width: 14px;
+  min-height: 4px;
+  border-radius: 5px 5px 0 0;
+  position: relative;
+  transition: height 0.4s cubic-bezier(0.34, 1.2, 0.64, 1), filter 0.2s ease;
+  box-sizing: border-box;
+
+  @media (min-width: 640px) {
+    width: 14px;
+    border-radius: 6px 6px 0 0;
+  }
+
+  &.bar-primary {
+    background: linear-gradient(180deg, #10B981 0%, rgba(16, 185, 129, 0.25) 100%);
+    box-shadow: 0 -2px 8px rgba(16, 185, 129, 0.25);
+
+    &.season-highlight {
+      background: linear-gradient(180deg, #059669 0%, rgba(5, 150, 105, 0.4) 100%);
+      box-shadow: 0 -2px 10px rgba(5, 150, 105, 0.4);
+    }
+
+    [data-theme="dark"] & {
+      background: linear-gradient(180deg, #34D399 0%, rgba(52, 211, 153, 0.2) 100%);
+      box-shadow: 0 -2px 8px rgba(52, 211, 153, 0.25);
+    }
+  }
+
+  &.bar-secondary {
+    background: linear-gradient(180deg, #3B82F6 0%, rgba(59, 130, 246, 0.25) 100%);
+    box-shadow: 0 -2px 8px rgba(59, 130, 246, 0.25);
+
+    [data-theme="dark"] & {
+      background: linear-gradient(180deg, #60A5FA 0%, rgba(96, 165, 250, 0.2) 100%);
+      box-shadow: 0 -2px 8px rgba(96, 165, 250, 0.25);
+    }
+  }
+
+  .bar-top-cap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 5px 5px 0 0;
+    background: rgba(255, 255, 255, 0.45);
+  }
+}
+
+.x-axis-label {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding-top: 4px;
+  user-select: none;
+
+  [data-theme="dark"] & {
+    color: #94A3B8;
+  }
+}
+
+// ------------------------------------------
+// 2. MODERN PAYMENT RECOVERY DONUT & ANALYSIS PANEL (CARD 2)
+// ------------------------------------------
+.modern-donut-card-body {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (min-width: 480px) {
+    gap: 18px;
+  }
+
+  @media (min-width: 640px) {
+    gap: 28px;
+  }
+}
+
+.modern-donut-stage {
+  position: relative;
+  width: 125px;
+  height: 125px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (min-width: 420px) {
+    width: 140px;
+    height: 140px;
+  }
+
+  @media (min-width: 640px) {
+    width: 160px;
+    height: 160px;
+  }
+
+  @media (min-width: 768px) {
+    width: 176px;
+    height: 176px;
+  }
+}
+
+.modern-donut-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.donut-bg-track {
+  stroke: #F1F5F9;
+
+  [data-theme="dark"] & {
+    stroke: #1E293B;
+  }
+}
+
+.donut-segment {
+  transition: stroke-dasharray 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.segment-blue {
+    stroke: #2563EB; // vibrant bright blue matching screenshot
+    [data-theme="dark"] & {
+      stroke: #3B82F6;
+    }
+  }
+
+  &.segment-pink {
+    stroke: #EC4899; // vibrant magenta/pink matching screenshot
+    [data-theme="dark"] & {
+      stroke: #F472B6;
+    }
+  }
+}
+
+.modern-donut-center-info {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px;
+  pointer-events: none;
+
+  .donut-center-title-text {
+    font-size: 9.5px;
+    font-weight: 600;
+    color: #64748B;
+    line-height: 1.2;
+    margin-bottom: 2px;
+    max-width: 75px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    @media (min-width: 640px) {
+      font-size: 11px;
+      max-width: 90px;
+    }
+
+    [data-theme="dark"] & {
+      color: #94A3B8;
+    }
+  }
+
+  .donut-center-big-number {
+    font-size: 14px;
+    font-weight: 800;
+    color: #475569;
+    line-height: 1.1;
+    letter-spacing: -0.3px;
+
+    @media (min-width: 420px) {
+      font-size: 16px;
+    }
+
+    @media (min-width: 640px) {
+      font-size: 21px;
+      letter-spacing: -0.5px;
+    }
+
+    [data-theme="dark"] & {
+      color: #E2E8F0;
+    }
+  }
+}
+
+// Right Analysis 3 Rows with Dividers
+.analysis-metrics-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.analysis-metric-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+
+  @media (min-width: 420px) {
+    gap: 12px;
+    padding: 8px 2px;
+  }
+
+  @media (min-width: 640px) {
+    gap: 18px;
+    padding: 10px 4px;
+  }
+
+  .analysis-stat-val {
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.3px;
+    min-width: 65px;
+    flex-shrink: 0;
+
+    @media (min-width: 420px) {
+      font-size: 20px;
+      min-width: 80px;
+    }
+
+    @media (min-width: 640px) {
+      font-size: 26px;
+      min-width: 105px;
+      letter-spacing: -0.5px;
+    }
+
+    &.text-blue {
+      color: #2563EB;
+      [data-theme="dark"] & { color: #60A5FA; }
+    }
+
+    &.text-pink {
+      color: #EC4899;
+      [data-theme="dark"] & { color: #F472B6; }
+    }
+
+    &.text-green {
+      color: #10B981;
+      [data-theme="dark"] & { color: #34D399; }
+    }
+  }
+
+  .analysis-meta-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+
+    .analysis-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #334155;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      @media (min-width: 420px) { font-size: 12.5px; }
+      @media (min-width: 640px) { font-size: 13.5px; }
+
+      [data-theme="dark"] & { color: #F1F5F9; }
+    }
+
+    .analysis-subtitle {
+      font-size: 10px;
+      font-weight: 500;
+      color: #64748B;
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      @media (min-width: 420px) { font-size: 10.5px; }
+      @media (min-width: 640px) { font-size: 11.5px; }
+
+      [data-theme="dark"] & { color: #94A3B8; }
+    }
+  }
+}
+
+.analysis-row-divider {
+  width: 100%;
+  height: 1px;
+  background: #E2E8F0;
+  margin: 0;
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+  }
+}
+
+// ------------------------------------------
+// 3. MIDDLE CARD: सीज़न अनुसार कटाई रिपोर्ट (FULL WIDTH)
+// ------------------------------------------
+.season-report-full-card {
+  width: 100%;
+}
+
+.season-heading-with-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.season-count-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: #F1F5F9;
+  color: #64748B;
+
+  [data-theme="dark"] & {
+    background: #334155;
+    color: #CBD5E1;
+  }
+}
+
+.btn-view-all-seasons {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: #F8FAFC;
+    border-color: #94A3B8;
+  }
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+    border-color: #475569;
+    color: #E2E8F0;
+    &:hover {
+      background: #334155;
+    }
+  }
+}
+
+.active-season-spotlight-box {
+  background: #FFFFFF;
+  border: 1.5px solid #10B981;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  [data-theme="dark"] & {
+    background: #0F172A;
+    border-color: #059669;
+  }
+
+  .spotlight-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .spotlight-season-name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      .leaf-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: #059669;
+      }
+
+      .season-title-text {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0F172A;
+
+        [data-theme="dark"] & {
+          color: #F8FAFC;
+        }
+      }
+    }
+
+    .spotlight-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      background: #059669;
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 700;
+
+      mat-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+      }
+    }
+  }
+
+  .spotlight-stats-columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .spotlight-col {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      [data-theme="dark"] & {
+        background: #1E293B;
+        border-color: #334155;
+      }
+
+      .col-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: #64748B;
+        [data-theme="dark"] & { color: #94A3B8; }
+      }
+
+      .col-value {
+        font-size: 15px;
+        font-weight: 800;
+        line-height: 1.2;
+
+        &.emerald-val,
+        &.green-val {
+          color: #059669;
+          [data-theme="dark"] & { color: #34D399; }
+        }
+        &.amber-val {
+          color: #D97706;
+          [data-theme="dark"] & { color: #FBBF24; }
+        }
+      }
+    }
+  }
+
+  .spotlight-footer-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #059669;
+    padding-top: 4px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    [data-theme="dark"] & {
+      color: #34D399;
+    }
+  }
+}
+
+// ------------------------------------------
+// 4. BOTTOM CARD: मशीन अनुसार कार्य विभाजन (FULL WIDTH)
+// ------------------------------------------
+.chart-summary-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (min-width: 640px) {
+    gap: 14px;
+  }
+}
+
+.chart-summary-stat-card {
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.2s ease;
+
+  .summary-pill-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .summary-pill-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+
+      &.green-dot {
+        background: #10B981;
+        box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+      }
+
+      &.blue-dot {
+        background: #3B82F6;
+        box-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
+      }
+    }
+
+    .summary-pill-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748B;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      [data-theme="dark"] & {
+        color: #94A3B8;
+      }
+    }
+  }
+
+  .summary-pill-value {
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+
+    &.green-val {
+      color: #059669;
+      [data-theme="dark"] & { color: #34D399; }
+    }
+
+    &.blue-val {
+      color: #2563EB;
+      [data-theme="dark"] & { color: #60A5FA; }
+    }
+  }
+
+  &.primary-summary-pill {
+    background: #F0FDF4;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+
+    [data-theme="dark"] & {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(52, 211, 153, 0.25);
+    }
+  }
+
+  &.secondary-summary-pill {
+    background: #EFF6FF;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+
+    [data-theme="dark"] & {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(96, 165, 250, 0.25);
+    }
+  }
+}

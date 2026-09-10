@@ -86,6 +86,25 @@ export const routes: Routes = [
         .then(m => m.LandMeasurementComponent),
     canActivate: [authGuard]
   },
+  {
+    path: 'reports',
+    loadComponent: () =>
+      import('./features/reports/reports.component')
+        .then(m => m.ReportsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'graph-reports',
+    redirectTo: 'reports',
+    pathMatch: 'full'
+  },
+  {
+    path: 'season-reports',
+    loadComponent: () =>
+      import('./features/season-reports/season-reports.component')
+        .then(m => m.SeasonReportsComponent),
+    canActivate: [authGuard]
+  },
 
   // -----------------------------
   // DEFAULT & FALLBACK

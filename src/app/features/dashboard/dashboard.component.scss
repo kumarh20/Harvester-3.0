@@ -1143,6 +1143,277 @@
 }
 
 // ==========================================
+// 2B. BANNER ACTION CARDS (FULL WIDTH UNDER FINANCIAL CARDS)
+// ==========================================
+.dashboard-banner-cards-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.banner-action-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border-color, #E2E8F0);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 3px 12px -2px rgba(35, 65, 38, 0.05);
+  transition: all 0.22s ease;
+  cursor: pointer;
+  user-select: none;
+  width: 100%;
+  box-sizing: border-box;
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+    border-color: #334155;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -3px rgba(35, 65, 38, 0.1);
+  }
+
+  .card-bg-motif {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.85;
+  }
+
+  .banner-card-top,
+  .banner-card-body {
+    position: relative;
+    z-index: 2;
+  }
+
+  .banner-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    .banner-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
+
+      .banner-icon-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+
+        &.graph-badge {
+          background: #ECFDF5;
+          color: #059669;
+          [data-theme="dark"] & {
+            background: rgba(5, 150, 105, 0.2);
+            color: #34D399;
+          }
+        }
+
+        &.season-badge {
+          background: #FEF3C7;
+          color: #D97706;
+          [data-theme="dark"] & {
+            background: rgba(217, 119, 6, 0.2);
+            color: #FBBF24;
+          }
+        }
+      }
+
+      .banner-title-box {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+
+        .banner-card-title {
+          font-size: 15px;
+          font-weight: 700;
+          color: #0F172A;
+          margin: 0;
+          line-height: 1.2;
+
+          [data-theme="dark"] & {
+            color: #F8FAFC;
+          }
+        }
+
+        .banner-card-subtitle {
+          font-size: 11px;
+          color: #64748B;
+          margin: 2px 0 0 0;
+          line-height: 1.3;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+
+          [data-theme="dark"] & {
+            color: #94A3B8;
+          }
+        }
+      }
+    }
+
+    .card-arrow-icon {
+      color: #94A3B8;
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+  }
+
+  &:hover .card-arrow-icon {
+    transform: translateX(3px);
+    color: #059669;
+  }
+
+  // Mini graph preview
+  .sample-graph-mini-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 8px 12px;
+    gap: 16px;
+
+    [data-theme="dark"] & {
+      background: #0F172A;
+      border-color: #334155;
+    }
+
+    .mini-trend-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 28px;
+      padding: 2px 0;
+
+      .m-bar {
+        width: 6px;
+        background: #A7F3D0;
+        border-radius: 2px;
+        transition: height 0.2s ease;
+
+        [data-theme="dark"] & {
+          background: #065F46;
+        }
+
+        &.active-m-bar {
+          background: #059669;
+          [data-theme="dark"] & {
+            background: #34D399;
+          }
+        }
+      }
+    }
+
+    .mini-graph-stats-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+
+      .m-stat-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #334155;
+
+        [data-theme="dark"] & {
+          color: #CBD5E1;
+        }
+
+        .m-stat-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+
+          &.green-dot { background: #059669; }
+          &.blue-dot { background: #0284C7; }
+          &.amber-dot { background: #D97706; }
+        }
+      }
+    }
+  }
+
+  // Season overview preview
+  .season-overview-preview {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 8px 12px;
+
+    [data-theme="dark"] & {
+      background: #0F172A;
+      border-color: #334155;
+    }
+
+    .season-preview-stats {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .s-prev-stat {
+        display: flex;
+        flex-direction: column;
+
+        .s-prev-lbl {
+          font-size: 10px;
+          color: #64748B;
+          [data-theme="dark"] & { color: #94A3B8; }
+        }
+
+        .s-prev-val {
+          font-size: 12px;
+          font-weight: 700;
+          color: #0F172A;
+          [data-theme="dark"] & { color: #F8FAFC; }
+
+          &.text-emerald { color: #059669; [data-theme="dark"] & { color: #34D399; } }
+          &.text-primary { color: #0284C7; [data-theme="dark"] & { color: #38BDF8; } }
+          &.text-amber { color: #D97706; [data-theme="dark"] & { color: #FBBF24; } }
+        }
+      }
+
+      .s-prev-divider {
+        width: 1px;
+        height: 22px;
+        background: #E2E8F0;
+        [data-theme="dark"] & { background: #334155; }
+      }
+    }
+  }
+}
+
+// ==========================================
 // 3. PERIOD SELECTOR (ORGANIC CATEGORY PILLS LIKE IMAGE)
 // ==========================================
 .period-selector-container {

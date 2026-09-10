@@ -1,0 +1,725 @@
+<div class="reports-page-wrapper">
+  <!-- Top Navigation Header with Back Button & Sidebar Filter Pill -->
+  <header class="reports-nav-header">
+    <div class="reports-header-content">
+      <div class="header-left-cluster">
+        <button 
+          type="button" 
+          class="header-back-btn" 
+          (click)="goBack()" 
+          aria-label="Go back to Dashboard"
+          id="btn-back-to-dashboard">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="header-text-block">
+          <h1 class="page-main-heading">{{ translationService.getCurrentLanguage() === 'hi' ? 'ग्राफ़ व रिपोर्ट्स' : 'Graph & Reports' }}</h1>
+          <p class="page-sub-heading">{{ translationService.getCurrentLanguage() === 'hi' ? 'कटाई रुझान, वसूली व मशीन कार्य विभाजन' : 'Cutting trends, recovery & fleet analysis' }}</p>
+        </div>
+      </div>
+
+      <!-- Filter Side Panel Trigger (Matching App Standard Pill Button) -->
+      <button 
+        type="button" 
+        class="figma-filter-pill-btn" 
+        (click)="openFilterPanel()" 
+        id="btn-reports-filter-drawer"
+        aria-label="Filter reports">
+        <mat-icon class="filter-btn-icon">tune</mat-icon>
+        <span class="filter-btn-text">{{ translationService.getCurrentLanguage() === 'hi' ? 'फ़िल्टर' : 'Filter' }}</span>
+        @if (activeFilterCount() > 0) {
+          <span class="filter-btn-badge">{{ activeFilterCount() }}</span>
+        }
+      </button>
+    </div>
+  </header>
+
+  <!-- Unified Right Side Filter Drawer Panel -->
+  @if (isFilterPanelOpen()) {
+    <div class="filter-drawer-backdrop" (click)="closeFilterPanel()" id="reports-filter-drawer-backdrop"></div>
+  }
+  <aside class="filter-drawer-panel" [class.is-open]="isFilterPanelOpen()" (click)="$event.stopPropagation()" id="reports-filter-drawer-panel" aria-label="Reports filter drawer">
+    <!-- Drawer Header -->
+    <div class="drawer-header">
+      <div class="drawer-title-wrap">
+        <mat-icon class="drawer-header-icon">tune</mat-icon>
+        <h3 class="drawer-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'फ़िल्टर सेटिंग्स' : 'Filter Records' }}</h3>
+      </div>
+      <button type="button" class="drawer-close-circle-btn" (click)="closeFilterPanel()" aria-label="Close Filter Panel">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <!-- Drawer Content Cards -->
+    <div class="drawer-content">
+      <!-- 1. Date Filter (तारीख) -->
+      <div class="drawer-filter-card">
+        <div class="drawer-card-header">
+          <div class="drawer-card-label-col">
+            <mat-icon class="drawer-card-icon">calendar_today</mat-icon>
+            <span class="drawer-card-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'तारीख' : 'Date' }}</span>
+          </div>
+          <span class="drawer-count-badge">{{ recordsByDate().length }}</span>
+        </div>
+
+        <div class="drawer-select-wrapper">
+          <button type="button" 
+                  class="drawer-dropdown-btn" 
+                  [class.is-open]="isDrawerDateOpen()"
+                  (click)="toggleDrawerDate()">
+            <span class="drawer-btn-value">{{ getSelectedDateFilterLabel() }}</span>
+            <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerDateOpen()">expand_more</mat-icon>
+          </button>
+
+          @if (isDrawerDateOpen()) {
+            <div class="drawer-dropdown-menu">
+              <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'all'" (click)="selectDateOption('all')">
+                <span>{{ translationService.get('records.filterAll') || 'सभी' }} ({{ allCount() }})</span>
+                @if (selectedDateFilter() === 'all') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'today'" (click)="selectDateOption('today')">
+                <span>{{ translationService.get('records.filterToday') || 'आज' }} ({{ todayCount() }})</span>
+                @if (selectedDateFilter() === 'today') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'yesterday'" (click)="selectDateOption('yesterday')">
+                <span>{{ translationService.get('records.filterYesterday') || 'कल' }} ({{ yesterdayCount() }})</span>
+                @if (selectedDateFilter() === 'yesterday') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'week'" (click)="selectDateOption('week')">
+                <span>{{ translationService.get('records.filterWeek') || 'इस सप्ताह' }} ({{ weekCount() }})</span>
+                @if (selectedDateFilter() === 'week') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'month'" (click)="selectDateOption('month')">
+                <span>{{ translationService.get('records.filterMonth') || 'इस माह' }} ({{ monthCount() }})</span>
+                @if (selectedDateFilter() === 'month') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'custom'" (click)="selectDateOption('custom')">
+                <span>{{ translationService.get('records.filterCustom') || 'कस्टम तारीख' }}</span>
+                @if (selectedDateFilter() === 'custom') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              @if (dueTodaySettlementCount() > 0) {
+                <button type="button" class="drawer-menu-item item-due" [class.is-selected]="selectedDateFilter() === 'dueToday'" (click)="selectDateOption('dueToday')">
+                  <span>{{ translationService.get('records.filterDueToday') || 'आज देय' }} ({{ dueTodaySettlementCount() }})</span>
+                  @if (selectedDateFilter() === 'dueToday') { <mat-icon class="item-check">check</mat-icon> }
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Custom Date Range picker inside Date Card if custom selected -->
+        @if (selectedDateFilter() === 'custom') {
+          <div class="drawer-custom-date-box" style="margin-top: 10px;">
+            <div class="custom-mode-switcher">
+              <button type="button" class="custom-mode-pill" [class.active]="customMode() === 'single'" (click)="setCustomMode('single')">
+                <mat-icon>event</mat-icon>
+                <span>{{ translationService.get('records.customSingleDate') || 'एक तारीख' }}</span>
+              </button>
+              <button type="button" class="custom-mode-pill" [class.active]="customMode() === 'range'" (click)="setCustomMode('range')">
+                <mat-icon>date_range</mat-icon>
+                <span>{{ translationService.get('records.customDateRange') || 'तारीख रेंज' }}</span>
+              </button>
+            </div>
+
+            @if (customMode() === 'single') {
+              <div class="single-picker-row" style="margin-top: 8px;">
+                <div class="date-input-wrap" (click)="openCustomDateDialog('single')" style="cursor: pointer;">
+                  <mat-icon class="date-wrap-icon">calendar_today</mat-icon>
+                  <input type="text" class="styled-date-input" [value]="formatDateDisplay(customSingleDate())" placeholder="DD-MM-YYYY" readonly style="cursor: pointer;" />
+                  <mat-icon class="date-wrap-icon" style="margin-left: auto;">event</mat-icon>
+                </div>
+              </div>
+            }
+            @if (customMode() === 'range') {
+              <div class="range-picker-row" style="margin-top: 8px;">
+                <div class="range-date-col">
+                  <label class="date-col-label">{{ translationService.get('records.fromDate') || 'प्रारंभ तारीख' }}</label>
+                  <div class="date-input-wrap" (click)="openCustomDateDialog('start')" style="cursor: pointer;">
+                    <mat-icon class="date-wrap-icon">event</mat-icon>
+                    <input type="text" class="styled-date-input" [value]="formatDateDisplay(customStartDate())" placeholder="DD-MM-YYYY" readonly style="cursor: pointer;" />
+                  </div>
+                </div>
+                <div class="range-date-col">
+                  <label class="date-col-label">{{ translationService.get('records.toDate') || 'अंतिम तारीख' }}</label>
+                  <div class="date-input-wrap" (click)="openCustomDateDialog('end')" style="cursor: pointer;">
+                    <mat-icon class="date-wrap-icon">event_available</mat-icon>
+                    <input type="text" class="styled-date-input" [value]="formatDateDisplay(customEndDate())" placeholder="DD-MM-YYYY" readonly style="cursor: pointer;" />
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- 2. Season Filter (सीज़न) -->
+      <div class="drawer-filter-card">
+        <div class="drawer-card-header">
+          <div class="drawer-card-label-col">
+            <mat-icon class="drawer-card-icon">grass</mat-icon>
+            <span class="drawer-card-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Season' }}</span>
+          </div>
+          <span class="drawer-count-badge">{{ getSeasonRecordCount(selectedSeasonFilter()) }}</span>
+        </div>
+
+        <div class="drawer-select-wrapper">
+          <button type="button" 
+                  class="drawer-dropdown-btn" 
+                  [class.is-open]="isDrawerSeasonOpen()"
+                  (click)="toggleDrawerSeason()">
+            <span class="drawer-btn-value">{{ getSelectedSeasonFilterLabel() }}</span>
+            <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerSeasonOpen()">expand_more</mat-icon>
+          </button>
+
+          @if (isDrawerSeasonOpen()) {
+            <div class="drawer-dropdown-menu">
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedSeasonFilter() === 'all'" 
+                      (click)="selectSeasonOption('all')">
+                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी सीज़न' : 'All Seasons' }}</span>
+                @if (selectedSeasonFilter() === 'all') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              @for (season of seasonService.seasons(); track season.id) {
+                <button type="button" 
+                        class="drawer-menu-item" 
+                        [class.is-selected]="selectedSeasonFilter() === season.id" 
+                        (click)="selectSeasonOption(season.id)">
+                  <span>{{ season.name }} ({{ season.year }})</span>
+                  @if (selectedSeasonFilter() === season.id) { <mat-icon class="item-check">check</mat-icon> }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- 3. Harvester Machine Filter (मशीन) -->
+      <div class="drawer-filter-card">
+        <div class="drawer-card-header">
+          <div class="drawer-card-label-col">
+            <mat-icon class="drawer-card-icon">agriculture</mat-icon>
+            <span class="drawer-card-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'हार्वेस्टर मशीन' : 'Harvester Machine' }}</span>
+          </div>
+          <span class="drawer-count-badge">{{ getHarvesterRecordCount(selectedHarvesterFilter()) }}</span>
+        </div>
+
+        <div class="drawer-select-wrapper">
+          <button type="button" 
+                  class="drawer-dropdown-btn" 
+                  [class.is-open]="isDrawerHarvesterOpen()"
+                  (click)="toggleDrawerHarvester()">
+            <span class="drawer-btn-value">{{ getSelectedHarvesterFilterLabel() }}</span>
+            <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerHarvesterOpen()">expand_more</mat-icon>
+          </button>
+
+          @if (isDrawerHarvesterOpen()) {
+            <div class="drawer-dropdown-menu">
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedHarvesterFilter() === 'all'" 
+                      (click)="selectHarvesterOption('all')">
+                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी मशीनें' : 'All Machines' }}</span>
+                @if (selectedHarvesterFilter() === 'all') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              @for (harvester of harvesterService.harvesters(); track harvester) {
+                <button type="button" 
+                        class="drawer-menu-item" 
+                        [class.is-selected]="selectedHarvesterFilter() === harvester" 
+                        (click)="selectHarvesterOption(harvester)">
+                  <span>{{ harvester }}</span>
+                  @if (selectedHarvesterFilter() === harvester) { <mat-icon class="item-check">check</mat-icon> }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Drawer Footer Actions -->
+    <div class="drawer-footer-actions">
+      <button type="button" class="drawer-reset-btn" (click)="resetFilters()">
+        <mat-icon>restart_alt</mat-icon>
+        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'रीसेट' : 'Reset' }}</span>
+      </button>
+      <button type="button" class="drawer-apply-btn" (click)="closeFilterPanel()">
+        <mat-icon>check</mat-icon>
+        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'लागू करें' : 'Apply' }}</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area: Pristine Charts Matching Screenshot -->
+  <main class="reports-main-container">
+    
+    <!-- TOP ROW: 2 Cards (Trend Chart + Recovery Donut Chart) -->
+    <div class="analytics-charts-grid" id="reports-top-charts-grid">
+
+      <!-- CARD 1: कटाई रुझान व ग्राफ -->
+      <div class="chart-card-container main-trend-card screenshot-styled-chart" id="chart-timeline-card">
+        <!-- Header -->
+        <div class="chart-card-header">
+          <div class="chart-header-title-box">
+            <div class="chart-title-icon-wrapper trend-icon">
+              <mat-icon>bar_chart</mat-icon>
+            </div>
+            <div>
+              <h3 class="chart-main-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'कटाई रुझान व ग्राफ' : 'Harvest Trends & Graph' }}</h3>
+              <p class="chart-sub-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'दैनिक व साप्ताहिक कटाई और आय का विश्लेषण' : 'Daily and weekly harvest & income analysis' }}</p>
+            </div>
+          </div>
+
+          <!-- Controls Cluster matching Screenshot -->
+          <div class="chart-controls-cluster">
+            <!-- Mode Switcher [ दिन | सीज़न ] -->
+            <div class="chart-metric-toggle-group">
+              <button 
+                type="button" 
+                class="metric-toggle-btn" 
+                [class.active]="chartViewMode() === 'daily'" 
+                (click)="setChartViewMode('daily')">
+                <mat-icon>calendar_view_day</mat-icon>
+                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'दिन' : 'Day' }}</span>
+              </button>
+              <button 
+                type="button" 
+                class="metric-toggle-btn" 
+                [class.active]="chartViewMode() === 'season'" 
+                (click)="setChartViewMode('season')">
+                <mat-icon>grass</mat-icon>
+                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Season' }}</span>
+              </button>
+            </div>
+
+            <!-- Metric Switcher [ ₹ कमाई (₹) | ✄ रकबा (एकड़) ] -->
+            <div class="chart-metric-toggle-group">
+              <button 
+                type="button" 
+                class="metric-toggle-btn" 
+                [class.active]="chartMetric() === 'revenue'" 
+                (click)="setChartMetric('revenue')">
+                <span>₹</span>
+                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'कमाई (₹)' : 'Earnings' }}</span>
+              </button>
+              <button 
+                type="button" 
+                class="metric-toggle-btn" 
+                [class.active]="chartMetric() === 'acres'" 
+                (click)="setChartMetric('acres')">
+                <mat-icon>content_cut</mat-icon>
+                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'रकबा (एकड़)' : 'Acres' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mid Legend Bar matching Screenshot -->
+        <div class="chart-mid-legend-bar">
+          <div class="legend-indicator-item">
+            <div class="legend-box-dot primary-dot"></div>
+            <span class="legend-box-text">{{ chartMetric() === 'revenue' ? (translationService.getCurrentLanguage() === 'hi' ? 'कुल बिल' : 'Total Billed') : (translationService.getCurrentLanguage() === 'hi' ? 'रकबा (एकड़)' : 'Acres') }}</span>
+          </div>
+          <div class="legend-indicator-item">
+            <div class="legend-box-dot secondary-dot"></div>
+            <span class="legend-box-text">{{ chartMetric() === 'revenue' ? (translationService.getCurrentLanguage() === 'hi' ? 'वसूल राशि' : 'Collected') : (translationService.getCurrentLanguage() === 'hi' ? 'जॉब्स संख्या' : 'Jobs') }}</span>
+          </div>
+        </div>
+
+        <!-- Dual-bar Chart Stage matching Screenshot -->
+        <div class="chart-body-area">
+          @if (chartViewMode() === 'daily') {
+            <div class="modern-bar-chart-stage">
+              <div class="chart-plot-area">
+                <!-- Y-Axis Labels -->
+                <div class="y-axis-labels-col">
+                  <span class="y-axis-tick">100%</span>
+                  <span class="y-axis-tick">75%</span>
+                  <span class="y-axis-tick">50%</span>
+                  <span class="y-axis-tick">25%</span>
+                  <span class="y-axis-tick">0%</span>
+                </div>
+
+                <!-- Grid lines & Bars -->
+                <div class="chart-grid-canvas">
+                  <div class="chart-grid-lines-layer">
+                    <div class="grid-horizontal-line"></div>
+                    <div class="grid-horizontal-line"></div>
+                    <div class="grid-horizontal-line"></div>
+                    <div class="grid-horizontal-line"></div>
+                    <div class="grid-horizontal-line baseline"></div>
+                  </div>
+
+                  <div class="chart-bars-layer">
+                    @for (point of chartTimeline(); track point.id) {
+                      <div 
+                        class="chart-bar-group" 
+                        [class.is-active]="activeBar()?.id === point.id"
+                        (click)="toggleBar(point)">
+                        
+                        <!-- Floating Popover on Click/Hover -->
+                        <div class="bar-pair-popover">
+                          <span class="popover-val p-val">{{ chartMetric() === 'revenue' ? formatCurrency(point.revenue) : (point.acres + ' ac') }}</span>
+                          <span class="popover-val s-val">{{ chartMetric() === 'revenue' ? formatCurrency(point.collected) : (point.jobsCount + ' कार्य') }}</span>
+                        </div>
+
+                        <!-- Dual Gradient Bars -->
+                        <div class="bar-pair-container">
+                          <div class="bar-pill bar-primary" [style.height.%]="point.primaryBarHeightPercent">
+                            <div class="bar-top-cap"></div>
+                          </div>
+                          <div class="bar-pill bar-secondary" [style.height.%]="point.secondaryBarHeightPercent">
+                            <div class="bar-top-cap"></div>
+                          </div>
+                        </div>
+
+                        <span class="x-axis-label">{{ point.label }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="modern-bar-chart-stage">
+              <div class="chart-plot-area">
+                <div class="y-axis-labels-col">
+                  <span class="y-axis-tick">100%</span>
+                  <span class="y-axis-tick">75%</span>
+                  <span class="y-axis-tick">50%</span>
+                  <span class="y-axis-tick">25%</span>
+                  <span class="y-axis-tick">0%</span>
+                </div>
+
+                <div class="chart-grid-canvas">
+                  <div class="chart-grid-lines-layer">
+                    <div class="grid-horizontal-line"></div>
+                    <div class="grid-horizontal-line"></div>
+                    <div class="grid-horizontal-line"></div>
+                    <div class="grid-horizontal-line"></div>
+                    <div class="grid-horizontal-line baseline"></div>
+                  </div>
+
+                  <div class="chart-bars-layer">
+                    @for (point of chartSeasonBreakdown(); track point.id) {
+                      <div 
+                        class="chart-bar-group" 
+                        [class.is-active]="activeSeasonBar()?.id === point.id"
+                        (click)="toggleSeasonBar(point)">
+                        
+                        <div class="bar-pair-popover">
+                          <span class="popover-val p-val">{{ chartMetric() === 'revenue' ? formatCurrency(point.revenue) : (point.acres + ' ac') }}</span>
+                          <span class="popover-val s-val">{{ chartMetric() === 'revenue' ? formatCurrency(point.collected) : (point.jobsCount + ' कार्य') }}</span>
+                        </div>
+
+                        <div class="bar-pair-container">
+                          <div class="bar-pill bar-primary" [class.season-highlight]="point.isSelected" [style.height.%]="point.primaryBarHeightPercent">
+                            <div class="bar-top-cap"></div>
+                          </div>
+                          <div class="bar-pill bar-secondary" [style.height.%]="point.secondaryBarHeightPercent">
+                            <div class="bar-top-cap"></div>
+                          </div>
+                        </div>
+
+                        <span class="x-axis-label">{{ point.label }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- CARD 2: वसूली व भुगतान अनुपात -->
+      <div class="chart-card-container recovery-card screenshot-styled-chart" id="chart-recovery-card">
+        <!-- Header -->
+        <div class="chart-card-header">
+          <div class="chart-header-title-box">
+            <div class="chart-title-icon-wrapper recovery-icon">
+              <mat-icon>sync</mat-icon>
+            </div>
+            <div>
+              <h3 class="chart-main-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'वसूली व भुगतान अनुपात' : 'Recovery & Payment Ratio' }}</h3>
+              <p class="chart-sub-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'नकद प्राप्त राशि बनाम शेष बकाया' : 'Cash collected vs outstanding balance' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Body: Donut + Right Breakdown matching Screenshot -->
+        <div class="modern-donut-card-body">
+          <!-- Donut SVG Canvas -->
+          <div class="modern-donut-stage">
+            <svg class="modern-donut-svg" viewBox="0 0 120 120">
+              <!-- Background Track -->
+              <circle 
+                class="donut-bg-track" 
+                cx="60" 
+                cy="60" 
+                r="52" 
+                stroke-width="14" 
+                fill="transparent">
+              </circle>
+
+              <!-- Blue Segment: Collected -->
+              <circle 
+                class="donut-segment segment-blue" 
+                cx="60" 
+                cy="60" 
+                r="52" 
+                stroke-width="14" 
+                fill="transparent"
+                stroke-linecap="butt"
+                [attr.stroke-dasharray]="recoveryOverview().dashArray1" 
+                [attr.stroke-dashoffset]="recoveryOverview().dashOffset1">
+              </circle>
+
+              <!-- Pink Segment: Pending -->
+              <circle 
+                class="donut-segment segment-pink" 
+                cx="60" 
+                cy="60" 
+                r="52" 
+                stroke-width="14" 
+                fill="transparent"
+                stroke-linecap="butt"
+                [attr.stroke-dasharray]="recoveryOverview().dashArray2" 
+                [attr.stroke-dashoffset]="recoveryOverview().dashOffset2">
+              </circle>
+            </svg>
+
+            <!-- Center Total Info matching Screenshot -->
+            <div class="modern-donut-center-info">
+              <span class="donut-center-title-text">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल कारोबार' : 'Total Revenue' }}</span>
+              <span class="donut-center-big-number">{{ formatCurrency(recoveryOverview().totalBilled) }}</span>
+            </div>
+          </div>
+
+          <!-- Right Analysis 3 Rows with Dividers matching Screenshot -->
+          <div class="analysis-metrics-panel">
+            <!-- Row 1: Received Amount -->
+            <div class="analysis-metric-row">
+              <span class="analysis-stat-val text-blue">{{ formatCurrency(recoveryOverview().totalCollected) }}</span>
+              <div class="analysis-meta-wrap">
+                <span class="analysis-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'प्राप्त राशि' : 'Received Amount' }}</span>
+                <span class="analysis-subtitle">{{ recoveryOverview().recoveryPercentage }}% {{ translationService.getCurrentLanguage() === 'hi' ? 'वसूला' : 'collected' }}</span>
+              </div>
+            </div>
+
+            <div class="analysis-row-divider"></div>
+
+            <!-- Row 2: Outstanding Balance -->
+            <div class="analysis-metric-row">
+              <span class="analysis-stat-val text-pink">{{ formatCurrency(recoveryOverview().totalPending) }}</span>
+              <div class="analysis-meta-wrap">
+                <span class="analysis-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'शेष बकाया' : 'Outstanding' }}</span>
+                <span class="analysis-subtitle">{{ recoveryOverview().pendingPercentage }}% {{ translationService.getCurrentLanguage() === 'hi' ? 'बकाया' : 'pending' }}</span>
+              </div>
+            </div>
+
+            <div class="analysis-row-divider"></div>
+
+            <!-- Row 3: Total Land Cut -->
+            <div class="analysis-metric-row">
+              <span class="analysis-stat-val text-green">{{ formatNumber(stats().totalLand) }} ac</span>
+              <div class="analysis-meta-wrap">
+                <span class="analysis-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल काटी गई जमीन' : 'Total Cut Land' }}</span>
+                <span class="analysis-subtitle">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल रकबा' : 'Total Acreage' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MIDDLE ROW: सीज़न अनुसार कटाई रिपोर्ट (Full Width Card matching Screenshot) -->
+    <div class="chart-card-container season-report-full-card" id="season-report-card">
+      <!-- Card Header -->
+      <div class="chart-card-header">
+        <div class="chart-header-title-box">
+          <div class="chart-title-icon-wrapper season-report-icon">
+            <mat-icon>grass</mat-icon>
+          </div>
+          <div>
+            <div class="season-heading-with-pill">
+              <h3 class="chart-main-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न अनुसार कटाई रिपोर्ट' : 'Season Harvest Report' }}</h3>
+              <span class="season-count-pill">{{ totalSeasonsCount() }} {{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Season' }}</span>
+            </div>
+            <p class="chart-sub-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'प्रत्येक सीज़न का रकबा, कुल आमदनी व बकाया विवरण' : 'Acreage, income and pending overview per season' }}</p>
+          </div>
+        </div>
+
+        <!-- Right Action Button -->
+        <button type="button" class="btn-view-all-seasons" (click)="goToSeasonReports()" id="btn-view-all-seasons">
+          <mat-icon>refresh</mat-icon>
+          <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी सीज़न देखें' : 'View All Seasons' }}</span>
+        </button>
+      </div>
+
+      <!-- Active Season Spotlight Box matching Screenshot -->
+      <div class="active-season-spotlight-box">
+        <!-- Top Row -->
+        <div class="spotlight-top-row">
+          <div class="spotlight-season-name">
+            <mat-icon class="leaf-icon">eco</mat-icon>
+            <span class="season-title-text">{{ activeSeasonStats().name }} {{ activeSeasonStats().year }}</span>
+          </div>
+          <span class="spotlight-status-badge">
+            <mat-icon>check_circle</mat-icon>
+            <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सक्रिय' : 'Active' }}</span>
+          </span>
+        </div>
+
+        <!-- 3 Stat Columns matching Screenshot -->
+        <div class="spotlight-stats-columns">
+          <div class="spotlight-col">
+            <span class="col-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल काटा गया रकबा' : 'Total Cut Land' }}</span>
+            <span class="col-value emerald-val">{{ formatNumber(activeSeasonStats().totalAcres) }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Acres' }}</span>
+          </div>
+          <div class="spotlight-col">
+            <span class="col-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल कारोबार' : 'Total Revenue' }}</span>
+            <span class="col-value green-val">{{ formatCurrency(activeSeasonStats().totalRevenue) }}</span>
+          </div>
+          <div class="spotlight-col">
+            <span class="col-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल बकाया राशि' : 'Total Pending' }}</span>
+            <span class="col-value amber-val">{{ formatCurrency(activeSeasonStats().totalPending) }}</span>
+          </div>
+        </div>
+
+        <!-- Footer Banner matching Screenshot -->
+        <div class="spotlight-footer-note">
+          <mat-icon>check</mat-icon>
+          <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'डैशबोर्ड पर यह सीज़न लागू है' : 'This season is applied on dashboard' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW: मशीन अनुसार कार्य विभाजन (Full Width Card matching Screenshot) -->
+    <div class="chart-card-container machine-comparison-card screenshot-styled-chart" id="chart-harvester-card">
+      <!-- Card Header -->
+      <div class="chart-card-header">
+        <div class="chart-header-title-box">
+          <div class="chart-title-icon-wrapper machine-chart-icon">
+            <mat-icon>agriculture</mat-icon>
+          </div>
+          <div>
+            <h3 class="chart-main-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'मशीन अनुसार कार्य विभाजन' : 'Machine Work Distribution' }}</h3>
+            <p class="chart-sub-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'सक्रिय हार्वेस्टर मशीनों का तुलनात्मक ग्राफ' : 'Comparative graph of active harvester machines' }}</p>
+          </div>
+        </div>
+
+        <!-- Metric Toggle Pills matching Screenshot -->
+        <div class="chart-controls-cluster">
+          <div class="chart-metric-toggle-group">
+            <button 
+              type="button" 
+              class="metric-toggle-btn" 
+              [class.active]="machineChartMetric() === 'revenue'" 
+              (click)="setMachineChartMetric('revenue')">
+              <span>₹</span>
+              <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'कमाई (₹)' : 'Earnings' }}</span>
+            </button>
+            <button 
+              type="button" 
+              class="metric-toggle-btn" 
+              [class.active]="machineChartMetric() === 'acres'" 
+              (click)="setMachineChartMetric('acres')">
+              <mat-icon>content_cut</mat-icon>
+              <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'रकबा (एकड़)' : 'Acres' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 Top Summary Stat Cards matching Screenshot -->
+      <div class="chart-summary-cards-grid">
+        <div class="chart-summary-stat-card primary-summary-pill">
+          <div class="summary-pill-top">
+            <div class="summary-pill-indicator green-dot"></div>
+            <span class="summary-pill-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल रकबा (एकड़)' : 'Total Acres' }}</span>
+          </div>
+          <div class="summary-pill-value green-val">{{ formatNumber(machineSummary().totalAcres) }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Acres' }}</div>
+        </div>
+
+        <div class="chart-summary-stat-card secondary-summary-pill">
+          <div class="summary-pill-top">
+            <div class="summary-pill-indicator blue-dot"></div>
+            <span class="summary-pill-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल कटाई कार्य' : 'Total Cutting Jobs' }}</span>
+          </div>
+          <div class="summary-pill-value blue-val">{{ machineSummary().totalJobs }} {{ translationService.getCurrentLanguage() === 'hi' ? 'कार्य' : 'Jobs' }}</div>
+        </div>
+      </div>
+
+      <!-- Mid Legend Bar matching Screenshot -->
+      <div class="chart-mid-legend-bar">
+        <div class="legend-indicator-item">
+          <div class="legend-box-dot primary-dot"></div>
+          <span class="legend-box-text">{{ machineChartMetric() === 'revenue' ? (translationService.getCurrentLanguage() === 'hi' ? 'कुल आमदनी (₹)' : 'Revenue') : (translationService.getCurrentLanguage() === 'hi' ? 'रकबा (एकड़)' : 'Acres') }}</span>
+        </div>
+        <div class="legend-indicator-item">
+          <div class="legend-box-dot secondary-dot"></div>
+          <span class="legend-box-text">{{ machineChartMetric() === 'revenue' ? (translationService.getCurrentLanguage() === 'hi' ? 'रकबा (एकड़)' : 'Acres') : (translationService.getCurrentLanguage() === 'hi' ? 'जॉब्स संख्या' : 'Jobs Count') }}</span>
+        </div>
+      </div>
+
+      <!-- Modern Dual-bar Chart Stage matching Screenshot -->
+      <div class="chart-body-area">
+        <div class="modern-bar-chart-stage">
+          <div class="chart-plot-area">
+            <!-- Y-Axis Labels -->
+            <div class="y-axis-labels-col">
+              <span class="y-axis-tick">100%</span>
+              <span class="y-axis-tick">75%</span>
+              <span class="y-axis-tick">50%</span>
+              <span class="y-axis-tick">25%</span>
+              <span class="y-axis-tick">0%</span>
+            </div>
+
+            <!-- Grid Lines & Dual Bars -->
+            <div class="chart-grid-canvas">
+              <div class="chart-grid-lines-layer">
+                <div class="grid-horizontal-line"></div>
+                <div class="grid-horizontal-line"></div>
+                <div class="grid-horizontal-line"></div>
+                <div class="grid-horizontal-line"></div>
+                <div class="grid-horizontal-line baseline"></div>
+              </div>
+
+              <div class="chart-bars-layer">
+                @for (mach of harvesterStats(); track mach.id) {
+                  <div 
+                    class="chart-bar-group" 
+                    [class.is-active]="activeMachineBar()?.id === mach.id"
+                    (click)="toggleMachineBar(mach)">
+                    
+                    <!-- Floating Popover -->
+                    <div class="bar-pair-popover">
+                      <span class="popover-val p-val">{{ machineChartMetric() === 'revenue' ? formatCurrency(mach.revenue) : (mach.acres + ' एकड़') }}</span>
+                      <span class="popover-val s-val">{{ machineChartMetric() === 'revenue' ? (mach.acres + ' एकड़') : (mach.count + ' कार्य') }}</span>
+                    </div>
+
+                    <!-- Dual Bars -->
+                    <div class="bar-pair-container">
+                      <div class="bar-pill bar-primary" [style.height.%]="mach.primaryBarHeightPercent">
+                        <div class="bar-top-cap"></div>
+                      </div>
+                      <div class="bar-pill bar-secondary" [style.height.%]="mach.secondaryBarHeightPercent">
+                        <div class="bar-top-cap"></div>
+                      </div>
+                    </div>
+
+                    <!-- X-Axis Machine Name -->
+                    <span class="x-axis-label">{{ mach.name }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>

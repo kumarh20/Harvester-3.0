@@ -1,0 +1,860 @@
+.season-reports-page-wrapper {
+  min-height: 100vh;
+  background-color: #F8FAFC;
+  padding-bottom: 90px;
+
+  [data-theme="dark"] & {
+    background-color: #0B1320;
+    color: #F8FAFC;
+  }
+}
+
+.season-nav-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 12px 16px;
+
+  [data-theme="dark"] & {
+    background: rgba(15, 23, 42, 0.95);
+    border-bottom-color: rgba(51, 65, 85, 0.8);
+  }
+
+  .season-header-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    .header-left-cluster {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .figma-filter-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border-radius: 9999px;
+      background: #447A44;
+      color: #FFFFFF;
+      border: none;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(68, 122, 68, 0.32);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+
+      &:hover {
+        background: #356335;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(68, 122, 68, 0.42);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+
+      .filter-btn-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .filter-btn-text {
+        text-transform: uppercase;
+        line-height: 1;
+      }
+
+      .filter-btn-badge {
+        background: #FFFFFF;
+        color: #356335;
+        font-size: 10px;
+        font-weight: 800;
+        border-radius: 9999px;
+        padding: 1px 6px;
+        min-width: 16px;
+        text-align: center;
+        line-height: 1.2;
+      }
+
+      [data-theme="dark"] & {
+        background: #5A935A;
+        box-shadow: 0 2px 8px rgba(90, 147, 90, 0.4);
+
+        &:hover {
+          background: #447A44;
+        }
+
+        .filter-btn-badge {
+          background: #FFFFFF;
+          color: #244624;
+        }
+      }
+    }
+  }
+
+  .header-back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F1F5F9;
+    border: none;
+    color: #1E293B;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    [data-theme="dark"] & {
+      background: #1E293B;
+      color: #F8FAFC;
+    }
+
+    &:hover {
+      background: #E2E8F0;
+      [data-theme="dark"] & {
+        background: #334155;
+      }
+    }
+  }
+
+  .header-text-block {
+    flex: 1;
+
+    .page-main-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0F172A;
+      margin: 0;
+      line-height: 1.2;
+
+      [data-theme="dark"] & {
+        color: #F8FAFC;
+      }
+    }
+
+    .page-sub-heading {
+      font-size: 12px;
+      color: #64748B;
+      margin: 2px 0 0 0;
+
+      [data-theme="dark"] & {
+        color: #94A3B8;
+      }
+    }
+  }
+}
+
+.season-main-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Overall Overview Banner */
+.season-overview-banner {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+    border-color: #334155;
+  }
+
+  @media (max-width: 650px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+
+    .overview-divider {
+      display: none;
+    }
+  }
+
+  .overview-metric-item {
+    display: flex;
+    flex-direction: column;
+
+    .overview-metric-lbl {
+      font-size: 11px;
+      color: #64748B;
+      margin-bottom: 2px;
+      [data-theme="dark"] & { color: #94A3B8; }
+    }
+
+    .overview-metric-val {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0F172A;
+      [data-theme="dark"] & { color: #F8FAFC; }
+
+      &.text-emerald { color: #059669; [data-theme="dark"] & { color: #34D399; } }
+      &.text-primary { color: #0284C7; [data-theme="dark"] & { color: #38BDF8; } }
+      &.text-amber { color: #D97706; [data-theme="dark"] & { color: #FBBF24; } }
+    }
+  }
+
+  .overview-divider {
+    width: 1px;
+    height: 32px;
+    background: #E2E8F0;
+    [data-theme="dark"] & { background: #334155; }
+  }
+}
+
+/* Season Controls Bar */
+.season-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  .season-filter-chips {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+
+    .season-chip-btn {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid #CBD5E1;
+      background: #FFFFFF;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+
+      [data-theme="dark"] & {
+        background: #1E293B;
+        border-color: #334155;
+        color: #94A3B8;
+      }
+
+      .chip-star-dot {
+        color: #F59E0B;
+        font-size: 11px;
+      }
+
+      &.active {
+        background: #059669;
+        color: #FFFFFF;
+        border-color: #059669;
+        font-weight: 600;
+
+        .chip-star-dot {
+          color: #FEF08A;
+        }
+      }
+    }
+  }
+
+  .accordion-toggle-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .text-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: transparent;
+      border: none;
+      color: #64748B;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+
+      [data-theme="dark"] & {
+        color: #94A3B8;
+      }
+
+      &:hover {
+        background: #F1F5F9;
+        [data-theme="dark"] & { background: #1E293B; }
+      }
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}
+
+/* Season Cards Accordion List */
+.season-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.season-accordion-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  transition: all 0.2s ease;
+
+  [data-theme="dark"] & {
+    background: #1E293B;
+    border-color: #334155;
+  }
+
+  &.is-default-season {
+    border-color: rgba(5, 150, 105, 0.4);
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.08);
+
+    [data-theme="dark"] & {
+      border-color: rgba(52, 211, 153, 0.3);
+    }
+  }
+
+  .season-card-collapsed-header {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    cursor: pointer;
+    background: #FFFFFF;
+    transition: background 0.15s ease;
+
+    [data-theme="dark"] & {
+      background: #1E293B;
+    }
+
+    &:hover {
+      background: #F8FAFC;
+      [data-theme="dark"] & {
+        background: #243044;
+      }
+    }
+
+    @media (max-width: 720px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+
+      .collapsed-metrics-row {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    .header-main-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .season-icon-badge {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: #FEF3C7;
+        color: #D97706;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        [data-theme="dark"] & {
+          background: rgba(217, 119, 6, 0.2);
+          color: #FBBF24;
+        }
+
+        mat-icon {
+          font-size: 22px;
+          width: 22px;
+          height: 22px;
+        }
+      }
+
+      .season-title-group {
+        display: flex;
+        flex-direction: column;
+
+        .season-name-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .season-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0F172A;
+            margin: 0;
+
+            [data-theme="dark"] & {
+              color: #F8FAFC;
+            }
+          }
+
+          .active-season-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: #ECFDF5;
+            color: #059669;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+
+            [data-theme="dark"] & {
+              background: rgba(5, 150, 105, 0.2);
+              color: #34D399;
+            }
+
+            mat-icon {
+              font-size: 13px;
+              width: 13px;
+              height: 13px;
+            }
+          }
+        }
+
+        .season-duration {
+          font-size: 12px;
+          color: #64748B;
+          margin-top: 2px;
+          [data-theme="dark"] & { color: #94A3B8; }
+        }
+      }
+    }
+
+    .collapsed-metrics-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .compact-metric-pill {
+        display: flex;
+        flex-direction: column;
+        padding: 4px 10px;
+        border-radius: 8px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+
+        [data-theme="dark"] & {
+          background: #0F172A;
+          border-color: #334155;
+        }
+
+        .pill-lbl {
+          font-size: 10px;
+          color: #64748B;
+          [data-theme="dark"] & { color: #94A3B8; }
+        }
+
+        .pill-val {
+          font-size: 13px;
+          font-weight: 700;
+          color: #0F172A;
+          [data-theme="dark"] & { color: #F8FAFC; }
+        }
+
+        &.emerald-pill .pill-val { color: #059669; [data-theme="dark"] & { color: #34D399; } }
+        &.primary-pill .pill-val { color: #0284C7; [data-theme="dark"] & { color: #38BDF8; } }
+        &.amber-pill .pill-val { color: #D97706; [data-theme="dark"] & { color: #FBBF24; } }
+      }
+
+      .expand-chevron-wrap {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #F1F5F9;
+        color: #64748B;
+
+        [data-theme="dark"] & {
+          background: #0F172A;
+          color: #94A3B8;
+        }
+
+        .expand-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+    }
+  }
+
+  .season-card-expanded-body {
+    padding: 16px;
+    border-top: 1px solid #E2E8F0;
+    background: #FAFAFA;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: expandFade 0.2s ease;
+
+    [data-theme="dark"] & {
+      background: #172033;
+      border-top-color: #334155;
+    }
+
+    .recovery-progress-box {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 12px 14px;
+
+      [data-theme="dark"] & {
+        background: #1E293B;
+        border-color: #334155;
+      }
+
+      .recovery-progress-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+
+        .progress-title {
+          font-size: 13px;
+          font-weight: 600;
+          color: #1E293B;
+          [data-theme="dark"] & { color: #F8FAFC; }
+        }
+
+        .progress-pct {
+          font-size: 13px;
+          font-weight: 700;
+          color: #059669;
+          [data-theme="dark"] & { color: #34D399; }
+        }
+      }
+
+      .progress-track-bar {
+        height: 8px;
+        background: #E2E8F0;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-bottom: 8px;
+
+        [data-theme="dark"] & {
+          background: #334155;
+        }
+
+        .progress-fill-emerald {
+          height: 100%;
+          background: linear-gradient(90deg, #059669, #34D399);
+          border-radius: 999px;
+        }
+      }
+
+      .progress-footer-stats {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #64748B;
+        [data-theme="dark"] & { color: #94A3B8; }
+
+        .text-amber { color: #D97706; [data-theme="dark"] & { color: #FBBF24; } }
+      }
+    }
+
+    .season-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+
+      @media (max-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .detail-stat-box {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        [data-theme="dark"] & {
+          background: #1E293B;
+          border-color: #334155;
+        }
+
+        .stat-icon-wrap {
+          width: 34px;
+          height: 34px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+          }
+
+          &.blue-bg { background: #EFF6FF; color: #2563EB; [data-theme="dark"] & { background: rgba(37,99,235,0.2); color: #60A5FA; } }
+          &.purple-bg { background: #FAF5FF; color: #9333EA; [data-theme="dark"] & { background: rgba(147,51,234,0.2); color: #C084FC; } }
+          &.emerald-bg { background: #ECFDF5; color: #059669; [data-theme="dark"] & { background: rgba(5,150,105,0.2); color: #34D399; } }
+          &.amber-bg { background: #FFFBEB; color: #D97706; [data-theme="dark"] & { background: rgba(217,119,6,0.2); color: #FBBF24; } }
+        }
+
+        .stat-info {
+          display: flex;
+          flex-direction: column;
+
+          .stat-num {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0F172A;
+            [data-theme="dark"] & { color: #F8FAFC; }
+
+            &.text-emerald { color: #059669; [data-theme="dark"] & { color: #34D399; } }
+            &.text-amber { color: #D97706; [data-theme="dark"] & { color: #FBBF24; } }
+          }
+
+          .stat-text {
+            font-size: 11px;
+            color: #64748B;
+            [data-theme="dark"] & { color: #94A3B8; }
+          }
+        }
+      }
+    }
+
+    .sub-section-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      margin: 0 0 8px 0;
+
+      [data-theme="dark"] & {
+        color: #CBD5E1;
+      }
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: #059669;
+      }
+    }
+
+    .season-machines-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+
+      @media (max-width: 500px) {
+        grid-template-columns: 1fr;
+      }
+
+      .season-machine-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 8px 12px;
+
+        [data-theme="dark"] & {
+          background: #1E293B;
+          border-color: #334155;
+        }
+
+        .mach-card-top {
+          display: flex;
+          justify-content: space-between;
+          font-size: 12px;
+          font-weight: 600;
+          color: #1E293B;
+          margin-bottom: 4px;
+
+          [data-theme="dark"] & { color: #F8FAFC; }
+          .mach-share { color: #0284C7; }
+        }
+
+        .mach-progress {
+          height: 6px;
+          background: #E2E8F0;
+          border-radius: 999px;
+          overflow: hidden;
+          margin-bottom: 6px;
+
+          [data-theme="dark"] & { background: #334155; }
+
+          .mach-progress-fill {
+            height: 100%;
+            background: #0284C7;
+            border-radius: 999px;
+          }
+        }
+
+        .mach-card-bottom {
+          display: flex;
+          justify-content: space-between;
+          font-size: 11px;
+          color: #64748B;
+          [data-theme="dark"] & { color: #94A3B8; }
+        }
+      }
+    }
+
+    .season-recent-jobs-section {
+      .season-jobs-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        .season-job-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #FFFFFF;
+          border: 1px solid #E2E8F0;
+          border-radius: 8px;
+          padding: 8px 12px;
+
+          [data-theme="dark"] & {
+            background: #1E293B;
+            border-color: #334155;
+          }
+
+          .job-farmer-info {
+            display: flex;
+            flex-direction: column;
+
+            .farmer-name {
+              font-size: 13px;
+              font-weight: 600;
+              color: #0F172A;
+              [data-theme="dark"] & { color: #F8FAFC; }
+            }
+
+            .job-date {
+              font-size: 11px;
+              color: #64748B;
+              [data-theme="dark"] & { color: #94A3B8; }
+            }
+          }
+
+          .job-stats-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .job-acres {
+              font-size: 12px;
+              font-weight: 600;
+              color: #059669;
+            }
+
+            .job-total {
+              font-size: 13px;
+              font-weight: 700;
+              color: #0F172A;
+              [data-theme="dark"] & { color: #F8FAFC; }
+            }
+
+            .status-badge {
+              font-size: 10px;
+              padding: 2px 6px;
+              border-radius: 4px;
+              font-weight: 600;
+
+              &.paid {
+                background: #ECFDF5;
+                color: #059669;
+                [data-theme="dark"] & { background: rgba(5,150,105,0.2); color: #34D399; }
+              }
+
+              &.pending {
+                background: #FFFBEB;
+                color: #D97706;
+                [data-theme="dark"] & { background: rgba(217,119,6,0.2); color: #FBBF24; }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .season-card-footer {
+      display: flex;
+      justify-content: flex-end;
+
+      .btn-view-season-records {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #059669;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s ease;
+
+        &:hover {
+          background: #047857;
+        }
+
+        .arrow-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
+}
+
+@keyframes expandFade {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}

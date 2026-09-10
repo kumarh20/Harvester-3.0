@@ -12,6 +12,7 @@ import { CustomDateAdapter, CUSTOM_DATE_FORMATS } from '../../core/adapters/cust
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule, MatAutocompleteTrigger, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { LandMeasurementComponent } from '../land-measurement/land-measurement.component';
 import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
@@ -41,6 +42,7 @@ import { AppNavigationService } from '../../core/services/app-navigation.service
     MatIconModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    MatAutocompleteModule,
     MatDialogModule
   ],
   providers: [
@@ -105,6 +107,40 @@ export class AddNewComponent implements OnInit {
   minPaymentDate = computed(() => 
     this.isEditMode() ? null : new Date()
   );
+
+  // Harvester autocomplete & manual typing support
+  harvesterSearchQuery = signal<string>('');
+
+  filteredHarvesters = computed(() => {
+    const list = this.harvesterService.harvesters();
+    const query = this.harvesterSearchQuery().trim().toLowerCase();
+    if (!query) return list;
+    const matches = list.filter(h => h.toLowerCase().includes(query));
+    return matches.length > 0 ? matches : list;
+  });
+
+  onHarvesterInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.harvesterSearchQuery.set(target.value || '');
+  }
+
+  onHarvesterFocus(): void {
+    this.harvesterSearchQuery.set('');
+  }
+
+  toggleHarvesterPanel(trigger: MatAutocompleteTrigger): void {
+    if (trigger.panelOpen) {
+      trigger.closePanel();
+    } else {
+      this.harvesterSearchQuery.set('');
+      trigger.openPanel();
+    }
+  }
+
+  onHarvesterOptionSelected(event: MatAutocompleteSelectedEvent): void {
+    this.recordForm.patchValue({ harvester: event.option.value });
+    this.harvesterSearchQuery.set('');
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -761,6 +797,10 @@ export class AddNewComponent implements OnInit {
     try {
       // Prepare data for API and Firestore (harvester is optional)
       const harvesterValue = formValue.harvester ? String(formValue.harvester).trim() : '';
+      if (harvesterValue) {
+        // Save new manually typed harvester to fleet if not already present
+        this.harvesterService.addHarvester(harvesterValue);
+      }
       const formattedRecordDate = this.formatDateToDDMMYYYY(formValue.date);
       const resolvedSeasonId = formValue.seasonId || this.seasonService.getSeasonForDate(formattedRecordDate)?.id || this.seasonService.getDefaultSeason()?.id || '';
 

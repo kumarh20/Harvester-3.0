@@ -335,6 +335,24 @@ export class DashboardComponent implements OnInit {
     return this.calculateStats(this.filteredRecords());
   });
 
+  activeSeasonStats = computed(() => {
+    const defaultSeason = this.seasonService.defaultSeason();
+    if (!defaultSeason) return { totalRecords: 0, totalLand: 0, totalPayment: 0, totalPending: 0, averageRate: 0, avgLandPerRecord: 0 };
+    const seasonRecords = this.recordsService.records().filter(r => {
+      const s = this.seasonService.getSeasonForRecord(r);
+      return s?.id === defaultSeason.id || r.seasonId === defaultSeason.id;
+    });
+    return this.calculateStats(seasonRecords);
+  });
+
+  activeSeasonName = computed(() => {
+    return this.seasonService.defaultSeason()?.name || (this.translationService.getCurrentLanguage() === 'hi' ? 'वर्तमान सीज़न' : 'Current Season');
+  });
+
+  totalSeasonsCount = computed(() => {
+    return this.seasonService.seasons().length;
+  });
+
   recentRecords = computed(() => {
     return [...this.filteredRecords()].reverse().slice(0, 5);
   });
@@ -819,6 +837,14 @@ export class DashboardComponent implements OnInit {
 
   goToRecords(): void {
     this.router.navigate(['/records']);
+  }
+
+  goToGraphReports(): void {
+    this.router.navigate(['/reports']);
+  }
+
+  goToSeasonReports(): void {
+    this.router.navigate(['/season-reports']);
   }
 
   goToFarmerRecord(record: Record): void {

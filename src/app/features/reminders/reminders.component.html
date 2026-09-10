@@ -649,15 +649,36 @@
                 <span matSuffix class="field-suffix-text">/एकड़</span>
               </mat-form-field>
 
-              <!-- Harvester Select -->
+              <!-- Harvester Select (Manual Typing + Autocomplete Dropdown) -->
               <mat-form-field appearance="outline" class="custom-mat-field" id="field-reminder-harvester">
                 <mat-label>{{ translationService.get('form.harvester') }}</mat-label>
-                <mat-select formControlName="harvester">
-                  @for (h of harvesterService.harvesters(); track h) {
+                <input 
+                  matInput 
+                  type="text" 
+                  formControlName="harvester" 
+                  [matAutocomplete]="autoReminderHarvester"
+                  #reminderHarvesterTrigger="matAutocompleteTrigger"
+                  (input)="onReminderHarvesterInput($event)"
+                  (focus)="onReminderHarvesterFocus()"
+                  [placeholder]="translationService.getCurrentLanguage() === 'hi' ? 'हार्वेस्टर का नाम दर्ज करें या चुनें' : 'Enter or select harvester name'"
+                  autocomplete="off"
+                  id="input-reminder-harvester-field" />
+                <mat-icon matPrefix class="field-icon">agriculture</mat-icon>
+                <button 
+                  type="button" 
+                  mat-icon-button 
+                  matSuffix 
+                  class="harvester-picker-toggle-btn"
+                  (click)="$event.stopPropagation(); toggleReminderHarvesterPanel(reminderHarvesterTrigger)"
+                  [title]="translationService.getCurrentLanguage() === 'hi' ? 'हार्वेस्टर सूची देखें' : 'View harvester list'"
+                  aria-label="Harvester list toggle">
+                  <mat-icon>arrow_drop_down</mat-icon>
+                </button>
+                <mat-autocomplete #autoReminderHarvester="matAutocomplete" (optionSelected)="onReminderHarvesterOptionSelected($event)">
+                  @for (h of filteredReminderHarvesters(); track h) {
                     <mat-option [value]="h">{{ h }}</mat-option>
                   }
-                </mat-select>
-                <mat-icon matPrefix class="field-icon">agriculture</mat-icon>
+                </mat-autocomplete>
               </mat-form-field>
             </div>
 

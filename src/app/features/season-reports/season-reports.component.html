@@ -1,0 +1,499 @@
+<div class="season-reports-page-wrapper">
+  <!-- Top Navigation Header with Back Button and Side Filter Button -->
+  <header class="season-nav-header">
+    <div class="season-header-content">
+      <div class="header-left-cluster">
+        <button 
+          type="button" 
+          class="header-back-btn" 
+          (click)="goBack()" 
+          aria-label="Go back to Dashboard"
+          id="btn-back-to-dashboard">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="header-text-block">
+          <h1 class="page-main-heading">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न रिपोर्ट्स व विवरण' : 'Season Reports & Analytics' }}</h1>
+          <p class="page-sub-heading">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न अनुसार कटाई, कमाई व बकाया राशि का व्यवस्थित विश्लेषण' : 'Season-wise harvest, earnings and recovery breakdown' }}</p>
+        </div>
+      </div>
+
+      <!-- Right Side Filter Pill Button (Matches App Theme) -->
+      <button 
+        type="button" 
+        class="figma-filter-pill-btn" 
+        (click)="openFilterPanel()" 
+        id="btn-open-season-filter-drawer"
+        aria-label="Filter records">
+        <mat-icon class="filter-btn-icon">tune</mat-icon>
+        <span class="filter-btn-text">{{ translationService.getCurrentLanguage() === 'hi' ? 'फ़िल्टर' : 'Filter' }}</span>
+        @if (activeFilterCount() > 0) {
+          <span class="filter-btn-badge">{{ activeFilterCount() }}</span>
+        }
+      </button>
+    </div>
+  </header>
+
+  <!-- Unified Right Side Filter Drawer Panel (Matching Entire App) -->
+  @if (isFilterPanelOpen()) {
+    <div class="filter-drawer-backdrop" (click)="closeFilterPanel()" id="season-filter-drawer-backdrop"></div>
+  }
+  <aside class="filter-drawer-panel" [class.is-open]="isFilterPanelOpen()" (click)="$event.stopPropagation()" id="season-filter-drawer-panel" aria-label="Season filter drawer">
+    <!-- Drawer Header -->
+    <div class="drawer-header">
+      <div class="drawer-title-wrap">
+        <mat-icon class="drawer-header-icon">tune</mat-icon>
+        <h3 class="drawer-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'फ़िल्टर सेटिंग्स' : 'Filter Records' }}</h3>
+      </div>
+      <button type="button" class="drawer-close-circle-btn" (click)="closeFilterPanel()" aria-label="Close Filter Panel">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <!-- Drawer Content Cards -->
+    <div class="drawer-content">
+      <!-- 1. Date Filter (तारीख) -->
+      <div class="drawer-filter-card">
+        <div class="drawer-card-header">
+          <div class="drawer-card-label-col">
+            <mat-icon class="drawer-card-icon">calendar_today</mat-icon>
+            <span class="drawer-card-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'तारीख' : 'Date' }}</span>
+          </div>
+          <span class="drawer-count-badge">{{ recordsByDate().length }}</span>
+        </div>
+
+        <div class="drawer-select-wrapper">
+          <button type="button" 
+                  class="drawer-dropdown-btn" 
+                  [class.is-open]="isDrawerDateOpen()"
+                  (click)="toggleDrawerDate()">
+            <span class="drawer-btn-value">{{ getSelectedDateFilterLabel() }}</span>
+            <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerDateOpen()">expand_more</mat-icon>
+          </button>
+
+          @if (isDrawerDateOpen()) {
+            <div class="drawer-dropdown-menu">
+              <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'all'" (click)="selectDateOption('all')">
+                <span>{{ translationService.get('records.filterAll') || 'सभी' }} ({{ allCount() }})</span>
+                @if (selectedDateFilter() === 'all') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'today'" (click)="selectDateOption('today')">
+                <span>{{ translationService.get('records.filterToday') || 'आज' }} ({{ todayCount() }})</span>
+                @if (selectedDateFilter() === 'today') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'yesterday'" (click)="selectDateOption('yesterday')">
+                <span>{{ translationService.get('records.filterYesterday') || 'कल' }} ({{ yesterdayCount() }})</span>
+                @if (selectedDateFilter() === 'yesterday') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'week'" (click)="selectDateOption('week')">
+                <span>{{ translationService.get('records.filterWeek') || 'इस सप्ताह' }} ({{ weekCount() }})</span>
+                @if (selectedDateFilter() === 'week') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'month'" (click)="selectDateOption('month')">
+                <span>{{ translationService.get('records.filterMonth') || 'इस माह' }} ({{ monthCount() }})</span>
+                @if (selectedDateFilter() === 'month') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'custom'" (click)="selectDateOption('custom')">
+                <span>{{ translationService.get('records.filterCustom') || 'कस्टम तारीख' }}</span>
+                @if (selectedDateFilter() === 'custom') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              @if (dueTodaySettlementCount() > 0) {
+                <button type="button" class="drawer-menu-item item-due" [class.is-selected]="selectedDateFilter() === 'dueToday'" (click)="selectDateOption('dueToday')">
+                  <span>{{ translationService.get('records.filterDueToday') || 'आज देय' }} ({{ dueTodaySettlementCount() }})</span>
+                  @if (selectedDateFilter() === 'dueToday') { <mat-icon class="item-check">check</mat-icon> }
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Custom Date Range picker inside Date Card if custom selected -->
+        @if (selectedDateFilter() === 'custom') {
+          <div class="drawer-custom-date-box" style="margin-top: 10px;">
+            <div class="custom-mode-switcher">
+              <button type="button" class="custom-mode-pill" [class.active]="customMode() === 'single'" (click)="setCustomMode('single')">
+                <mat-icon>event</mat-icon>
+                <span>{{ translationService.get('records.customSingleDate') || 'एक तारीख' }}</span>
+              </button>
+              <button type="button" class="custom-mode-pill" [class.active]="customMode() === 'range'" (click)="setCustomMode('range')">
+                <mat-icon>date_range</mat-icon>
+                <span>{{ translationService.get('records.customDateRange') || 'तारीख रेंज' }}</span>
+              </button>
+            </div>
+
+            @if (customMode() === 'single') {
+              <div class="single-picker-row" style="margin-top: 8px;">
+                <div class="date-input-wrap" (click)="openCustomDateDialog('single')" style="cursor: pointer;">
+                  <mat-icon class="date-wrap-icon">calendar_today</mat-icon>
+                  <input type="text" class="styled-date-input" [value]="formatDateDisplay(customSingleDate())" placeholder="DD-MM-YYYY" readonly style="cursor: pointer;" />
+                  <mat-icon class="date-wrap-icon" style="margin-left: auto;">event</mat-icon>
+                </div>
+              </div>
+            }
+            @if (customMode() === 'range') {
+              <div class="range-picker-row" style="margin-top: 8px;">
+                <div class="range-date-col">
+                  <label class="date-col-label">{{ translationService.get('records.fromDate') || 'प्रारंभ तारीख' }}</label>
+                  <div class="date-input-wrap" (click)="openCustomDateDialog('start')" style="cursor: pointer;">
+                    <mat-icon class="date-wrap-icon">event</mat-icon>
+                    <input type="text" class="styled-date-input" [value]="formatDateDisplay(customStartDate())" placeholder="DD-MM-YYYY" readonly style="cursor: pointer;" />
+                  </div>
+                </div>
+                <div class="range-date-col">
+                  <label class="date-col-label">{{ translationService.get('records.toDate') || 'अंतिम तारीख' }}</label>
+                  <div class="date-input-wrap" (click)="openCustomDateDialog('end')" style="cursor: pointer;">
+                    <mat-icon class="date-wrap-icon">event_available</mat-icon>
+                    <input type="text" class="styled-date-input" [value]="formatDateDisplay(customEndDate())" placeholder="DD-MM-YYYY" readonly style="cursor: pointer;" />
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- 2. Season Filter (सीज़न) -->
+      <div class="drawer-filter-card">
+        <div class="drawer-card-header">
+          <div class="drawer-card-label-col">
+            <mat-icon class="drawer-card-icon">grass</mat-icon>
+            <span class="drawer-card-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Season' }}</span>
+          </div>
+          <span class="drawer-count-badge">{{ getSeasonRecordCount(selectedSeasonFilter()) }}</span>
+        </div>
+
+        <div class="drawer-select-wrapper">
+          <button type="button" 
+                  class="drawer-dropdown-btn" 
+                  [class.is-open]="isDrawerSeasonOpen()"
+                  (click)="toggleDrawerSeason()">
+            <span class="drawer-btn-value">{{ getSelectedSeasonFilterLabel() }}</span>
+            <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerSeasonOpen()">expand_more</mat-icon>
+          </button>
+
+          @if (isDrawerSeasonOpen()) {
+            <div class="drawer-dropdown-menu">
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedSeasonFilter() === 'all'" 
+                      (click)="selectSeasonOption('all')">
+                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी सीज़न' : 'All Seasons' }}</span>
+                @if (selectedSeasonFilter() === 'all') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              @for (season of seasonService.seasons(); track season.id) {
+                <button type="button" 
+                        class="drawer-menu-item" 
+                        [class.is-selected]="selectedSeasonFilter() === season.id" 
+                        (click)="selectSeasonOption(season.id)">
+                  <span>{{ season.name }} ({{ season.year }})</span>
+                  @if (selectedSeasonFilter() === season.id) { <mat-icon class="item-check">check</mat-icon> }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- 3. Harvester Machine Filter (मशीन) -->
+      <div class="drawer-filter-card">
+        <div class="drawer-card-header">
+          <div class="drawer-card-label-col">
+            <mat-icon class="drawer-card-icon">agriculture</mat-icon>
+            <span class="drawer-card-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'हार्वेस्टर मशीन' : 'Harvester Machine' }}</span>
+          </div>
+          <span class="drawer-count-badge">{{ getHarvesterRecordCount(selectedHarvesterFilter()) }}</span>
+        </div>
+
+        <div class="drawer-select-wrapper">
+          <button type="button" 
+                  class="drawer-dropdown-btn" 
+                  [class.is-open]="isDrawerHarvesterOpen()"
+                  (click)="toggleDrawerHarvester()">
+            <span class="drawer-btn-value">{{ getSelectedHarvesterFilterLabel() }}</span>
+            <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerHarvesterOpen()">expand_more</mat-icon>
+          </button>
+
+          @if (isDrawerHarvesterOpen()) {
+            <div class="drawer-dropdown-menu">
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedHarvesterFilter() === 'all'" 
+                      (click)="selectHarvesterOption('all')">
+                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी मशीनें' : 'All Machines' }}</span>
+                @if (selectedHarvesterFilter() === 'all') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              @for (harvester of harvesterService.harvesters(); track harvester) {
+                <button type="button" 
+                        class="drawer-menu-item" 
+                        [class.is-selected]="selectedHarvesterFilter() === harvester" 
+                        (click)="selectHarvesterOption(harvester)">
+                  <span>{{ harvester }}</span>
+                  @if (selectedHarvesterFilter() === harvester) { <mat-icon class="item-check">check</mat-icon> }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Drawer Footer Actions -->
+    <div class="drawer-footer-actions">
+      <button type="button" class="drawer-reset-btn" (click)="resetFilters()">
+        <mat-icon>restart_alt</mat-icon>
+        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'रीसेट' : 'Reset' }}</span>
+      </button>
+      <button type="button" class="drawer-apply-btn" (click)="closeFilterPanel()">
+        <mat-icon>check</mat-icon>
+        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'लागू करें' : 'Apply' }}</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="season-main-container">
+    <!-- Overall Quick Stats Header (Calculated Reactively from Filtered Data) -->
+    <section class="season-overview-banner" id="season-overview-banner">
+      <div class="overview-metric-item">
+        <span class="overview-metric-lbl">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल सीज़न' : 'Seasons' }}</span>
+        <span class="overview-metric-val">{{ overallStats().totalSeasons }}</span>
+      </div>
+      <div class="overview-divider"></div>
+      <div class="overview-metric-item">
+        <span class="overview-metric-lbl">{{ translationService.get('dashboard.totalLand') }}</span>
+        <span class="overview-metric-val text-emerald">{{ formatNumber(overallStats().totalLand) }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Acres' }}</span>
+      </div>
+      <div class="overview-divider"></div>
+      <div class="overview-metric-item">
+        <span class="overview-metric-lbl">{{ translationService.get('dashboard.totalAmount') }}</span>
+        <span class="overview-metric-val text-primary">{{ formatCurrency(overallStats().totalRevenue) }}</span>
+      </div>
+      <div class="overview-divider"></div>
+      <div class="overview-metric-item">
+        <span class="overview-metric-lbl">{{ translationService.get('dashboard.pendingAmount') }}</span>
+        <span class="overview-metric-val text-amber">{{ formatCurrency(overallStats().totalPending) }}</span>
+      </div>
+    </section>
+
+    <!-- Filter Pills & Expand/Collapse Controls -->
+    <div class="season-controls-bar">
+      <div class="season-filter-chips">
+        <button 
+          type="button" 
+          class="season-chip-btn" 
+          [class.active]="selectedSeasonFilter() === 'all'" 
+          (click)="setSeasonFilter('all')"
+          id="chip-season-all">
+          {{ translationService.getCurrentLanguage() === 'hi' ? 'सभी सीज़न' : 'All Seasons' }}
+        </button>
+        @for (s of seasonService.seasons(); track s.id) {
+          <button 
+            type="button" 
+            class="season-chip-btn" 
+            [class.active]="selectedSeasonFilter() === s.id" 
+            (click)="setSeasonFilter(s.id || '')"
+            [id]="'chip-season-' + s.id">
+            <span>{{ s.name }} ({{ s.year }})</span>
+            @if (s.isDefault) {
+              <span class="chip-star-dot">★</span>
+            }
+          </button>
+        }
+      </div>
+
+      <div class="accordion-toggle-actions">
+        <button type="button" class="text-action-btn" (click)="expandAll()" id="btn-expand-all">
+          <mat-icon>unfold_more</mat-icon>
+          <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी खोलें' : 'Expand All' }}</span>
+        </button>
+        <button type="button" class="text-action-btn" (click)="collapseAll()" id="btn-collapse-all">
+          <mat-icon>unfold_less</mat-icon>
+          <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी समेटें' : 'Collapse All' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Season Cards List (Collapsible / Expandable) -->
+    <div class="season-cards-list" id="season-cards-container">
+      @for (season of filteredSeasonSummaries(); track season.id) {
+        <div 
+          class="season-accordion-card" 
+          [class.is-expanded]="isExpanded(season.id)"
+          [class.is-default-season]="season.isDefault"
+          [id]="'season-card-' + season.id">
+          
+          <!-- Collapsed Header & Simple Data Row (Clean, Attractive UX) -->
+          <div 
+            class="season-card-collapsed-header" 
+            (click)="toggleExpand(season.id)"
+            [id]="'season-header-toggle-' + season.id"
+            role="button"
+            tabindex="0"
+            [attr.aria-expanded]="isExpanded(season.id)">
+            
+            <div class="header-main-info">
+              <div class="season-icon-badge">
+                <mat-icon>grass</mat-icon>
+              </div>
+              <div class="season-title-group">
+                <div class="season-name-row">
+                  <h3 class="season-name">{{ season.name }} ({{ season.year }})</h3>
+                  @if (season.isDefault) {
+                    <span class="active-season-pill">
+                      <mat-icon>check_circle</mat-icon>
+                      <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सक्रिय सीज़न' : 'Active' }}</span>
+                    </span>
+                  }
+                </div>
+                <span class="season-duration">{{ season.durationLabel }} • {{ season.totalRecords }} {{ translationService.getCurrentLanguage() === 'hi' ? 'कटाई' : 'Jobs' }}</span>
+              </div>
+            </div>
+
+            <!-- Compact Metrics Preview (Simple & Crisp) -->
+            <div class="collapsed-metrics-row">
+              <div class="compact-metric-pill emerald-pill">
+                <span class="pill-lbl">{{ translationService.get('dashboard.totalLand') }}</span>
+                <span class="pill-val">{{ formatNumber(season.totalLand) }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Ac' }}</span>
+              </div>
+              <div class="compact-metric-pill primary-pill">
+                <span class="pill-lbl">{{ translationService.get('dashboard.totalAmount') }}</span>
+                <span class="pill-val">{{ formatCurrency(season.totalRevenue) }}</span>
+              </div>
+              <div class="compact-metric-pill amber-pill">
+                <span class="pill-lbl">{{ translationService.get('dashboard.pendingAmount') }}</span>
+                <span class="pill-val">{{ formatCurrency(season.totalPending) }}</span>
+              </div>
+              <div class="expand-chevron-wrap">
+                <mat-icon class="expand-icon">{{ isExpanded(season.id) ? 'expand_less' : 'expand_more' }}</mat-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expanded Details Section -->
+          @if (isExpanded(season.id)) {
+            <div class="season-card-expanded-body" [id]="'season-body-' + season.id">
+              <!-- Recovery Progress Bar -->
+              <div class="recovery-progress-box">
+                <div class="recovery-progress-meta">
+                  <span class="progress-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'भुगतान वसूली प्रगति' : 'Payment Recovery Progress' }}</span>
+                  <span class="progress-pct">{{ season.recoveryPercentage }}% {{ translationService.getCurrentLanguage() === 'hi' ? 'वसूल' : 'Collected' }}</span>
+                </div>
+                <div class="progress-track-bar">
+                  <div class="progress-fill-emerald" [style.width.%]="season.recoveryPercentage"></div>
+                </div>
+                <div class="progress-footer-stats">
+                  <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'नकद प्राप्त:' : 'Collected:' }} <strong>{{ formatCurrency(season.totalCollected) }}</strong></span>
+                  <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'शेष बकाया:' : 'Pending:' }} <strong class="text-amber">{{ formatCurrency(season.totalPending) }}</strong></span>
+                </div>
+              </div>
+
+              <!-- Detailed Stats Grid for this Season -->
+              <div class="season-detail-grid">
+                <div class="detail-stat-box">
+                  <span class="stat-icon-wrap blue-bg"><mat-icon>agriculture</mat-icon></span>
+                  <div class="stat-info">
+                    <span class="stat-num">{{ season.totalRecords }}</span>
+                    <span class="stat-text">{{ translationService.getCurrentLanguage() === 'hi' ? 'कुल कार्य / कटाई' : 'Completed Jobs' }}</span>
+                  </div>
+                </div>
+
+                <div class="detail-stat-box">
+                  <span class="stat-icon-wrap purple-bg"><mat-icon>trending_up</mat-icon></span>
+                  <div class="stat-info">
+                    <span class="stat-num">{{ formatCurrency(season.averageRate) }}</span>
+                    <span class="stat-text">{{ translationService.getCurrentLanguage() === 'hi' ? 'औसत दर प्रति एकड़' : 'Avg Rate / Acre' }}</span>
+                  </div>
+                </div>
+
+                <div class="detail-stat-box">
+                  <span class="stat-icon-wrap emerald-bg"><mat-icon>payments</mat-icon></span>
+                  <div class="stat-info">
+                    <span class="stat-num text-emerald">{{ formatCurrency(season.totalCollected) }}</span>
+                    <span class="stat-text">{{ translationService.getCurrentLanguage() === 'hi' ? 'नकद प्राप्त राशि' : 'Cash Collected' }}</span>
+                  </div>
+                </div>
+
+                <div class="detail-stat-box">
+                  <span class="stat-icon-wrap amber-bg"><mat-icon>assignment_late</mat-icon></span>
+                  <div class="stat-info">
+                    <span class="stat-num text-amber">{{ formatCurrency(season.totalPending) }}</span>
+                    <span class="stat-text">{{ translationService.getCurrentLanguage() === 'hi' ? 'बाकी बकाया राशि' : 'Pending Due' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Machine Contributions in this Season -->
+              @if (season.machines.length > 0) {
+                <div class="season-machines-section">
+                  <h4 class="sub-section-title">
+                    <mat-icon>precision_manufacturing</mat-icon>
+                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'मशीन अनुसार योगदान' : 'Machine Contributions' }}</span>
+                  </h4>
+                  <div class="season-machines-grid">
+                    @for (m of season.machines; track m.machineName) {
+                      <div class="season-machine-card">
+                        <div class="mach-card-top">
+                          <span class="mach-name">{{ m.machineName }}</span>
+                          <span class="mach-share">{{ m.sharePercent }}%</span>
+                        </div>
+                        <div class="mach-progress">
+                          <div class="mach-progress-fill" [style.width.%]="m.sharePercent"></div>
+                        </div>
+                        <div class="mach-card-bottom">
+                          <span>{{ formatNumber(m.acres) }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Acres' }}</span>
+                          <span class="mach-rev">{{ formatCurrency(m.revenue) }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Recent Records in this Season -->
+              @if (season.recentRecords.length > 0) {
+                <div class="season-recent-jobs-section">
+                  <h4 class="sub-section-title">
+                    <mat-icon>history</mat-icon>
+                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न के हालिया रिकॉर्ड्स' : 'Recent Harvests in Season' }}</span>
+                  </h4>
+                  <div class="season-jobs-list">
+                    @for (rec of season.recentRecords; track rec.id) {
+                      <div class="season-job-item">
+                        <div class="job-farmer-info">
+                          <span class="farmer-name">{{ rec.farmerName }}</span>
+                          <span class="job-date">{{ rec.date }}</span>
+                        </div>
+                        <div class="job-stats-info">
+                          <span class="job-acres">{{ formatNumber(rec.landInAcres) }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Ac' }}</span>
+                          <span class="job-total">{{ formatCurrency(rec.totalPayment) }}</span>
+                          @if (rec.markedAsPaid) {
+                            <span class="status-badge paid">{{ translationService.getCurrentLanguage() === 'hi' ? 'पूर्ण भुगतान' : 'Paid' }}</span>
+                          } @else if ((rec.pendingAmount || 0) > 0) {
+                            <span class="status-badge pending">{{ translationService.getCurrentLanguage() === 'hi' ? 'बाकी' : 'Pending' }}</span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Season Action Footer: Link to full ledger -->
+              <div class="season-card-footer">
+                <button 
+                  type="button" 
+                  class="btn-view-season-records"
+                  (click)="goToSeasonRecords(season.id)"
+                  [id]="'btn-view-records-' + season.id">
+                  <mat-icon>list_alt</mat-icon>
+                  <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'इस सीज़न के सभी रिकॉर्ड्स देखें' : 'View All Records for this Season' }}</span>
+                  <mat-icon class="arrow-icon">arrow_forward</mat-icon>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </main>
+</div>

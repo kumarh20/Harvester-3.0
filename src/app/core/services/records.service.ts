@@ -21,6 +21,8 @@ export interface Record {
   markedAsPaid?: boolean;
 }
 
+export type HarvestRecord = Record;
+
 @Injectable({
   providedIn: 'root'
 })

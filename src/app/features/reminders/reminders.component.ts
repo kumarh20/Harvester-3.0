@@ -12,6 +12,7 @@ import { CustomDateAdapter, CUSTOM_DATE_FORMATS } from '../../core/adapters/cust
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule, MatAutocompleteTrigger, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RemindersService, Reminder } from '../../core/services/reminders.service';
 import { RecordsService } from '../../core/services/records.service';
@@ -47,6 +48,7 @@ export type ReminderTabFilter = 'today' | 'tomorrow' | 'upcoming' | 'all' | 'cus
     MatIconModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    MatAutocompleteModule,
     MatDialogModule,
     ReminderSkeletonComponent
   ],
@@ -103,6 +105,40 @@ export class RemindersComponent implements OnInit {
 
   // Temporary selected time for clean datetime picker in reminders
   tempReminderTime = signal<string>('08:00');
+
+  // Harvester autocomplete & manual typing support in reminders
+  reminderHarvesterQuery = signal<string>('');
+
+  filteredReminderHarvesters = computed(() => {
+    const list = this.harvesterService.harvesters();
+    const query = this.reminderHarvesterQuery().trim().toLowerCase();
+    if (!query) return list;
+    const matches = list.filter(h => h.toLowerCase().includes(query));
+    return matches.length > 0 ? matches : list;
+  });
+
+  onReminderHarvesterInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.reminderHarvesterQuery.set(target.value || '');
+  }
+
+  onReminderHarvesterFocus(): void {
+    this.reminderHarvesterQuery.set('');
+  }
+
+  toggleReminderHarvesterPanel(trigger: MatAutocompleteTrigger): void {
+    if (trigger.panelOpen) {
+      trigger.closePanel();
+    } else {
+      this.reminderHarvesterQuery.set('');
+      trigger.openPanel();
+    }
+  }
+
+  onReminderHarvesterOptionSelected(event: MatAutocompleteSelectedEvent): void {
+    this.bookingForm.patchValue({ harvester: event.option.value });
+    this.reminderHarvesterQuery.set('');
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -1010,6 +1046,11 @@ export class RemindersComponent implements OnInit {
       const rate = Number(val.ratePerAcre) || this.ratePerAcreVal() || 0;
       const total = Math.round(acres * rate);
 
+      const reminderHarvester = (val.harvester || '').trim() || this.harvesterService.getDefaultHarvester();
+      if (val.harvester && val.harvester.trim()) {
+        this.harvesterService.addHarvester(val.harvester.trim());
+      }
+
       const reminderData = {
         farmerName: (val.farmerName || '').trim(),
         contactNumber: (val.contactNumber || '').trim(),
@@ -1018,7 +1059,7 @@ export class RemindersComponent implements OnInit {
         landInAcres: acres,
         ratePerAcre: rate,
         estimatedTotal: total,
-        harvester: val.harvester || this.harvesterService.getDefaultHarvester(),
+        harvester: reminderHarvester,
         notes: (val.notes || '').trim(),
         status: 'pending' as const
       };
