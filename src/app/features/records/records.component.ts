@@ -155,6 +155,7 @@ export class RecordsComponent implements OnInit, OnDestroy {
     effect(() => {
       const isFarmerDetailOpen = !!this.selectedFarmer();
       this.recordsService.isKisanDetailPageOpen.set(isFarmerDetailOpen);
+      this.updateThemeColorForKisan(isFarmerDetailOpen);
     });
 
     // Default season synchronization from Settings
@@ -207,8 +208,22 @@ export class RecordsComponent implements OnInit, OnDestroy {
     return `${dd}-${mm}-${yyyy}`;
   }
 
+  private updateThemeColorForKisan(isOpen: boolean): void {
+    if (typeof document === 'undefined') return;
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      if (isOpen) {
+        metaTheme.setAttribute('content', '#062612');
+      } else {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        metaTheme.setAttribute('content', isDark ? '#0F1C12' : '#2e562f');
+      }
+    }
+  }
+
   ngOnDestroy(): void {
     this.recordsService.isKisanDetailPageOpen.set(false);
+    this.updateThemeColorForKisan(false);
   }
 
   async ngOnInit(): Promise<void> {

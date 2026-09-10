@@ -37,12 +37,12 @@
                   <mat-icon>arrow_back</mat-icon>
                 </button>
               }
-              <h1 class="hero-company-name" id="dashboard-company-name">{{ companyName() }}</h1>
+              <h1 class="hero-company-name" id="dashboard-company-name" [title]="companyName()">{{ companyName() }}</h1>
             </div>
             <div class="hero-welcome-wrapper" id="dashboard-welcome-back">
               <span class="welcome-text">Welcome back,</span>
               <div class="user-row">
-                <span class="user-highlight">{{ userName() }}</span>
+                <span class="user-highlight" [title]="userName()">{{ userName() }}</span>
                 <span class="wave-emoji" aria-hidden="true">👏</span>
               </div>
               <p class="hero-tagline" id="dashboard-hero-tagline">Good farming leads to greater opportunities.</p>

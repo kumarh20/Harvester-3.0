@@ -236,17 +236,19 @@
           }
         </div>
       </div>
+      <!-- Reset Filter Option -->
+      <div class="drawer-reset-wrapper">
+        <button type="button" class="drawer-reset-link" (click)="resetFilters()">
+          <mat-icon>restart_alt</mat-icon>
+          <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी फ़िल्टर रीसेट करें' : 'Reset All Filters' }}</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Drawer Footer Actions -->
-    <div class="drawer-footer-actions">
-      <button type="button" class="drawer-reset-btn" (click)="resetFilters()">
-        <mat-icon>restart_alt</mat-icon>
-        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'रीसेट' : 'Reset' }}</span>
-      </button>
-      <button type="button" class="drawer-apply-btn" (click)="closeFilterPanel()">
-        <mat-icon>check</mat-icon>
-        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'लागू करें' : 'Apply' }}</span>
+    <!-- Drawer Footer -->
+    <div class="drawer-footer">
+      <button type="button" class="drawer-apply-pill-btn" (click)="closeFilterPanel()">
+        {{ translationService.getCurrentLanguage() === 'hi' ? 'लागू करें' : 'APPLY' }}
       </button>
     </div>
   </aside>

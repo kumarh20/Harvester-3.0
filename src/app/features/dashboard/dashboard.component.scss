@@ -129,6 +129,7 @@
   gap: 12px;
   width: 100%;
   z-index: 2;
+  min-width: 0;
 }
 
 .hero-header-text {
@@ -137,13 +138,15 @@
   gap: 3px;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 
   .hero-title-group {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     min-width: 0;
+    max-width: 100%;
   }
 
   .hero-company-name {
@@ -153,7 +156,11 @@
     margin: 0;
     letter-spacing: -0.025em;
     line-height: 1.15;
-    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    max-width: 100%;
 
     [data-theme="dark"] & {
       color: #F8FAFC;
@@ -165,12 +172,17 @@
     flex-direction: column;
     gap: 1px;
     margin-top: 2px;
+    min-width: 0;
+    max-width: 100%;
 
     .welcome-text {
       font-size: clamp(13px, 2vw, 15px);
       color: #1E293B;
       font-weight: 600;
       line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
 
       [data-theme="dark"] & {
         color: #CBD5E1;
@@ -181,12 +193,19 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      min-width: 0;
+      max-width: 100%;
 
       .user-highlight {
         font-size: clamp(19px, 3vw, 24px);
         color: #047857;
         font-weight: 800;
         line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+        max-width: 100%;
 
         [data-theme="dark"] & {
           color: #34D399;
@@ -197,6 +216,7 @@
         font-size: clamp(18px, 2.8vw, 23px);
         line-height: 1;
         display: inline-block;
+        flex-shrink: 0;
       }
     }
 
@@ -206,6 +226,10 @@
       font-weight: 500;
       margin: 3px 0 0 0;
       line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
 
       [data-theme="dark"] & {
         color: #94A3B8;
