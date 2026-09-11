@@ -15,6 +15,9 @@ import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
 import { AppNavigationService } from '../../core/services/app-navigation.service';
 import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
+import { FilterDrawerComponent } from '../../shared/components/filter-drawer/filter-drawer.component';
+import { parseDate, formatDateDisplay, formatDateForInput, normalizeDateToKey } from '../../core/utils/date.utils';
+import { formatIndianCurrency, formatIndianNumber } from '../../core/utils/number.utils';
 
 export interface SeasonMachineStat {
   machineName: string;
@@ -53,7 +56,8 @@ export interface SeasonSummaryData {
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule
+    MatDialogModule,
+    FilterDrawerComponent
   ],
   templateUrl: './season-reports.component.html',
   styleUrl: './season-reports.component.scss',
@@ -290,81 +294,19 @@ export class SeasonReportsComponent {
 
   // Date Parsing Helpers
   normalizeDateToKey(dateStr?: string | null): string {
-    if (!dateStr) return '';
-    const parsed = this.parseDate(dateStr);
-    if (!parsed) return '';
-    return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
+    return normalizeDateToKey(dateStr);
   }
 
   parseDate(dateStr: string): Date | null {
-    if (!dateStr) return null;
-    const parts = dateStr.trim().replace(/\//g, '-').split('-');
-    if (parts.length !== 3) return null;
-
-    let day = 1;
-    let month = 0;
-    let year = 2026;
-
-    if (parts[0].length === 4) {
-      year = parseInt(parts[0], 10);
-      month = parseInt(parts[1], 10) - 1;
-      day = parseInt(parts[2], 10);
-    } else {
-      day = parseInt(parts[0], 10);
-      month = parseInt(parts[1], 10) - 1;
-      year = parseInt(parts[2], 10);
-    }
-
-    if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
-    return new Date(year, month, day);
+    return parseDate(dateStr);
   }
 
   formatDateDisplay(dateStr: string): string {
-    if (!dateStr) return '';
-    const parsed = this.parseDate(dateStr);
-    if (!parsed) return dateStr;
-    const dd = String(parsed.getDate()).padStart(2, '0');
-    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
-    const yyyy = parsed.getFullYear();
-    return `${dd}-${mm}-${yyyy}`;
+    return formatDateDisplay(dateStr);
   }
 
   formatDateForInput(d: Date): string {
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-  }
-
-  openCustomDateDialog(type: 'single' | 'start' | 'end'): void {
-    const currentVal = type === 'single' ? this.customSingleDate() : type === 'start' ? this.customStartDate() : this.customEndDate();
-    let initialDateVal = new Date();
-    if (currentVal) {
-      const parsed = this.parseDate(currentVal);
-      if (parsed) initialDateVal = parsed;
-    }
-
-    const dialogRef = this.dialog.open(DateTimePickerDialogComponent, {
-      panelClass: 'kendo-dtp-dialog-panel',
-      data: {
-        initialDate: initialDateVal,
-        mode: 'date',
-        title: this.translationService.get('records.filterByDate') || 'तारीख अनुसार फ़िल्टर'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe((result: DateTimePickerResult | null) => {
-      if (result && result.date) {
-        const formatted = this.formatDateForInput(result.date);
-        if (type === 'single') {
-          this.customSingleDate.set(formatted);
-        } else if (type === 'start') {
-          this.customStartDate.set(formatted);
-        } else if (type === 'end') {
-          this.customEndDate.set(formatted);
-        }
-      }
-    });
+    return formatDateForInput(d);
   }
 
   // Filtered dataset according to date & harvester
@@ -636,10 +578,10 @@ export class SeasonReportsComponent {
   });
 
   formatCurrency(value: number): string {
-    return '₹' + (value || 0).toLocaleString('en-IN');
+    return formatIndianCurrency(value);
   }
 
   formatNumber(value: number): string {
-    return (value || 0).toLocaleString('en-IN');
+    return formatIndianNumber(value);
   }
 }

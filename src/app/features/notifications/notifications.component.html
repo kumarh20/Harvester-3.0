@@ -1,0 +1,167 @@
+<div class="notifications-page-container" id="notifications-page-root">
+  <!-- Top App Bar / Header -->
+  <header class="notifications-header" id="notifications-header-bar">
+    <div class="header-left">
+      <button 
+        type="button" 
+        id="notifications-back-btn" 
+        class="back-btn" 
+        (click)="goBack()" 
+        aria-label="Go back">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-wrap">
+        <h1 class="page-title">{{ isHindi() ? 'सूचनाएं' : 'Notifications' }}</h1>
+        <span class="unread-pill" *ngIf="unreadCount() > 0">
+          {{ unreadCount() }} {{ isHindi() ? 'नई' : 'New' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button 
+        type="button" 
+        id="mark-all-read-btn" 
+        class="action-text-btn" 
+        *ngIf="unreadCount() > 0"
+        (click)="markAllAsRead($event)"
+        title="Mark all as read">
+        <mat-icon class="btn-icon">done_all</mat-icon>
+        <span class="btn-label">{{ isHindi() ? 'सभी पढ़ें' : 'Mark all read' }}</span>
+      </button>
+      <button 
+        type="button" 
+        id="clear-all-notifs-btn" 
+        class="icon-circle-btn danger" 
+        *ngIf="totalCount() > 0"
+        (click)="clearAll($event)"
+        title="Clear all notifications">
+        <mat-icon>delete_sweep</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <!-- Filter Chips / Tabs -->
+  <nav class="filter-chips-row" id="notifications-filter-tabs">
+    <button 
+      type="button" 
+      class="filter-chip" 
+      [class.active]="activeFilter() === 'all'"
+      (click)="setFilter('all')">
+      <span>{{ isHindi() ? 'सभी' : 'All' }}</span>
+      <span class="count-badge">{{ totalCount() }}</span>
+    </button>
+    <button 
+      type="button" 
+      class="filter-chip" 
+      [class.active]="activeFilter() === 'unread'"
+      (click)="setFilter('unread')">
+      <span>{{ isHindi() ? 'अपठित' : 'Unread' }}</span>
+      <span class="count-badge highlight" *ngIf="unreadCount() > 0">{{ unreadCount() }}</span>
+    </button>
+    <button 
+      type="button" 
+      class="filter-chip" 
+      [class.active]="activeFilter() === 'reminder'"
+      (click)="setFilter('reminder')">
+      <mat-icon class="chip-icon">alarm</mat-icon>
+      <span>{{ isHindi() ? 'रिमाइंडर' : 'Reminders' }}</span>
+    </button>
+    <button 
+      type="button" 
+      class="filter-chip" 
+      [class.active]="activeFilter() === 'due'"
+      (click)="setFilter('due')">
+      <mat-icon class="chip-icon">payments</mat-icon>
+      <span>{{ isHindi() ? 'बकाया' : 'Payment Due' }}</span>
+    </button>
+  </nav>
+
+  <!-- Notification List -->
+  <main class="notifications-content" id="notifications-list-container">
+    @if (notifications().length > 0) {
+      <div class="notifications-list">
+        @for (notif of notifications(); track notif.id) {
+          <article 
+            class="notification-card" 
+            [class.unread]="!notif.isRead"
+            [class.due-card]="notif.type === 'settlement_due'"
+            [class.reminder-card]="notif.type === 'reminder'"
+            [id]="'notif-card-' + notif.id"
+            (click)="onNotificationClick(notif)">
+            
+            <!-- Unread indicator dot -->
+            <div class="unread-dot" *ngIf="!notif.isRead"></div>
+
+            <!-- Icon Box -->
+            <div class="card-icon-box" [class]="'icon-' + notif.type">
+              <mat-icon>{{ getNotificationIcon(notif.type) }}</mat-icon>
+            </div>
+
+            <!-- Content Details -->
+            <div class="card-details">
+              <div class="card-header-line">
+                <span class="category-tag" [class]="getNotificationTag(notif.type).class">
+                  {{ getNotificationTag(notif.type).label }}
+                </span>
+                <span class="timestamp-text">{{ formatTime(notif.timestamp) }}</span>
+              </div>
+
+              <h2 class="card-title">{{ notif.title }}</h2>
+              <p class="card-message">{{ notif.message }}</p>
+
+              <!-- Optional Context Pill -->
+              @if (notif.farmerName || notif.amount) {
+                <div class="card-meta-row">
+                  @if (notif.farmerName) {
+                    <span class="meta-pill farmer">
+                      <mat-icon class="pill-icon">person</mat-icon>
+                      <span>{{ notif.farmerName }}</span>
+                    </span>
+                  }
+                  @if (notif.amount) {
+                    <span class="meta-pill amount">
+                      <mat-icon class="pill-icon">currency_rupee</mat-icon>
+                      <span>₹{{ notif.amount | number:'1.0-0' }}</span>
+                    </span>
+                  }
+                  @if (notif.acres) {
+                    <span class="meta-pill acres">
+                      <mat-icon class="pill-icon">crop</mat-icon>
+                      <span>{{ notif.acres }} {{ isHindi() ? 'एकड़' : 'Acres' }}</span>
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Trailing Action -->
+            <div class="card-trailing">
+              <button 
+                type="button" 
+                class="delete-single-btn" 
+                (click)="deleteNotification(notif.id, $event)"
+                title="Delete">
+                <mat-icon>close</mat-icon>
+              </button>
+              <mat-icon class="chevron-icon">chevron_right</mat-icon>
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <!-- Empty State -->
+      <div class="empty-notifications-card" id="empty-notifications-state">
+        <div class="empty-icon-circle">
+          <mat-icon class="empty-icon">notifications_off</mat-icon>
+        </div>
+        <h2 class="empty-title">{{ isHindi() ? 'कोई सूचना नहीं है' : 'No Notifications' }}</h2>
+        <p class="empty-subtitle">
+          {{ isHindi() 
+            ? 'यहाँ आपके कटाई रिमाइंडर और बकाया भुगतान से जुड़ी सभी सूचनाएं दिखेंगी।' 
+            : 'All your cutting reminders and payment due notifications will appear here.' }}
+        </p>
+      </div>
+    }
+  </main>
+</div>

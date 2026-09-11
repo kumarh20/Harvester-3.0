@@ -12,6 +12,7 @@ import { ThemeService } from '../../services/theme.service';
 import { UserService } from '../../../services/user/user-service';
 import { AuthService } from '../../../services/auth/auth-service';
 import { ToastService } from '../../services/toast.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { ProfileDialogComponent, ProfileDialogData } from '../profile-dialog/profile-dialog.component';
 
 @Component({
@@ -32,6 +33,7 @@ export class HeaderComponent implements OnInit {
   public translationService = inject(TranslationService);
   private languageService = inject(LanguageService);
   public themeService = inject(ThemeService);
+  public notificationService = inject(NotificationService);
   private auth = inject(Auth);
   private authService = inject(AuthService);
   private ngZone = inject(NgZone);
@@ -41,6 +43,9 @@ export class HeaderComponent implements OnInit {
   private router = inject(Router);
   private elementRef = inject(ElementRef);
   private cdr = inject(ChangeDetectorRef);
+
+  // Unread notifications badge
+  unreadNotificationCount = computed(() => this.notificationService.unreadCount());
 
   // Theme signal
   isDarkMode = computed(() => this.themeService.isDarkMode());
@@ -174,6 +179,10 @@ export class HeaderComponent implements OnInit {
     return this.languageService.getCurrentLanguage();
   }
 
+  isHindi(): boolean {
+    return this.translationService.getCurrentLanguage() === 'hi';
+  }
+
   toggleProfileMenu(): void {
     this.isProfileMenuOpen.update(v => !v);
   }
@@ -243,6 +252,11 @@ export class HeaderComponent implements OnInit {
   navigateToSettings(): void {
     this.closeProfileMenu();
     this.router.navigate(['/settings']);
+  }
+
+  navigateToNotifications(): void {
+    this.closeProfileMenu();
+    this.router.navigate(['/notifications']);
   }
 
   async onLogout(): Promise<void> {

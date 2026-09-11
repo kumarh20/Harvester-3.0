@@ -462,6 +462,107 @@
 }
 
 // ==========================================
+// 🔔 3D NOTIFICATION ICON BUTTON & BADGE
+// ==========================================
+.notification-icon-btn-3d {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    flex-shrink: 0;
+
+    &:hover {
+        transform: translateY(-1.5px) scale(1.06);
+        background: rgba(255, 255, 255, 0.22);
+        border-color: rgba(255, 255, 255, 0.45);
+        box-shadow: 
+            0 4px 12px rgba(0, 0, 0, 0.25),
+            0 0 12px rgba(74, 222, 128, 0.3);
+    }
+
+    &:active {
+        transform: scale(0.92);
+    }
+
+    .notification-icon-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+
+        .header-bell-icon {
+            color: #FFFFFF;
+            font-size: 21px;
+            width: 21px;
+            height: 21px;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+            transition: transform 0.2s ease;
+        }
+
+        .notification-badge-pulse {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            color: #FFFFFF;
+            font-size: 10px;
+            font-weight: 800;
+            line-height: 18px;
+            text-align: center;
+            letter-spacing: -0.02em;
+            border: 2px solid #062612;
+            box-shadow: 
+                0 2px 6px rgba(239, 68, 68, 0.6),
+                0 0 8px rgba(239, 68, 68, 0.5);
+            animation: badgePulse 2s infinite ease-in-out;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    [data-theme="dark"] & {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(74, 222, 128, 0.25);
+
+        &:hover {
+            background: rgba(74, 222, 128, 0.18);
+            border-color: #4ADE80;
+        }
+
+        .notification-icon-wrap .notification-badge-pulse {
+            border-color: #04180C;
+        }
+    }
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.12);
+    }
+}
+
+// ==========================================
 // 👤 3D INSTAGRAM STORY RING PROFILE PILL
 // ==========================================
 .profile-pill-wrapper {

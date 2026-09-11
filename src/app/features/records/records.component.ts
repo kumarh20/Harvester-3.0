@@ -11,7 +11,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog } from '@angular/material/dialog';
-import { RecordsService } from '../../core/services/records.service';
+import { RecordsService, Record, HarvestRecord } from '../../core/services/records.service';
 import { RemindersService, Reminder } from '../../core/services/reminders.service';
 import { HarvesterService } from '../../core/services/harvester.service';
 import { SeasonService } from '../../core/services/season.service';
@@ -21,36 +21,17 @@ import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
 import { UiPreferencesService, DefaultRecordFilterSetting } from '../../core/services/ui-preferences.service';
 import { RecordSkeletonComponent } from '../../shared/components/skeleton/record-skeleton/record-skeleton.component';
+import { FilterDrawerComponent } from '../../shared/components/filter-drawer/filter-drawer.component';
 import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { UserService } from '../../services/user/user-service';
 import { AppNavigationService } from '../../core/services/app-navigation.service';
-
-export type RecordDateFilterOption = 'today' | 'yesterday' | 'week' | 'month' | 'custom' | 'all' | 'dueToday';
-
-interface Record {
-  id: string;
-  farmerName: string;
-  contactNumber: string;
-  date: string;
-  cuttingTime?: string;
-  landInAcres: number;
-  ratePerAcre: number;
-  totalPayment: number;
-  paidOnSight: number;
-  pendingAmount: number;
-  fullPaymentDate?: string;
-  harvester?: string;
-  markedAsPaid?: boolean;
-  seasonId?: string;
-}
-
-interface GroupedRecords {
-  dateLabel: string;
-  date: string;
-  records: Record[];
-}
+import { parseDate, formatDateDisplay, formatDateForInput, formatDateToDDMMYYYY, normalizeDateToKey } from '../../core/utils/date.utils';
+import { formatIndianCurrency, formatIndianNumber } from '../../core/utils/number.utils';
+import { cleanPhoneNumber, openWhatsAppChat } from '../../core/utils/string.utils';
+import { RecordDateFilterOption, RecordPaymentFilterOption, GroupedRecords } from './records.interface';
+import { RECORDS_CONSTANTS } from './records.constants';
 
 @Component({
   selector: 'app-records',
@@ -68,7 +49,8 @@ interface GroupedRecords {
     MatExpansionModule,
     MatMenuModule,
     RouterModule,
-    RecordSkeletonComponent
+    RecordSkeletonComponent,
+    FilterDrawerComponent
   ],
   templateUrl: './records.component.html',
   styleUrl: './records.component.scss'
@@ -92,6 +74,17 @@ export class RecordsComponent implements OnInit, OnDestroy {
   isDrawerSeasonOpen = signal<boolean>(false);
   isDrawerHarvesterOpen = signal<boolean>(false);
   isDrawerDateOpen = signal<boolean>(false);
+  isDrawerPaymentOpen = signal<boolean>(false);
+
+  // Payment Status Filtering State (default 'all')
+  selectedPaymentFilter = signal<RecordPaymentFilterOption>('all');
+
+  // Payment Date Filtering State (भुगतान तिथि filter, default 'all')
+  selectedPaymentDateFilter = signal<string>('all');
+  customPaymentDateMode = signal<'single' | 'range'>('single');
+  customPaymentSingleDate = signal<string>(this.formatDateForInput(new Date()));
+  customPaymentStartDate = signal<string>('');
+  customPaymentEndDate = signal<string>('');
 
   // Date Filtering State
   selectedDateFilter = signal<RecordDateFilterOption>('today');
@@ -126,6 +119,8 @@ export class RecordsComponent implements OnInit, OnDestroy {
     if (this.selectedDateFilter() !== 'all') count++;
     if (this.selectedSeasonFilter() !== 'all') count++;
     if (this.selectedHarvesterRecordFilter() !== 'all') count++;
+    if (this.selectedPaymentFilter() !== 'all') count++;
+    if (this.selectedPaymentDateFilter() !== 'all') count++;
     return count;
   });
 
@@ -279,38 +274,11 @@ export class RecordsComponent implements OnInit, OnDestroy {
   }
 
   formatDateForInput(date: Date): string {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
+    return formatDateForInput(date);
   }
 
   normalizeDateToKey(dateVal: any): string | null {
-    if (!dateVal) return null;
-    if (typeof dateVal === 'string') {
-      const trimmed = dateVal.trim();
-      if (!trimmed) return null;
-      if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(trimmed)) {
-        const parts = trimmed.split(/[\/\-]/);
-        const day = parts[0].padStart(2, '0');
-        const month = parts[1].padStart(2, '0');
-        const year = parts[2];
-        return `${year}-${month}-${day}`;
-      }
-      const dateObj = new Date(trimmed);
-      if (!isNaN(dateObj.getTime())) {
-        const year = dateObj.getFullYear();
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      }
-    } else if (dateVal instanceof Date && !isNaN(dateVal.getTime())) {
-      const year = dateVal.getFullYear();
-      const month = String(dateVal.getMonth() + 1).padStart(2, '0');
-      const day = String(dateVal.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-    return null;
+    return normalizeDateToKey(dateVal);
   }
 
   isSettlementDueToday(record: Record): boolean {
@@ -352,8 +320,8 @@ export class RecordsComponent implements OnInit, OnDestroy {
     this.isSeasonFilterOpen.set(false);
   }
 
-  selectDateOption(filter: RecordDateFilterOption): void {
-    this.setDateFilter(filter);
+  selectDateOption(filter: RecordDateFilterOption | string): void {
+    this.setDateFilter(filter as RecordDateFilterOption);
     this.isDateFilterOpen.set(false);
   }
 
@@ -444,6 +412,7 @@ export class RecordsComponent implements OnInit, OnDestroy {
     this.isDrawerSeasonOpen.set(false);
     this.isDrawerHarvesterOpen.set(false);
     this.isDrawerDateOpen.set(false);
+    this.isDrawerPaymentOpen.set(false);
     this.isFilterPanelOpen.set(true);
   }
 
@@ -451,18 +420,28 @@ export class RecordsComponent implements OnInit, OnDestroy {
     this.isDrawerDateOpen.update(v => !v);
     this.isDrawerSeasonOpen.set(false);
     this.isDrawerHarvesterOpen.set(false);
+    this.isDrawerPaymentOpen.set(false);
   }
 
   toggleDrawerSeason(): void {
     this.isDrawerSeasonOpen.update(v => !v);
     this.isDrawerDateOpen.set(false);
     this.isDrawerHarvesterOpen.set(false);
+    this.isDrawerPaymentOpen.set(false);
   }
 
   toggleDrawerHarvester(): void {
     this.isDrawerHarvesterOpen.update(v => !v);
     this.isDrawerDateOpen.set(false);
     this.isDrawerSeasonOpen.set(false);
+    this.isDrawerPaymentOpen.set(false);
+  }
+
+  toggleDrawerPayment(): void {
+    this.isDrawerPaymentOpen.update(v => !v);
+    this.isDrawerDateOpen.set(false);
+    this.isDrawerSeasonOpen.set(false);
+    this.isDrawerHarvesterOpen.set(false);
   }
 
   closeFilterPanel(): void {
@@ -470,6 +449,7 @@ export class RecordsComponent implements OnInit, OnDestroy {
     this.isDrawerSeasonOpen.set(false);
     this.isDrawerHarvesterOpen.set(false);
     this.isDrawerDateOpen.set(false);
+    this.isDrawerPaymentOpen.set(false);
   }
 
   applyFilterPanel(): void {
@@ -477,6 +457,7 @@ export class RecordsComponent implements OnInit, OnDestroy {
     this.isDrawerSeasonOpen.set(false);
     this.isDrawerHarvesterOpen.set(false);
     this.isDrawerDateOpen.set(false);
+    this.isDrawerPaymentOpen.set(false);
   }
 
   resetAllFilters(): void {
@@ -485,11 +466,108 @@ export class RecordsComponent implements OnInit, OnDestroy {
     const defSeason = this.seasonService.defaultSeason();
     this.selectedSeasonFilter.set(defSeason?.id || 'all');
     this.selectedHarvesterRecordFilter.set('all');
+    this.selectedPaymentFilter.set('all');
+    this.selectedPaymentDateFilter.set('all');
+    this.customPaymentDateMode.set('single');
+    this.customPaymentSingleDate.set(this.formatDateForInput(new Date()));
+    this.customPaymentStartDate.set('');
+    this.customPaymentEndDate.set('');
     this.customStartDate.set('');
     this.customEndDate.set('');
     this.isDrawerSeasonOpen.set(false);
     this.isDrawerHarvesterOpen.set(false);
     this.isDrawerDateOpen.set(false);
+    this.isDrawerPaymentOpen.set(false);
+  }
+
+  selectPaymentOption(filter: RecordPaymentFilterOption): void {
+    this.selectedPaymentFilter.set(filter);
+    this.isDrawerPaymentOpen.set(false);
+  }
+
+  selectPaymentDateOption(filter: string): void {
+    this.selectedPaymentDateFilter.set(filter);
+  }
+
+  applyPaymentDateFilter(record: Record): boolean {
+    const filter = this.selectedPaymentDateFilter();
+    if (filter === 'all') return true;
+
+    if (filter === 'noDate') {
+      return !record.fullPaymentDate || !this.parseDate(record.fullPaymentDate);
+    }
+
+    if (!record.fullPaymentDate) return false;
+    const parsed = this.parseDate(record.fullPaymentDate);
+    if (!parsed) return false;
+
+    const paymentDay = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()).getTime();
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const tomorrowStart = todayStart + oneDayMs;
+    const weekEnd = todayStart + (7 * oneDayMs);
+    const monthEnd = todayStart + (30 * oneDayMs);
+
+    switch (filter) {
+      case 'today':
+        return paymentDay === todayStart;
+      case 'tomorrow':
+        return paymentDay === tomorrowStart;
+      case 'overdue':
+        return paymentDay < todayStart && !record.markedAsPaid && (Number(record.pendingAmount) || 0) > 0;
+      case 'week':
+        return paymentDay >= todayStart && paymentDay <= weekEnd;
+      case 'month':
+        return paymentDay >= todayStart && paymentDay <= monthEnd;
+      case 'custom': {
+        const mode = this.customPaymentDateMode();
+        if (mode === 'single') {
+          const single = this.customPaymentSingleDate();
+          if (!single) return true;
+          const target = this.parseDate(single);
+          if (!target) return true;
+          const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
+          return paymentDay === targetDay;
+        } else {
+          const startStr = this.customPaymentStartDate();
+          const endStr = this.customPaymentEndDate();
+          if (!startStr && !endStr) return true;
+          const startParsed = startStr ? this.parseDate(startStr) : null;
+          const endParsed = endStr ? this.parseDate(endStr) : null;
+          const startMs = startParsed ? new Date(startParsed.getFullYear(), startParsed.getMonth(), startParsed.getDate()).getTime() : -Infinity;
+          const endMs = endParsed ? new Date(endParsed.getFullYear(), endParsed.getMonth(), endParsed.getDate()).getTime() + oneDayMs - 1 : Infinity;
+          return paymentDay >= startMs && paymentDay <= endMs;
+        }
+      }
+      default:
+        return true;
+    }
+  }
+
+  getSelectedPaymentFilterLabel(): string {
+    const isHi = this.translationService.getCurrentLanguage() === 'hi';
+    switch (this.selectedPaymentFilter()) {
+      case 'completed':
+        return isHi ? 'पूर्ण भुगतान' : 'Completed Payment';
+      case 'pending':
+        return isHi ? 'बकाया राशि वाला' : 'Pending Payment';
+      case 'all':
+      default:
+        return isHi ? 'सभी' : 'All';
+    }
+  }
+
+  getPaymentRecordCount(filter: RecordPaymentFilterOption): number {
+    const records = this.selectedFarmer() ? this.selectedFarmerRecords() : this.recordsService.records();
+    if (filter === 'all') return records.length;
+    if (filter === 'completed') {
+      return records.filter(r => r.markedAsPaid || (Number(r.pendingAmount) || 0) <= 0).length;
+    }
+    if (filter === 'pending') {
+      return records.filter(r => !r.markedAsPaid && (Number(r.pendingAmount) || 0) > 0).length;
+    }
+    return records.length;
   }
 
   selectHarvesterRecordOption(harvester: string): void {
@@ -680,6 +758,7 @@ export class RecordsComponent implements OnInit, OnDestroy {
     const records = this.recordsByDate();
     const seasonFilter = this.selectedSeasonFilter();
     const harvesterFilter = this.selectedHarvesterRecordFilter();
+    const paymentFilter = this.selectedPaymentFilter();
 
     let result = records;
     if (seasonFilter !== 'all') {
@@ -695,6 +774,15 @@ export class RecordsComponent implements OnInit, OnDestroy {
         return h === harvesterFilter.trim().toLowerCase();
       });
     }
+
+    if (paymentFilter === 'completed') {
+      result = result.filter(record => record.markedAsPaid || (Number(record.pendingAmount) || 0) <= 0);
+    } else if (paymentFilter === 'pending') {
+      result = result.filter(record => !record.markedAsPaid && (Number(record.pendingAmount) || 0) > 0);
+    }
+
+    // Payment Date Filter (भुगतान तिथि)
+    result = result.filter(record => this.applyPaymentDateFilter(record));
 
     const query = this.searchQuery().toLowerCase().trim();
     if (!query) {
@@ -1199,38 +1287,14 @@ export class RecordsComponent implements OnInit, OnDestroy {
   }
 
   openWhatsApp(contactNumber: string): void {
-    const clean = this.cleanPhone(contactNumber);
-    if (clean) {
-      window.open(`https://wa.me/91${clean}`, '_blank');
-    }
+    openWhatsAppChat(contactNumber);
   }
 
   /**
    * Parse date string (supports YYYY-MM-DD, DD-MM-YYYY, and slash formats)
    */
   parseDate(dateString: string): Date | null {
-    if (!dateString || typeof dateString !== 'string') return null;
-    
-    const clean = dateString.trim().replace(/\//g, '-');
-    const parts = clean.split('-');
-    if (parts.length !== 3) {
-      const fallback = new Date(dateString);
-      return isNaN(fallback.getTime()) ? null : fallback;
-    }
-
-    // Check if format is YYYY-MM-DD (ISO format)
-    if (parts[0].length === 4) {
-      const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1;
-      const day = parseInt(parts[2], 10);
-      return new Date(year, month, day);
-    }
-    
-    // Otherwise assume DD-MM-YYYY format
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1;
-    const year = parseInt(parts[2], 10);
-    return new Date(year, month, day);
+    return parseDate(dateString);
   }
 
   /**
@@ -1383,6 +1447,7 @@ export class RecordsComponent implements OnInit, OnDestroy {
     const records = this.selectedFarmerRecords();
     const harvesterFilter = this.selectedHarvesterRecordFilter();
     const dateFilter = this.selectedDateFilter();
+    const paymentFilter = this.selectedPaymentFilter();
 
     let result = records;
 
@@ -1391,7 +1456,17 @@ export class RecordsComponent implements OnInit, OnDestroy {
       result = result.filter(r => (r.harvester || 'Harvester 1').trim().toLowerCase() === harvesterFilter.trim().toLowerCase());
     }
 
-    // 2. Date Filter
+    // 2. Payment Status Filter
+    if (paymentFilter === 'completed') {
+      result = result.filter(r => r.markedAsPaid || (Number(r.pendingAmount) || 0) <= 0);
+    } else if (paymentFilter === 'pending') {
+      result = result.filter(r => !r.markedAsPaid && (Number(r.pendingAmount) || 0) > 0);
+    }
+
+    // 2b. Payment Date Filter (भुगतान तिथि)
+    result = result.filter(r => this.applyPaymentDateFilter(r));
+
+    // 3. Date Filter
     if (dateFilter !== 'all') {
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();

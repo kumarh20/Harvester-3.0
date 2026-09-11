@@ -1333,6 +1333,7 @@ input[type="date"] {
       }
 
       &.chip-harvester-active,
+      &.chip-payment-active,
       &.harvester-pill {
         background: #E8F5E9;
         border-color: #A5D6A7;
@@ -1372,6 +1373,7 @@ input[type="date"] {
         }
 
         &.chip-harvester-active,
+        &.chip-payment-active,
         &.harvester-pill {
           background: rgba(124, 179, 66, 0.2);
           border-color: rgba(124, 179, 66, 0.4);
@@ -1519,10 +1521,10 @@ input[type="date"] {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: calc(14px + env(safe-area-inset-top, 0px));
-    padding-bottom: 12px;
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    padding-bottom: 9px;
+    padding-left: 14px;
+    padding-right: 14px;
     border-bottom: 1px solid #EEF5EF;
     flex-shrink: 0;
     background: #FFFFFF;
@@ -1533,19 +1535,19 @@ input[type="date"] {
     .drawer-title-block {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
       min-width: 0;
 
       .drawer-header-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
         color: #447A44;
         flex-shrink: 0;
       }
 
       .drawer-title {
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 800;
         letter-spacing: 0.04em;
         color: #1C2D1F;
@@ -1559,10 +1561,10 @@ input[type="date"] {
 
     .drawer-close-circle-btn,
     .drawer-close-btn {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
-      min-height: 36px;
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      min-height: 32px;
       border-radius: 50%;
       border: 1.5px solid #D1E2D3;
       background: #F0F5F1;
@@ -1577,10 +1579,10 @@ input[type="date"] {
       -webkit-tap-highlight-color: transparent;
 
       mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-        line-height: 20px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
       }
 
       &:hover {
@@ -1601,20 +1603,20 @@ input[type="date"] {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 14px 14px;
+    padding: 10px 11px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
     box-sizing: border-box;
 
     .drawer-filter-card {
       background: #F8FAF8;
       border: 1.5px solid #E2ECE3;
-      border-radius: 14px;
-      padding: 12px;
+      border-radius: 11px;
+      padding: 8px 10px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 6px;
       transition: border-color 0.2s ease;
 
       &:focus-within {
@@ -1632,14 +1634,14 @@ input[type="date"] {
           gap: 6px;
 
           .drawer-card-icon {
-            font-size: 17px;
-            width: 17px;
-            height: 17px;
+            font-size: 15px;
+            width: 15px;
+            height: 15px;
             color: #447A44;
           }
 
           .drawer-card-label {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             color: #1C2D1F;
           }
@@ -1648,9 +1650,9 @@ input[type="date"] {
         .drawer-count-badge {
           background: #EAF4EC;
           color: #2E7D32;
-          font-size: 11px;
+          font-size: 10.5px;
           font-weight: 700;
-          padding: 2px 8px;
+          padding: 1px 7px;
           border-radius: 9999px;
           border: 1px solid #C5E3C8;
         }
@@ -1667,9 +1669,9 @@ input[type="date"] {
           justify-content: space-between;
           background: #FFFFFF;
           border: 1.5px solid #CBD5E1;
-          border-radius: 10px;
-          padding: 9px 12px;
-          font-size: 13px;
+          border-radius: 8px;
+          padding: 7px 10px;
+          font-size: 12.5px;
           font-weight: 600;
           color: #1C2D1F;
           cursor: pointer;
@@ -1694,9 +1696,9 @@ input[type="date"] {
           }
 
           .drawer-btn-chevron {
-            font-size: 18px;
-            width: 18px;
-            height: 18px;
+            font-size: 17px;
+            width: 17px;
+            height: 17px;
             color: #64748B;
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             flex-shrink: 0;
@@ -1711,9 +1713,9 @@ input[type="date"] {
         .drawer-dropdown-menu {
           background: #FFFFFF;
           border: 1px solid #D1E2D3;
-          border-radius: 10px;
-          margin-top: 6px;
-          max-height: 220px;
+          border-radius: 9px;
+          margin-top: 4px;
+          max-height: 200px;
           overflow-y: auto;
           box-shadow: 0 4px 16px rgba(35, 65, 38, 0.12);
           display: flex;
@@ -1724,8 +1726,8 @@ input[type="date"] {
           .drawer-menu-item {
             width: 100%;
             text-align: left;
-            padding: 9px 12px;
-            font-size: 12.5px;
+            padding: 7px 10px;
+            font-size: 12px;
             font-weight: 500;
             color: #2D4830;
             border: none;
@@ -1749,9 +1751,9 @@ input[type="date"] {
             }
 
             .item-check {
-              font-size: 16px;
-              width: 16px;
-              height: 16px;
+              font-size: 15px;
+              width: 15px;
+              height: 15px;
               color: #447A44;
             }
           }
@@ -1759,36 +1761,36 @@ input[type="date"] {
       }
 
       .drawer-custom-date-box {
-        padding-top: 6px;
+        padding-top: 3px;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
       }
     }
 
     .drawer-reset-wrapper {
       display: flex;
       justify-content: center;
-      margin-top: 2px;
+      margin-top: 1px;
 
       .drawer-reset-link {
         background: none;
         border: none;
         color: #557A58;
-        font-size: 12px;
+        font-size: 11.5px;
         font-weight: 600;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 5px;
-        padding: 6px 12px;
-        border-radius: 8px;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 6px;
         transition: all 0.15s ease;
 
         mat-icon {
-          font-size: 15px;
-          width: 15px;
-          height: 15px;
+          font-size: 14px;
+          width: 14px;
+          height: 14px;
         }
 
         &:hover {
@@ -1801,10 +1803,10 @@ input[type="date"] {
 
   // Footer: Prominent APPLY Button (Green Theme with Safe Area padding)
   .drawer-footer {
-    padding-top: 12px;
-    padding-left: 16px;
-    padding-right: 16px;
-    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    padding-top: 9px;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid #EEF5EF;
     background: #FFFFFF;
     flex-shrink: 0;
@@ -1815,10 +1817,10 @@ input[type="date"] {
       background: #447A44;
       color: #FFFFFF;
       border: none;
-      padding: 12px 20px;
-      font-size: 13.5px;
+      padding: 10px 18px;
+      font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       cursor: pointer;
       display: flex;
@@ -1844,9 +1846,9 @@ input[type="date"] {
   .drawer-footer-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    gap: 8px;
+    padding: 9px 14px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid #EEF5EF;
     background: #FFFFFF;
     flex-shrink: 0;
@@ -1856,22 +1858,22 @@ input[type="date"] {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      padding: 11px 16px;
+      gap: 5px;
+      padding: 9px 14px;
       border-radius: 9999px;
       background: #F1F5F2;
       color: #374151;
       border: 1px solid #E2E8F0;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
       outline: none;
 
       mat-icon {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
+        font-size: 15px;
+        width: 15px;
+        height: 15px;
       }
 
       &:hover {
@@ -1890,13 +1892,13 @@ input[type="date"] {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      padding: 11px 18px;
+      gap: 5px;
+      padding: 9px 16px;
       border-radius: 9999px;
       background: #447A44;
       color: #FFFFFF;
       border: none;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 700;
       letter-spacing: 0.03em;
       cursor: pointer;
@@ -1905,9 +1907,9 @@ input[type="date"] {
       outline: none;
 
       mat-icon {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
+        font-size: 15px;
+        width: 15px;
+        height: 15px;
       }
 
       &:hover {

@@ -28,8 +28,11 @@ import { AppNavigationService } from '../../core/services/app-navigation.service
 import { SeasonService } from '../../core/services/season.service';
 import { UiPreferencesService } from '../../core/services/ui-preferences.service';
 import { ReminderSkeletonComponent } from '../../shared/components/skeleton/reminder-skeleton/reminder-skeleton.component';
-
-export type ReminderTabFilter = 'today' | 'tomorrow' | 'upcoming' | 'all' | 'custom';
+import { FilterDrawerComponent } from '../../shared/components/filter-drawer/filter-drawer.component';
+import { formatIndianCurrency } from '../../core/utils/number.utils';
+import { formatDateDisplay } from '../../core/utils/date.utils';
+import { ReminderTabFilter } from './reminders.interface';
+import { REMINDERS_CONSTANTS } from './reminders.constants';
 
 @Component({
   selector: 'app-reminders',
@@ -50,7 +53,8 @@ export type ReminderTabFilter = 'today' | 'tomorrow' | 'upcoming' | 'all' | 'cus
     MatSelectModule,
     MatAutocompleteModule,
     MatDialogModule,
-    ReminderSkeletonComponent
+    ReminderSkeletonComponent,
+    FilterDrawerComponent
   ],
   providers: [
     { provide: DateAdapter, useClass: CustomDateAdapter },
@@ -1258,13 +1262,11 @@ export class RemindersComponent implements OnInit {
   }
 
   formatCurrency(amount?: number): string {
-    if (amount === undefined || amount === null || isNaN(amount)) return '₹0';
-    return '₹' + Math.round(amount).toLocaleString('en-IN');
+    return formatIndianCurrency(amount || 0);
   }
 
   formatRate(rate?: number): string {
-    if (rate === undefined || rate === null || isNaN(rate)) return '₹0/Ac';
-    return '₹' + Math.round(rate).toLocaleString('en-IN') + '/Ac';
+    return formatIndianCurrency(rate || 0) + '/Ac';
   }
 
   goToRecord(reminder: Reminder): void {

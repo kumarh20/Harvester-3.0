@@ -1,22 +1,9 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { FirestoreService } from '../../services/firestore/firestore-service';
+import { parseDate } from '../utils/date.utils';
+import type { Reminder } from '../models/reminder.model';
 
-export interface Reminder {
-  id: string;
-  farmerName: string;
-  contactNumber: string;
-  scheduledDate: string; // DD/MM/YYYY or YYYY-MM-DD
-  scheduledTime?: string; // HH:mm (e.g. 08:30)
-  landInAcres: number;
-  ratePerAcre: number;
-  estimatedTotal: number;
-  harvester?: string;
-  notes?: string;
-  status: 'pending' | 'completed' | 'cancelled';
-  movedToRecordId?: string;
-  createdAt?: any;
-  uid?: string;
-}
+export type { Reminder };
 
 @Injectable({
   providedIn: 'root'
@@ -204,26 +191,7 @@ export class RemindersService {
   // ==========================================
 
   parseDate(dateStr: string): Date | null {
-    if (!dateStr) return null;
-    const clean = dateStr.trim().replace(/\//g, '-');
-    const parts = clean.split('-');
-    if (parts.length === 3) {
-      let y: number, m: number, d: number;
-      if (parts[0].length === 4) {
-        y = parseInt(parts[0], 10);
-        m = parseInt(parts[1], 10) - 1;
-        d = parseInt(parts[2], 10);
-      } else {
-        d = parseInt(parts[0], 10);
-        m = parseInt(parts[1], 10) - 1;
-        y = parseInt(parts[2], 10);
-      }
-      if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
-        return new Date(y, m, d);
-      }
-    }
-    const timestamp = Date.parse(dateStr);
-    return isNaN(timestamp) ? null : new Date(timestamp);
+    return parseDate(dateStr);
   }
 
   isToday(dateStr: string): boolean {

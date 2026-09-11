@@ -26,6 +26,10 @@ import { TranslationService } from '../../shared/services/translation.service';
 import { DialogService } from '../../shared/services/dialog.service';
 import { Auth } from '@angular/fire/auth';
 import { AppNavigationService } from '../../core/services/app-navigation.service';
+import { parseDate, formatDateToDDMMYYYY } from '../../core/utils/date.utils';
+import { RecordFormData } from './add-new.interface';
+import { ADD_NEW_CONSTANTS } from './add-new.constants';
+import { calculateRecordTotals } from './add-new.helper';
 
 @Component({
   selector: 'app-add-new',
@@ -685,60 +689,17 @@ export class AddNewComponent implements OnInit {
 
   /**
    * Convert string date to Date object for Material Datepicker
-   * Handles multiple formats: DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD, ISO strings
    */
   private convertToDateObject(dateString: string): Date | string {
-    if (!dateString || dateString.trim() === '') {
-      return '';
-    }
-
-    const clean = dateString.trim().replace(/\-/g, '/');
-    const parts = clean.split('/');
-    if (parts.length === 3) {
-      if (parts[0].length === 4) {
-        // YYYY/MM/DD
-        const year = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const day = parseInt(parts[2], 10);
-        return new Date(year, month, day);
-      } else {
-        // DD/MM/YYYY
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const year = parseInt(parts[2], 10);
-        return new Date(year, month, day);
-      }
-    }
-
-    try {
-      const date = new Date(dateString);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    } catch (e) {
-      console.error('❌ Error parsing date:', e);
-    }
-
-    return '';
+    if (!dateString || dateString.trim() === '') return '';
+    return parseDate(dateString) || '';
   }
 
   /**
    * Format date as DD/MM/YYYY string across the entire application
    */
   formatDateToDDMMYYYY(dateInput: Date | string | null | undefined): string {
-    if (!dateInput) return '';
-    let d: Date | null = null;
-    if (dateInput instanceof Date) {
-      d = dateInput;
-    } else {
-      const obj = this.convertToDateObject(String(dateInput));
-      d = obj instanceof Date ? obj : null;
-    }
-    if (!d || isNaN(d.getTime())) return String(dateInput);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
+    return formatDateToDDMMYYYY(dateInput);
   }
 
   /**

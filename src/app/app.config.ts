@@ -2,12 +2,13 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withHashLocation } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { provideAuth, getAuth } from '@angular/fire/auth';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { CustomDateAdapter, CUSTOM_DATE_FORMATS } from './core/adapters/custom-date-adapter';
+import { apiInterceptor } from './core/interceptors/api.interceptor';
 
 
 // Your web app's Firebase configuration
@@ -27,7 +28,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideRouter(routes, withHashLocation()),
     provideAnimationsAsync(),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([apiInterceptor])),
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),

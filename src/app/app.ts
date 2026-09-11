@@ -82,10 +82,9 @@ export class App implements OnInit {
         if (user) {
           // ✅ Firebase ke paas valid session hai
           this.idleService.startWatching();
-          // Evaluate settlement dates due today and trigger system notification
+          // Evaluate settlement dates and cutting reminders due today and trigger system notifications
           this.recordsService.loadRecords().then(() => {
-            this.notificationService.evaluateTodaySettlements();
-            this.notificationService.triggerSettlementNotification();
+            this.notificationService.checkAllDailyReminders();
           }).catch(() => {});
           this.router.navigate(['/dashboard']);
         } else {

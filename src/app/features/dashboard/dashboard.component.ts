@@ -16,79 +16,21 @@ import { TranslationService } from '../../shared/services/translation.service';
 import { LanguageService } from '../../shared/services/language.service';
 import { UserService } from '../../services/user/user-service';
 import { DashboardSkeletonComponent } from '../../shared/components/skeleton/dashboard-skeleton/dashboard-skeleton.component';
+import { FilterDrawerComponent } from '../../shared/components/filter-drawer/filter-drawer.component';
 import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
 import { AppNavigationService } from '../../core/services/app-navigation.service';
-
-export type DashboardDateFilter = 'all' | 'today' | 'yesterday' | 'week' | 'month' | 'custom' | 'dueToday';
-export type ChartMetricMode = 'revenue' | 'acres';
-export type ChartViewMode = 'daily' | 'season';
-
-export interface ChartDataPoint {
-  id: string;
-  dateStr: string;
-  label: string;
-  fullDate: string;
-  acres: number;
-  revenue: number;
-  collected: number;
-  pending: number;
-  jobsCount: number;
-  barHeightPercent: number;
-  primaryBarHeightPercent: number;
-  secondaryBarHeightPercent: number;
-}
-
-export interface SeasonChartDataPoint {
-  id: string;
-  seasonId: string;
-  name: string;
-  year: number;
-  label: string;
-  fullLabel: string;
-  acres: number;
-  revenue: number;
-  collected: number;
-  pending: number;
-  jobsCount: number;
-  barHeightPercent: number;
-  primaryBarHeightPercent: number;
-  secondaryBarHeightPercent: number;
-  isSelected: boolean;
-}
-
-export interface HarvesterStat {
-  id: string;
-  name: string;
-  count: number;
-  acres: number;
-  revenue: number;
-  percentOfTotal: number;
-  barHeightPercent: number;
-  primaryBarHeightPercent: number;
-  secondaryBarHeightPercent: number;
-}
-
-export interface RecoveryOverview {
-  totalBilled: number;
-  totalCollected: number;
-  totalPending: number;
-  dueTodayAmount: number;
-  totalAcres: number;
-  recoveryPercentage: number;
-  pendingPercentage: number;
-  dueTodayPercentage: number;
-  circumference: number;
-  strokeDashoffset: number;
-  dashArray1: string;
-  dashOffset1: number;
-  dashArray2: string;
-  dashOffset2: number;
-  dashArray3: string;
-  dashOffset3: number;
-  seg1Pct: number;
-  seg2Pct: number;
-  seg3Pct: number;
-}
+import { parseDate, formatDateDisplay, formatDateForInput, normalizeDateToKey } from '../../core/utils/date.utils';
+import { formatIndianCurrency, formatIndianNumber } from '../../core/utils/number.utils';
+import { 
+  DashboardDateFilter, 
+  ChartMetricMode, 
+  ChartViewMode, 
+  ChartDataPoint, 
+  SeasonChartDataPoint, 
+  HarvesterStat, 
+  RecoveryOverview 
+} from './dashboard.interface';
+import { DASHBOARD_CONSTANTS } from './dashboard.constants';
 
 interface Stats {
   totalRecords: number;
@@ -110,7 +52,8 @@ interface Stats {
     MatButtonModule,
     MatIconModule,
     MatGridListModule,
-    DashboardSkeletonComponent
+    DashboardSkeletonComponent,
+    FilterDrawerComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -223,6 +166,7 @@ export class DashboardComponent implements OnInit {
   activeMachineBar = signal<HarvesterStat | null>(null);
 
   todayCount = signal(0);
+  yesterdayCount = signal(0);
   weekCount = signal(0);
   monthCount = signal(0);
   allCount = signal(0);
@@ -237,6 +181,57 @@ export class DashboardComponent implements OnInit {
       if (r.markedAsPaid || (Number(r.pendingAmount) || 0) <= 0 || !r.fullPaymentDate) return false;
       return this.normalizeDateToKey(r.fullPaymentDate) === todayKey;
     }).length;
+  });
+
+  // Settlement due chip state
+  private dismissedDueToken = signal<string | null>(
+    typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('harvester_dismissed_due_chip') : null
+  );
+
+  /**
+   * Generates a unique token based on current due status & latest notification.
+   * If a new notification arrives or records change, this token automatically changes!
+   */
+  public currentDueToken = computed(() => {
+    const summary = this.notificationService.dueTodaySummary();
+    if (!summary || !summary.hasDueToday) return null;
+    const notifs = this.notificationService.notifications();
+    const latestDueNotif = notifs.find(n => n.type === 'settlement_due');
+    const latestNotifKey = latestDueNotif ? `${latestDueNotif.id}_${latestDueNotif.isRead}` : 'none';
+    const totalNotifsCount = notifs.length;
+    return `${summary.dueRecords.length}_${summary.totalDueAmount}_${latestNotifKey}_${totalNotifsCount}`;
+  });
+
+  /**
+   * Whether to show the compact settlement due chip.
+   * Hides if:
+   * - No due records today
+   * - User clicked it / read the notification
+   * - User dismissed (cut) this notification
+   * Reappears automatically when a new notification / due arrival happens!
+   */
+  public showDueTodayChip = computed(() => {
+    const summary = this.notificationService.dueTodaySummary();
+    if (!summary || !summary.hasDueToday || this.notificationService.dueTodayCount() <= 0) {
+      return false;
+    }
+
+    // Check if the current settlement notification is already read
+    const notifs = this.notificationService.notifications();
+    const dueNotifs = notifs.filter(n => n.type === 'settlement_due');
+    if (dueNotifs.length > 0 && dueNotifs.every(n => n.isRead)) {
+      return false;
+    }
+
+    const token = this.currentDueToken();
+    if (!token) return false;
+
+    // If dismissed token matches current token, keep it hidden until next notification / token change
+    if (this.dismissedDueToken() === token) {
+      return false;
+    }
+
+    return true;
   });
 
   // Records filtered by the chosen date filter option
@@ -794,13 +789,7 @@ export class DashboardComponent implements OnInit {
   }
 
   formatDateDisplay(dateStr: string): string {
-    if (!dateStr) return '';
-    const parsed = this.parseDate(dateStr);
-    if (!parsed) return dateStr;
-    const dd = String(parsed.getDate()).padStart(2, '0');
-    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
-    const yyyy = parsed.getFullYear();
-    return `${dd}-${mm}-${yyyy}`;
+    return formatDateDisplay(dateStr);
   }
 
   async ngOnInit(): Promise<void> {
@@ -875,6 +864,47 @@ export class DashboardComponent implements OnInit {
     await this.notificationService.triggerSettlementNotification(true);
   }
 
+  /**
+   * Navigate to records with 'dueToday' filter when clicking the chip,
+   * mark settlement notifications as read so it disappears from dashboard.
+   */
+  openDueTodayRecords(event?: Event): void {
+    if (event) event.stopPropagation();
+
+    // Mark today's settlement notifications as read in notification service
+    const dueNotifs = this.notificationService.notifications().filter(n => n.type === 'settlement_due');
+    dueNotifs.forEach(n => this.notificationService.markAsRead(n.id));
+
+    // Store dismissal token so it stays hidden after reading
+    const token = this.currentDueToken();
+    if (token) {
+      this.dismissedDueToken.set(token);
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('harvester_dismissed_due_chip', token);
+      }
+    }
+
+    // Navigate to records with dueToday filter
+    this.router.navigate(['/records'], {
+      queryParams: { filter: 'dueToday' }
+    });
+  }
+
+  /**
+   * Dismiss the chip when clicking the small cut button (X).
+   * Reappears when the next notification arrives!
+   */
+  dismissDueChip(event: Event): void {
+    event.stopPropagation();
+    const token = this.currentDueToken();
+    if (token) {
+      this.dismissedDueToken.set(token);
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('harvester_dismissed_due_chip', token);
+      }
+    }
+  }
+
   // ----------------------------------------------------
   // Dropdown Filter Interactions (Identical to Records)
   // ----------------------------------------------------
@@ -895,8 +925,8 @@ export class DashboardComponent implements OnInit {
     this.isSeasonFilterOpen.set(false);
   }
 
-  selectDateOption(filter: DashboardDateFilter): void {
-    this.selectedDateFilter.set(filter);
+  selectDateOption(filter: DashboardDateFilter | string): void {
+    this.selectedDateFilter.set(filter as DashboardDateFilter);
     this.isDateFilterOpen.set(false);
     this.activeBar.set(null);
   }
@@ -1048,87 +1078,25 @@ export class DashboardComponent implements OnInit {
   }
 
   formatDateForInput(date: Date): string {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
+    return formatDateForInput(date);
   }
 
   normalizeDateToKey(dateVal: any): string | null {
-    if (!dateVal) return null;
-    if (typeof dateVal === 'string') {
-      const trimmed = dateVal.trim();
-      if (!trimmed) return null;
-      if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(trimmed)) {
-        const parts = trimmed.split(/[\/\-]/);
-        const day = parts[0].padStart(2, '0');
-        const month = parts[1].padStart(2, '0');
-        const year = parts[2];
-        return `${year}-${month}-${day}`;
-      }
-      const dateObj = new Date(trimmed);
-      if (!isNaN(dateObj.getTime())) {
-        const year = dateObj.getFullYear();
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      }
-    } else if (dateVal instanceof Date && !isNaN(dateVal.getTime())) {
-      const year = dateVal.getFullYear();
-      const month = String(dateVal.getMonth() + 1).padStart(2, '0');
-      const day = String(dateVal.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-    return null;
+    return normalizeDateToKey(dateVal);
   }
 
   /**
-   * Parse record date string to Date (start of day local time).
-   * Supports: YYYY-MM-DD (ISO, from Firestore), DD-MM-YYYY, DD/MM/YYYY.
+   * Parse record date string to Date.
    */
   private parseDate(dateString: string): Date | null {
-    if (!dateString || typeof dateString !== 'string') return null;
-    const s = dateString.trim();
-
-    // YYYY-MM-DD (ISO) – e.g. "2025-02-12"
-    const isoMatch = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-    if (isoMatch) {
-      const year = parseInt(isoMatch[1], 10);
-      const month = parseInt(isoMatch[2], 10) - 1;
-      const day = parseInt(isoMatch[3], 10);
-      const d = new Date(year, month, day);
-      return isNaN(d.getTime()) ? null : d;
-    }
-
-    // DD-MM-YYYY
-    const dashMatch = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-    if (dashMatch) {
-      const day = parseInt(dashMatch[1], 10);
-      const month = parseInt(dashMatch[2], 10) - 1;
-      const year = parseInt(dashMatch[3], 10);
-      const d = new Date(year, month, day);
-      return isNaN(d.getTime()) ? null : d;
-    }
-
-    // DD/MM/YYYY
-    const slashParts = s.split('/');
-    if (slashParts.length === 3) {
-      const day = parseInt(slashParts[0], 10);
-      const month = parseInt(slashParts[1], 10) - 1;
-      const year = parseInt(slashParts[2], 10);
-      const d = new Date(year, month, day);
-      return isNaN(d.getTime()) ? null : d;
-    }
-
-    // Fallback: native parse (e.g. ISO with time)
-    const d = new Date(s);
-    return isNaN(d.getTime()) ? null : d;
+    return parseDate(dateString);
   }
 
   private updatePeriodCounts(): void {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const oneDayMs = 24 * 60 * 60 * 1000;
+    const yesterdayStart = todayStart - oneDayMs;
     const weekStart = todayStart - (7 * oneDayMs);
     const monthStart = todayStart - (30 * oneDayMs);
     const todayEnd = todayStart + oneDayMs - 1;
@@ -1136,6 +1104,7 @@ export class DashboardComponent implements OnInit {
     const records = this.recordsService.records();
 
     let today = 0;
+    let yesterday = 0;
     let week = 0;
     let month = 0;
 
@@ -1144,11 +1113,13 @@ export class DashboardComponent implements OnInit {
       if (!parsed) continue;
       const time = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()).getTime();
       if (time === todayStart) today++;
+      if (time === yesterdayStart) yesterday++;
       if (time >= weekStart && time <= todayEnd) week++;
       if (time >= monthStart && time <= todayEnd) month++;
     }
 
     this.todayCount.set(today);
+    this.yesterdayCount.set(yesterday);
     this.weekCount.set(week);
     this.monthCount.set(month);
     this.allCount.set(records.length);

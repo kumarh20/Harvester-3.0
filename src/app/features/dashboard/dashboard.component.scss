@@ -535,207 +535,191 @@
 }
 
 // ==========================================
-// 1.5 SETTLEMENT DUE TODAY ALERT BANNER (MOBILE FIRST)
+// 1.5 SETTLEMENT DUE TODAY COMPACT CHIP (THIN PILL)
 // ==========================================
-.settlement-due-alert-banner {
+.settlement-due-chip {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 38px;
+  max-height: 42px;
+  padding: 4px 8px 4px 10px;
   background: #FFFBEB;
-  border: 1.5px solid #FCD34D;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.12);
-  margin-bottom: 8px;
-  animation: bannerFadeDown 0.3s ease-out;
+  border: 1px solid #FCD34D;
+  border-radius: 9999px;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.08);
+  margin-bottom: 10px;
+  cursor: pointer;
+  animation: bannerFadeDown 0.25s ease-out;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  user-select: none;
 
-  .alert-icon-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+  &:hover {
     background: #FEF3C7;
-    border: 1px solid #F59E0B;
-    color: #D97706;
-    flex-shrink: 0;
-
-    .bell-ring-icon {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
-      animation: bellSwing 2.5s infinite ease-in-out;
-    }
+    border-color: #F59E0B;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(217, 119, 6, 0.14);
   }
 
-  .alert-info-wrapper {
-    flex: 1;
-    min-width: 0;
-
-    .alert-title-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 3px;
-      flex-wrap: wrap;
-
-      .alert-badge {
-        font-size: 13px;
-        font-weight: 800;
-        color: #92400E;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-      }
-
-      .alert-count-pill {
-        display: inline-flex;
-        align-items: center;
-        padding: 2px 8px;
-        background: #F59E0B;
-        color: #FFFFFF;
-        font-size: 11px;
-        font-weight: 700;
-        border-radius: 999px;
-      }
-    }
-
-    .alert-description {
-      font-size: 13px;
-      color: #78350F;
-      margin: 0;
-      line-height: 1.4;
-
-      .farmers-highlight {
-        font-weight: 700;
-        color: #B45309;
-      }
-
-      .amount-highlight {
-        font-weight: 800;
-        color: #92400E;
-        font-size: 14px;
-      }
-    }
+  &:active {
+    transform: translateY(0);
   }
 
-  .alert-action-buttons {
+  .chip-content-left {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
 
-    .alert-view-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      min-height: 40px;
-      background: #D97706;
-      color: #FFFFFF;
-      border: none;
-      border-radius: 10px;
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);
-      transition: all 0.2s ease;
-
-      mat-icon {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-      }
-
-      &:hover {
-        background: #B45309;
-        transform: translateY(-1px);
-      }
-    }
-
-    .alert-notify-btn {
+    .chip-icon-box {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 40px;
-      height: 40px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
       background: #FEF3C7;
+      color: #D97706;
+      flex-shrink: 0;
+
+      .chip-bell-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+        animation: bellSwing 2.5s infinite ease-in-out;
+      }
+    }
+
+    .chip-count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1px 7px;
+      background: #F59E0B;
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 999px;
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+
+    .chip-title-text {
+      font-size: 12.5px;
+      font-weight: 700;
       color: #92400E;
-      border: 1px solid #FCD34D;
-      border-radius: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chip-amount-text {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #B45309;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+  }
+
+  .chip-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+
+    .chip-arrow-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #D97706;
+      transition: transform 0.15s ease;
+    }
+
+    .chip-cut-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      margin-left: 2px;
+      background: rgba(217, 119, 6, 0.1);
+      color: #92400E;
+      border: none;
+      border-radius: 50%;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background-color 0.15s ease, color 0.15s ease;
 
       mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
       }
 
       &:hover {
-        background: #FDE68A;
+        background: rgba(217, 119, 6, 0.25);
+        color: #78350F;
+      }
+
+      &:active {
+        transform: scale(0.92);
       }
     }
   }
 
-  @media (max-width: 600px) {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 12px;
-    gap: 10px;
-
-    .alert-action-buttons {
-      width: 100%;
-      justify-content: flex-end;
-
-      .alert-view-btn {
-        flex: 1;
-        justify-content: center;
-      }
-    }
+  &:hover .chip-actions-right .chip-arrow-icon {
+    transform: translateX(2px);
   }
 
   [data-theme="dark"] & {
-    background: rgba(120, 53, 15, 0.2);
-    border-color: rgba(245, 158, 11, 0.4);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    background: rgba(120, 53, 15, 0.25);
+    border-color: rgba(245, 158, 11, 0.45);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 
-    .alert-icon-wrapper {
-      background: rgba(245, 158, 11, 0.2);
-      border-color: rgba(245, 158, 11, 0.5);
-      color: #FBBF24;
+    &:hover {
+      background: rgba(120, 53, 15, 0.38);
+      border-color: rgba(245, 158, 11, 0.65);
     }
 
-    .alert-info-wrapper {
-      .alert-title-row {
-        .alert-badge {
-          color: #FDE68A;
-        }
+    .chip-content-left {
+      .chip-icon-box {
+        background: rgba(245, 158, 11, 0.2);
+        color: #FBBF24;
       }
 
-      .alert-description {
-        color: #FCD34D;
-
-        .farmers-highlight {
-          color: #FBBF24;
-        }
-
-        .amount-highlight {
-          color: #FDE68A;
-        }
-      }
-    }
-
-    .alert-action-buttons {
-      .alert-view-btn {
+      .chip-count-badge {
         background: #D97706;
         color: #FFFFFF;
       }
 
-      .alert-notify-btn {
-        background: rgba(245, 158, 11, 0.15);
+      .chip-title-text {
+        color: #FDE68A;
+      }
+
+      .chip-amount-text {
         color: #FBBF24;
-        border-color: rgba(245, 158, 11, 0.3);
+      }
+    }
+
+    .chip-actions-right {
+      .chip-arrow-icon {
+        color: #FBBF24;
+      }
+
+      .chip-cut-btn {
+        background: rgba(245, 158, 11, 0.2);
+        color: #FDE68A;
+
+        &:hover {
+          background: rgba(245, 158, 11, 0.35);
+          color: #FFFFFF;
+        }
       }
     }
   }

@@ -1,9 +1,10 @@
-import { Injectable, inject, signal, NgZone } from '@angular/core';
+import { Injectable, inject, signal, computed, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { RecordsService, Record } from './records.service';
 import { RemindersService, Reminder } from './reminders.service';
 import { TranslationService } from '../../shared/services/translation.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { AppNotification, NotificationType } from '../models/notification.model';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 
@@ -20,6 +21,8 @@ export interface TodayCuttingSummary {
   farmersListText: string;
   hasCuttingsToday: boolean;
 }
+
+const NOTIFICATIONS_STORAGE_KEY = 'harvester_app_notifications_list_v1';
 
 @Injectable({
   providedIn: 'root'
@@ -41,9 +44,95 @@ export class NotificationService {
   public todayCuttingsSummary = signal<TodayCuttingSummary | null>(null);
   public showDayEndPrompt = signal<boolean>(false);
 
+  // Persistent Notification Center Store
+  public notifications = signal<AppNotification[]>([]);
+  public unreadCount = computed(() => this.notifications().filter(n => !n.isRead).length);
+
   constructor() {
+    this.loadNotificationsFromStorage();
     this.checkPermissionStatus();
     this.initNotificationListeners();
+  }
+
+  /**
+   * Load stored notifications from localStorage
+   */
+  private loadNotificationsFromStorage(): void {
+    try {
+      const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          this.notifications.set(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load notifications from storage:', e);
+    }
+  }
+
+  /**
+   * Persist notifications to storage
+   */
+  private saveNotificationsToStorage(): void {
+    try {
+      localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(this.notifications()));
+    } catch (e) {
+      console.warn('Could not save notifications to storage:', e);
+    }
+  }
+
+  /**
+   * Add a notification to the in-app notification center
+   */
+  public addNotification(notification: Omit<AppNotification, 'id' | 'timestamp' | 'isRead'>): AppNotification {
+    const newNotif: AppNotification = {
+      ...notification,
+      id: 'notif_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      timestamp: Date.now(),
+      isRead: false
+    };
+
+    // Keep max 100 recent notifications
+    this.notifications.update(list => [newNotif, ...list].slice(0, 100));
+    this.saveNotificationsToStorage();
+    return newNotif;
+  }
+
+  /**
+   * Mark a single notification as read
+   */
+  public markAsRead(id: string): void {
+    this.notifications.update(list =>
+      list.map(n => n.id === id ? { ...n, isRead: true } : n)
+    );
+    this.saveNotificationsToStorage();
+  }
+
+  /**
+   * Mark all notifications as read
+   */
+  public markAllAsRead(): void {
+    this.notifications.update(list =>
+      list.map(n => ({ ...n, isRead: true }))
+    );
+    this.saveNotificationsToStorage();
+  }
+
+  /**
+   * Clear a single notification
+   */
+  public deleteNotification(id: string): void {
+    this.notifications.update(list => list.filter(n => n.id !== id));
+    this.saveNotificationsToStorage();
+  }
+
+  /**
+   * Clear all notifications
+   */
+  public clearAllNotifications(): void {
+    this.notifications.set([]);
+    this.saveNotificationsToStorage();
   }
 
   /**
@@ -56,15 +145,32 @@ export class NotificationService {
           console.log('🔔 Notification action performed:', notificationAction);
           this.ngZone.run(() => {
             const extra = notificationAction.notification.extra;
-            const filter = extra?.filter || 'dueToday';
-            const recordId = extra?.recordId;
+            const action = extra?.action;
             
-            this.router.navigate(['/records'], {
-              queryParams: {
-                filter,
-                ...(recordId ? { recordId } : {})
-              }
-            });
+            if (action === 'open_reminders') {
+              this.router.navigate(['/reminders'], {
+                queryParams: {
+                  filter: extra?.filter || 'today',
+                  ...(extra?.checkStatus ? { check: 'true' } : {})
+                }
+              });
+            } else if (action === 'open_farmer') {
+              this.router.navigate(['/records'], {
+                queryParams: {
+                  farmer: extra?.farmer || '',
+                  ...(extra?.recordId ? { recordId: extra.recordId } : {})
+                }
+              });
+            } else if (action === 'open_records') {
+              this.router.navigate(['/records'], {
+                queryParams: {
+                  filter: extra?.filter || 'dueToday',
+                  ...(extra?.recordId ? { recordId: extra.recordId } : {})
+                }
+              });
+            } else {
+              this.router.navigate(['/notifications']);
+            }
           });
         });
       } catch (err) {
@@ -216,7 +322,7 @@ export class NotificationService {
   }
 
   /**
-   * Dispatch system notification for today's due settlement
+   * Dispatch system notification and notification center item for today's due settlement
    * @param force - If true, bypasses once-per-day cooldown check
    */
   async triggerSettlementNotification(force: boolean = false): Promise<boolean> {
@@ -243,26 +349,54 @@ export class NotificationService {
     const isHi = this.translationService.getCurrentLanguage() === 'hi';
     const count = summary.dueRecords.length;
     const amountStr = '₹' + summary.totalDueAmount.toLocaleString('en-IN');
-    const singleRecordId = count === 1 ? summary.dueRecords[0].id : undefined;
+    const isSingle = count === 1;
+    const singleRecord = isSingle ? summary.dueRecords[0] : null;
+    const singleRecordId = singleRecord?.id;
+    const singleFarmerName = singleRecord?.farmerName;
 
     let title = '';
     let body = '';
+    let targetRoute = '/records';
+    let targetQueryParams: { [key: string]: any } = {};
 
-    if (count === 1) {
-      const record = summary.dueRecords[0];
-      const farmerAmount = '₹' + Number(record.pendingAmount).toLocaleString('en-IN');
-      title = isHi ? '🌾 आज भुगतान वादा रिमाइंडर' : '🌾 Payment Promise Due Today';
+    if (isSingle && singleRecord) {
+      const farmerAmount = '₹' + Number(singleRecord.pendingAmount).toLocaleString('en-IN');
+      title = isHi ? '🌾 आज बकाया भुगतान वादा' : '🌾 Payment Promise Due Today';
       body = isHi 
-        ? `${record.farmerName} का ${farmerAmount} का भुगतान आज देय है!` 
-        : `${record.farmerName}'s payment of ${farmerAmount} is due today!`;
+        ? `${singleRecord.farmerName} का ${farmerAmount} का बकाया भुगतान आज देय है!` 
+        : `${singleRecord.farmerName}'s payment of ${farmerAmount} is due today!`;
+      
+      // Single farmer: direct to farmer record page
+      targetQueryParams = {
+        farmer: singleRecord.contactNumber || singleRecord.farmerName,
+        recordId: singleRecord.id
+      };
     } else {
       title = isHi 
-        ? `🌾 आज ${count} किसानों का भुगतान वादा है` 
+        ? `🌾 आज ${count} किसानों का बकाया भुगतान वादा है` 
         : `🌾 ${count} Farmers Due for Payment Today`;
       body = isHi 
         ? `${summary.farmersListText} का कुल ${amountStr} बकाया भुगतान आज देय है!` 
         : `${summary.farmersListText} have a total of ${amountStr} due today!`;
+      
+      // Multiple farmers: direct to records page with dueToday filter
+      targetQueryParams = {
+        filter: 'dueToday'
+      };
     }
+
+    // Add to In-App Notification Center
+    this.addNotification({
+      type: 'settlement_due',
+      title,
+      message: body,
+      route: targetRoute,
+      queryParams: targetQueryParams,
+      farmerName: isSingle ? singleFarmerName : summary.farmersListText,
+      amount: summary.totalDueAmount,
+      dateKey: todayKey,
+      entityId: singleRecordId
+    });
 
     // Try System Notification via Capacitor LocalNotifications or Web Notification API
     let dispatched = false;
@@ -282,12 +416,9 @@ export class NotificationService {
               schedule: { at: new Date(Date.now() + 500) },
               sound: 'default',
               smallIcon: 'ic_launcher',
-              extra: { 
-                action: 'open_records', 
-                filter: 'dueToday',
-                recordId: singleRecordId,
-                date: todayKey 
-              }
+              extra: isSingle
+                ? { action: 'open_farmer', farmer: singleRecord?.contactNumber || singleRecord?.farmerName, recordId: singleRecordId, date: todayKey }
+                : { action: 'open_records', filter: 'dueToday', date: todayKey }
             }
           ]
         });
@@ -303,12 +434,7 @@ export class NotificationService {
           notif.onclick = () => {
             window.focus();
             this.ngZone.run(() => {
-              this.router.navigate(['/records'], {
-                queryParams: {
-                  filter: 'dueToday',
-                  ...(singleRecordId ? { recordId: singleRecordId } : {})
-                }
-              });
+              this.router.navigate([targetRoute], { queryParams: targetQueryParams });
             });
           };
           dispatched = true;
@@ -324,12 +450,7 @@ export class NotificationService {
             notif.onclick = () => {
               window.focus();
               this.ngZone.run(() => {
-                this.router.navigate(['/records'], {
-                  queryParams: {
-                    filter: 'dueToday',
-                    ...(singleRecordId ? { recordId: singleRecordId } : {})
-                  }
-                });
+                this.router.navigate([targetRoute], { queryParams: targetQueryParams });
               });
             };
             dispatched = true;
@@ -359,6 +480,14 @@ export class NotificationService {
       ? 'सिस्टम नोटिफिकेशन सफलता से काम कर रहा है!' 
       : 'System notifications are working perfectly on this device!';
 
+    // Add to Notification Center
+    this.addNotification({
+      type: 'system',
+      title,
+      message: body,
+      route: '/notifications'
+    });
+
     try {
       if (Capacitor.isNativePlatform()) {
         await this.requestPermission();
@@ -385,7 +514,7 @@ export class NotificationService {
           notif.onclick = () => {
             window.focus();
             this.ngZone.run(() => {
-              this.router.navigate(['/records'], { queryParams: { filter: 'dueToday' } });
+              this.router.navigate(['/notifications']);
             });
           };
         }
@@ -398,7 +527,7 @@ export class NotificationService {
   }
 
   // ==========================================
-  // FUTURE CUTTING SCHEDULE NOTIFICATIONS
+  // FUTURE CUTTING / BOOKING SCHEDULE NOTIFICATIONS (4x Daily)
   // ==========================================
 
   /**
@@ -445,9 +574,23 @@ export class NotificationService {
   }
 
   /**
-   * Morning 8:00 AM (or early app launch) cutting schedule reminder
+   * Determine current daily reminder slot (Slot 1: 07:00, Slot 2: 11:00, Slot 3: 15:00, Slot 4: 19:00)
    */
-  async triggerMorningCuttingNotification(force: boolean = false): Promise<boolean> {
+  private getCurrentDailySlot(): { slotId: number; label: string } | null {
+    const hour = new Date().getHours();
+    if (hour >= 19) return { slotId: 4, label: 'शाम 7:00' };
+    if (hour >= 15) return { slotId: 3, label: 'दोपहर 3:00' };
+    if (hour >= 11) return { slotId: 2, label: 'सुबह 11:00' };
+    if (hour >= 7) return { slotId: 1, label: 'सुबह 7:00' };
+    return null;
+  }
+
+  /**
+   * 4x Daily Cutting Reminder notification (7 AM, 11 AM, 3 PM, 7 PM)
+   * Continues repeating up to 4 times a day until the reminder date is modified or moved to records.
+   * Clicking navigates directly to the Reminders page.
+   */
+  async triggerDailyCuttingReminders(force: boolean = false): Promise<boolean> {
     const isNotificationsEnabled = localStorage.getItem('notifications') !== 'false';
     if (!isNotificationsEnabled) return false;
 
@@ -456,10 +599,17 @@ export class NotificationService {
 
     const today = new Date();
     const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    const storageKey = 'last_morning_cutting_notif_date';
-    const lastNotified = localStorage.getItem(storageKey);
+    const slot = this.getCurrentDailySlot();
 
-    if (!force && lastNotified === todayKey) {
+    if (!slot && !force) {
+      return false; // Too early (before 7:00 AM)
+    }
+
+    const slotId = slot?.slotId || 1;
+    const storageKey = `last_cutting_remind_slot_${todayKey}_${slotId}`;
+    const alreadySentForSlot = localStorage.getItem(storageKey);
+
+    if (!force && alreadySentForSlot) {
       return false;
     }
 
@@ -470,10 +620,11 @@ export class NotificationService {
 
     if (count === 1) {
       const rem = summary.todayReminders[0];
+      const timeStr = rem.scheduledTime ? ` (${rem.scheduledTime})` : '';
       title = isHi ? '🌾 आज कटाई रिमाइंडर' : '🌾 Cutting Scheduled Today';
       body = isHi 
-        ? `${rem.farmerName} (${rem.landInAcres} एकड़) की कटाई आज निर्धारित है!` 
-        : `${rem.farmerName} (${rem.landInAcres} Acres) scheduled for cutting today!`;
+        ? `${rem.farmerName} (${rem.landInAcres} एकड़)${timeStr} की कटाई आज निर्धारित है!` 
+        : `${rem.farmerName} (${rem.landInAcres} Acres)${timeStr} is scheduled for cutting today!`;
     } else {
       title = isHi 
         ? `🌾 आज ${count} खेतों की कटाई निर्धारित है` 
@@ -483,14 +634,26 @@ export class NotificationService {
         : `${summary.farmersListText} (${summary.totalAcres} Acres total) scheduled today!`;
     }
 
-    // Trigger notification
+    // Add to Notification Center Store
+    this.addNotification({
+      type: 'reminder',
+      title,
+      message: body,
+      route: '/reminders',
+      queryParams: { filter: 'today' },
+      farmerName: summary.farmersListText,
+      acres: summary.totalAcres,
+      dateKey: todayKey
+    });
+
+    // Dispatch System Notification
     try {
       if (Capacitor.isNativePlatform()) {
         await this.requestPermission();
         await LocalNotifications.schedule({
           notifications: [
             {
-              id: Math.floor(Date.now() % 100000) + 100,
+              id: Math.floor(Date.now() % 100000) + 100 + slotId,
               title,
               body,
               schedule: { at: new Date(Date.now() + 500) },
@@ -504,7 +667,7 @@ export class NotificationService {
         const notif = new Notification(title, {
           body,
           icon: '/favicon.ico',
-          tag: `morning-cutting-${todayKey}`
+          tag: `cutting-reminder-${todayKey}-slot-${slotId}`
         });
         notif.onclick = () => {
           window.focus();
@@ -514,12 +677,19 @@ export class NotificationService {
         };
       }
     } catch (err) {
-      console.warn('Morning cutting notification error:', err);
+      console.warn('Cutting reminder notification error:', err);
     }
 
-    localStorage.setItem(storageKey, todayKey);
+    localStorage.setItem(storageKey, 'true');
     this.toastService.info(body);
     return true;
+  }
+
+  /**
+   * Legacy wrapper for morning cutting notification
+   */
+  async triggerMorningCuttingNotification(force: boolean = false): Promise<boolean> {
+    return this.triggerDailyCuttingReminders(force);
   }
 
   /**
@@ -551,6 +721,18 @@ export class NotificationService {
 
     // Show prompt signal so UI displays dialog / banner
     this.showDayEndPrompt.set(true);
+
+    // Add to Notification Center Store
+    this.addNotification({
+      type: 'cutting_status',
+      title,
+      message: body,
+      route: '/reminders',
+      queryParams: { filter: 'today', check: 'true' },
+      farmerName: summary.farmersListText,
+      acres: summary.totalAcres,
+      dateKey: todayKey
+    });
 
     try {
       if (Capacitor.isNativePlatform()) {
@@ -595,16 +777,14 @@ export class NotificationService {
   public checkAllDailyReminders(): void {
     const hour = new Date().getHours();
     
-    // Settlement reminder check
+    // Settlement reminder check (morning / daytime)
     this.evaluateTodaySettlements();
     this.triggerSettlementNotification();
 
-    // Cutting schedule checks
+    // Cutting schedule checks (4x daily: 7 AM, 11 AM, 3 PM, 7 PM)
     this.evaluateTodayCuttings();
-
-    // If morning (around or after 8 AM)
-    if (hour >= 8 && hour < 20) {
-      this.triggerMorningCuttingNotification();
+    if (hour >= 7) {
+      this.triggerDailyCuttingReminders();
     }
 
     // If day-end (around or after 20:00 / 8 PM - 10 PM)
@@ -613,4 +793,3 @@ export class NotificationService {
     }
   }
 }
-

@@ -1,27 +1,8 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { FirestoreService } from '../../services/firestore/firestore-service';
+import type { Record, HarvestRecord } from '../models/record.model';
 
-export interface Record {
-  id: string;
-  farmerName: string;
-  contactNumber: string;
-  date: string;
-  cuttingTime?: string;
-  landInAcres: number;
-  ratePerAcre: number;
-  paidOnSight: number;
-  fullPaymentDate: string;
-  totalPayment: number;
-  pendingAmount: number;
-  /** Optional harvester name (e.g. Harvester 1, Harvester 2) */
-  harvester?: string;
-  /** Optional season document ID */
-  seasonId?: string;
-  /** When true, record is soft-deleted: shown with strikethrough, pending = 0, status Paid. User can edit to revert. */
-  markedAsPaid?: boolean;
-}
-
-export type HarvestRecord = Record;
+export type { Record, HarvestRecord };
 
 @Injectable({
   providedIn: 'root'

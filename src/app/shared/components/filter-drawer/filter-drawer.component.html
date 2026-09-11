@@ -1,0 +1,564 @@
+<!-- Shared Reusable Side Filter Drawer Backdrop -->
+@if (isOpen) {
+  <div class="filter-drawer-backdrop" (click)="onClose()" [id]="drawerId + '-backdrop'"></div>
+}
+
+<aside 
+  class="filter-drawer-panel" 
+  [class.is-open]="isOpen" 
+  (click)="$event.stopPropagation()" 
+  [id]="drawerId" 
+  role="dialog" 
+  aria-modal="true" 
+  aria-label="Filter Panel">
+
+  <!-- Drawer Header -->
+  <div class="drawer-header">
+    <div class="drawer-title-wrap">
+      <mat-icon class="drawer-header-icon">tune</mat-icon>
+      <span class="drawer-title">{{ drawerTitle || (isHi ? 'फ़िल्टर' : 'FILTER') }}</span>
+    </div>
+    <button type="button" class="drawer-close-circle-btn" (click)="onClose()" aria-label="Close Filter Panel">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Drawer Scrollable Body -->
+  <div class="drawer-content">
+
+    <!-- 1. Date Filter (तारीख) -->
+    @if (showDateFilter) {
+      <div class="drawer-filter-card" id="card-filter-date">
+        <div class="drawer-card-header">
+          <div class="drawer-card-label-col">
+            <mat-icon class="drawer-card-icon">calendar_today</mat-icon>
+            <span class="drawer-card-label">{{ isHi ? 'तारीख' : 'Date' }}</span>
+          </div>
+          @if (dateBadgeCount !== null && dateBadgeCount !== undefined) {
+            <span class="drawer-count-badge">{{ dateBadgeCount }}</span>
+          }
+        </div>
+
+        <div class="drawer-select-wrapper">
+          <button type="button" 
+                  class="drawer-dropdown-btn" 
+                  [class.is-open]="isDrawerDateOpen()"
+                  (click)="toggleDrawerDate()"
+                  id="btn-filter-drawer-date">
+            <span class="drawer-btn-value">{{ getSelectedDateFilterLabel() }}</span>
+            <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerDateOpen()">expand_more</mat-icon>
+          </button>
+
+          @if (isDrawerDateOpen()) {
+            <div class="drawer-dropdown-menu">
+              <!-- All -->
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedDateFilter === 'all'" 
+                      (click)="selectDate('all')">
+                <span>
+                  {{ t('records.filterAll', isHi ? 'सभी' : 'All') }}
+                  @if (dateCounts?.all !== undefined) { ({{ dateCounts?.all }}) }
+                </span>
+                @if (selectedDateFilter === 'all') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              <!-- Today -->
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedDateFilter === 'today'" 
+                      (click)="selectDate('today')">
+                <span>
+                  {{ t('records.filterToday', isHi ? 'आज' : 'Today') }}
+                  @if (dateCounts?.today !== undefined) { ({{ dateCounts?.today }}) }
+                </span>
+                @if (selectedDateFilter === 'today') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              <!-- Yesterday -->
+              @if (allowYesterday) {
+                <button type="button" 
+                        class="drawer-menu-item" 
+                        [class.is-selected]="selectedDateFilter === 'yesterday'" 
+                        (click)="selectDate('yesterday')">
+                  <span>
+                    {{ t('records.filterYesterday', isHi ? 'कल' : 'Yesterday') }}
+                    @if (dateCounts?.yesterday !== undefined) { ({{ dateCounts?.yesterday }}) }
+                  </span>
+                  @if (selectedDateFilter === 'yesterday') { <mat-icon class="item-check">check</mat-icon> }
+                </button>
+              }
+
+              <!-- Tomorrow (for Reminders) -->
+              @if (allowTomorrow) {
+                <button type="button" 
+                        class="drawer-menu-item" 
+                        [class.is-selected]="selectedDateFilter === 'tomorrow'" 
+                        (click)="selectDate('tomorrow')">
+                  <span>
+                    {{ isHi ? 'कल' : 'Tomorrow' }}
+                    @if (dateCounts?.tomorrow !== undefined) { ({{ dateCounts?.tomorrow }}) }
+                  </span>
+                  @if (selectedDateFilter === 'tomorrow') { <mat-icon class="item-check">check</mat-icon> }
+                </button>
+              }
+
+              <!-- This Week -->
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedDateFilter === 'week'" 
+                      (click)="selectDate('week')">
+                <span>
+                  {{ t('records.filterWeek', isHi ? 'इस सप्ताह' : 'This Week') }}
+                  @if (dateCounts?.week !== undefined) { ({{ dateCounts?.week }}) }
+                </span>
+                @if (selectedDateFilter === 'week') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              <!-- This Month -->
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedDateFilter === 'month'" 
+                      (click)="selectDate('month')">
+                <span>
+                  {{ t('records.filterMonth', isHi ? 'इस माह' : 'This Month') }}
+                  @if (dateCounts?.month !== undefined) { ({{ dateCounts?.month }}) }
+                </span>
+                @if (selectedDateFilter === 'month') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              <!-- Due Today Option -->
+              @if (dueTodayCount > 0) {
+                <button type="button" 
+                        class="drawer-menu-item item-due" 
+                        [class.is-selected]="selectedDateFilter === 'dueToday'" 
+                        (click)="selectDate('dueToday')">
+                  <span>
+                    {{ t('records.filterDueToday', isHi ? 'आज देय' : 'Due Today') }}
+                    ({{ dueTodayCount }})
+                  </span>
+                  @if (selectedDateFilter === 'dueToday') { <mat-icon class="item-check">check</mat-icon> }
+                </button>
+              }
+
+              <!-- Custom Date -->
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedDateFilter === 'custom'" 
+                      (click)="selectDate('custom')">
+                <span>{{ t('records.filterCustom', isHi ? 'कस्टम तारीख' : 'Custom Date') }}</span>
+                @if (selectedDateFilter === 'custom') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Custom Date Selection Area -->
+        @if (selectedDateFilter === 'custom') {
+          <div class="drawer-custom-date-box">
+            <div class="custom-mode-switcher">
+              <button type="button" 
+                      class="custom-mode-pill" 
+                      [class.active]="customMode === 'single'" 
+                      (click)="setCustomMode('single')">
+                <mat-icon>event</mat-icon>
+                <span>{{ t('records.customSingleDate', isHi ? 'एक तारीख' : 'Single Date') }}</span>
+              </button>
+              <button type="button" 
+                      class="custom-mode-pill" 
+                      [class.active]="customMode === 'range'" 
+                      (click)="setCustomMode('range')">
+                <mat-icon>date_range</mat-icon>
+                <span>{{ t('records.customDateRange', isHi ? 'तारीख रेंज' : 'Date Range') }}</span>
+              </button>
+            </div>
+
+            @if (customMode === 'single') {
+              <div class="single-picker-row">
+                <div class="date-input-wrap" (click)="openCustomDateDialog('single')" style="cursor: pointer;">
+                  <mat-icon class="date-wrap-icon">calendar_today</mat-icon>
+                  <input type="text" 
+                         class="styled-date-input" 
+                         [value]="formatDateDisplay(customSingleDate)" 
+                         placeholder="DD-MM-YYYY" 
+                         readonly 
+                         style="cursor: pointer;" />
+                  <mat-icon class="date-wrap-icon" style="margin-left: auto;">event</mat-icon>
+                </div>
+              </div>
+            }
+
+            @if (customMode === 'range') {
+              <div class="range-picker-row">
+                <div class="range-date-col">
+                  <label class="date-col-label">{{ t('records.fromDate', isHi ? 'प्रारंभ तारीख' : 'From Date') }}</label>
+                  <div class="date-input-wrap" (click)="openCustomDateDialog('start')" style="cursor: pointer;">
+                    <mat-icon class="date-wrap-icon">event</mat-icon>
+                    <input type="text" 
+                           class="styled-date-input" 
+                           [value]="formatDateDisplay(customStartDate)" 
+                           placeholder="DD-MM-YYYY" 
+                           readonly 
+                           style="cursor: pointer;" />
+                  </div>
+                </div>
+                <div class="range-date-col">
+                  <label class="date-col-label">{{ t('records.toDate', isHi ? 'अंतिम तारीख' : 'To Date') }}</label>
+                  <div class="date-input-wrap" (click)="openCustomDateDialog('end')" style="cursor: pointer;">
+                    <mat-icon class="date-wrap-icon">event_available</mat-icon>
+                    <input type="text" 
+                           class="styled-date-input" 
+                           [value]="formatDateDisplay(customEndDate)" 
+                           placeholder="DD-MM-YYYY" 
+                           readonly 
+                           style="cursor: pointer;" />
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- 2. Season Filter (सीज़न) -->
+    @if (showSeasonFilter) {
+      <div class="drawer-filter-card" id="card-filter-season">
+        <div class="drawer-card-header">
+          <div class="drawer-card-label-col">
+            <mat-icon class="drawer-card-icon">grass</mat-icon>
+            <span class="drawer-card-label">{{ isHi ? 'सीज़न' : 'Season' }}</span>
+          </div>
+          @if (seasonBadgeCount !== null && seasonBadgeCount !== undefined) {
+            <span class="drawer-count-badge">{{ seasonBadgeCount }}</span>
+          }
+        </div>
+
+        <div class="drawer-select-wrapper">
+          <button type="button" 
+                  class="drawer-dropdown-btn" 
+                  [class.is-open]="isDrawerSeasonOpen()"
+                  (click)="toggleDrawerSeason()"
+                  id="btn-filter-drawer-season">
+            <span class="drawer-btn-value">{{ getSelectedSeasonFilterLabel() }}</span>
+            <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerSeasonOpen()">expand_more</mat-icon>
+          </button>
+
+          @if (isDrawerSeasonOpen()) {
+            <div class="drawer-dropdown-menu">
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedSeasonFilter === 'all'" 
+                      (click)="selectSeason('all')">
+                <span>{{ isHi ? 'सभी सीज़न' : 'All Seasons' }}</span>
+                @if (selectedSeasonFilter === 'all') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              @for (season of seasonService.seasons(); track (season.id || season.name)) {
+                <button type="button" 
+                        class="drawer-menu-item" 
+                        [class.is-selected]="selectedSeasonFilter === (season.id || '')" 
+                        (click)="selectSeason(season.id || '')">
+                  <span>{{ season.name }} {{ season.year }}</span>
+                  @if (selectedSeasonFilter === (season.id || '')) { <mat-icon class="item-check">check</mat-icon> }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- 3. Harvester Filter (हार्वेस्टर) -->
+    @if (showHarvesterFilter) {
+      <div class="drawer-filter-card" id="card-filter-harvester">
+        <div class="drawer-card-header">
+          <div class="drawer-card-label-col">
+            <mat-icon class="drawer-card-icon">agriculture</mat-icon>
+            <span class="drawer-card-label">{{ harvesterLabel || (isHi ? 'हार्वेस्टर' : 'Harvester') }}</span>
+          </div>
+          @if (harvesterBadgeCount !== null && harvesterBadgeCount !== undefined) {
+            <span class="drawer-count-badge">{{ harvesterBadgeCount }}</span>
+          }
+        </div>
+
+        <div class="drawer-select-wrapper">
+          <button type="button" 
+                  class="drawer-dropdown-btn" 
+                  [class.is-open]="isDrawerHarvesterOpen()"
+                  (click)="toggleDrawerHarvester()"
+                  id="btn-filter-drawer-harvester">
+            <span class="drawer-btn-value">{{ getSelectedHarvesterFilterLabel() }}</span>
+            <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerHarvesterOpen()">expand_more</mat-icon>
+          </button>
+
+          @if (isDrawerHarvesterOpen()) {
+            <div class="drawer-dropdown-menu">
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedHarvesterFilter === 'all'" 
+                      (click)="selectHarvester('all')">
+                <span>{{ isHi ? 'सभी हार्वेस्टर (All)' : 'All Harvesters' }}</span>
+                @if (selectedHarvesterFilter === 'all') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              @for (harv of getHarvestersList(); track harv) {
+                <button type="button" 
+                        class="drawer-menu-item" 
+                        [class.is-selected]="selectedHarvesterFilter === harv" 
+                        (click)="selectHarvester(harv)">
+                  <span>{{ harv }}</span>
+                  @if (selectedHarvesterFilter === harv) { <mat-icon class="item-check">check</mat-icon> }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- 4. Payment Status Filter (भुगतान स्थिति) - ONLY for Records & Kisan Record Pages -->
+    @if (showPaymentFilter) {
+      <div class="drawer-filter-card" id="card-filter-payment">
+        <div class="drawer-card-header">
+          <div class="drawer-card-label-col">
+            <mat-icon class="drawer-card-icon">payments</mat-icon>
+            <span class="drawer-card-label">{{ isHi ? 'भुगतान स्थिति' : 'Payment Status' }}</span>
+          </div>
+          @if (paymentBadgeCount !== null && paymentBadgeCount !== undefined) {
+            <span class="drawer-count-badge">{{ paymentBadgeCount }}</span>
+          }
+        </div>
+
+        <div class="drawer-select-wrapper">
+          <button type="button" 
+                  class="drawer-dropdown-btn" 
+                  [class.is-open]="isDrawerPaymentOpen()"
+                  (click)="toggleDrawerPayment()"
+                  id="btn-filter-drawer-payment">
+            <span class="drawer-btn-value">{{ getSelectedPaymentFilterLabel() }}</span>
+            <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerPaymentOpen()">expand_more</mat-icon>
+          </button>
+
+          @if (isDrawerPaymentOpen()) {
+            <div class="drawer-dropdown-menu">
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedPaymentFilter === 'all'" 
+                      (click)="selectPayment('all')"
+                      id="filter-payment-opt-all">
+                <span>{{ isHi ? 'सभी (All)' : 'All (सभी)' }}</span>
+                @if (selectedPaymentFilter === 'all') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedPaymentFilter === 'completed'" 
+                      (click)="selectPayment('completed')"
+                      id="filter-payment-opt-completed">
+                <span>{{ isHi ? 'पूर्ण भुगतान (Completed Payment)' : 'Completed Payment' }}</span>
+                @if (selectedPaymentFilter === 'completed') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedPaymentFilter === 'pending'" 
+                      (click)="selectPayment('pending')"
+                      id="filter-payment-opt-pending">
+                <span>{{ isHi ? 'बकाया राशि वाला (Pending Payment)' : 'Pending Payment (बकाया राशि)' }}</span>
+                @if (selectedPaymentFilter === 'pending') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- 5. Payment Date Filter (भुगतान तिथि) - ONLY for Records & Kisan Record Pages -->
+    @if (showPaymentDateFilter) {
+      <div class="drawer-filter-card" id="card-filter-payment-date">
+        <div class="drawer-card-header">
+          <div class="drawer-card-label-col">
+            <mat-icon class="drawer-card-icon">event_note</mat-icon>
+            <span class="drawer-card-label">{{ isHi ? 'भुगतान तिथि' : 'Payment Due Date' }}</span>
+          </div>
+          @if (paymentDateBadgeCount !== null && paymentDateBadgeCount !== undefined) {
+            <span class="drawer-count-badge">{{ paymentDateBadgeCount }}</span>
+          }
+        </div>
+
+        <div class="drawer-select-wrapper">
+          <button type="button" 
+                  class="drawer-dropdown-btn" 
+                  [class.is-open]="isDrawerPaymentDateOpen()"
+                  (click)="toggleDrawerPaymentDate()"
+                  id="btn-filter-drawer-payment-date">
+            <span class="drawer-btn-value">{{ getSelectedPaymentDateFilterLabel() }}</span>
+            <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerPaymentDateOpen()">expand_more</mat-icon>
+          </button>
+
+          @if (isDrawerPaymentDateOpen()) {
+            <div class="drawer-dropdown-menu">
+              <!-- All -->
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedPaymentDateFilter === 'all'" 
+                      (click)="selectPaymentDate('all')"
+                      id="filter-payment-date-opt-all">
+                <span>{{ isHi ? 'सभी भुगतान तिथियां (All)' : 'All Payment Dates' }}</span>
+                @if (selectedPaymentDateFilter === 'all') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              <!-- Today -->
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedPaymentDateFilter === 'today'" 
+                      (click)="selectPaymentDate('today')"
+                      id="filter-payment-date-opt-today">
+                <span>{{ isHi ? 'आज देय (Due Today)' : 'Due Today (आज देय)' }}</span>
+                @if (selectedPaymentDateFilter === 'today') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              <!-- Tomorrow -->
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedPaymentDateFilter === 'tomorrow'" 
+                      (click)="selectPaymentDate('tomorrow')"
+                      id="filter-payment-date-opt-tomorrow">
+                <span>{{ isHi ? 'कल देय (Due Tomorrow)' : 'Due Tomorrow (कल देय)' }}</span>
+                @if (selectedPaymentDateFilter === 'tomorrow') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              <!-- Overdue / Past Due -->
+              <button type="button" 
+                      class="drawer-menu-item item-due" 
+                      [class.is-selected]="selectedPaymentDateFilter === 'overdue'" 
+                      (click)="selectPaymentDate('overdue')"
+                      id="filter-payment-date-opt-overdue">
+                <span>{{ isHi ? 'बीती तारीख / बकाया (Past Due)' : 'Past Due / Overdue' }}</span>
+                @if (selectedPaymentDateFilter === 'overdue') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              <!-- This Week -->
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedPaymentDateFilter === 'week'" 
+                      (click)="selectPaymentDate('week')"
+                      id="filter-payment-date-opt-week">
+                <span>{{ isHi ? 'इस सप्ताह देय (This Week)' : 'This Week' }}</span>
+                @if (selectedPaymentDateFilter === 'week') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              <!-- This Month -->
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedPaymentDateFilter === 'month'" 
+                      (click)="selectPaymentDate('month')"
+                      id="filter-payment-date-opt-month">
+                <span>{{ isHi ? 'इस माह देय (This Month)' : 'This Month' }}</span>
+                @if (selectedPaymentDateFilter === 'month') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              <!-- Without Payment Date -->
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedPaymentDateFilter === 'noDate'" 
+                      (click)="selectPaymentDate('noDate')"
+                      id="filter-payment-date-opt-nodate">
+                <span>{{ isHi ? 'बिना भुगतान तिथि वाले (No Date Set)' : 'No Payment Date Set' }}</span>
+                @if (selectedPaymentDateFilter === 'noDate') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+
+              <!-- Custom Date -->
+              <button type="button" 
+                      class="drawer-menu-item" 
+                      [class.is-selected]="selectedPaymentDateFilter === 'custom'" 
+                      (click)="selectPaymentDate('custom')"
+                      id="filter-payment-date-opt-custom">
+                <span>{{ isHi ? 'कस्टम तारीख (Custom Date)' : 'Custom Date' }}</span>
+                @if (selectedPaymentDateFilter === 'custom') { <mat-icon class="item-check">check</mat-icon> }
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Custom Payment Date Selection Area -->
+        @if (selectedPaymentDateFilter === 'custom') {
+          <div class="drawer-custom-date-box">
+            <div class="custom-mode-switcher">
+              <button type="button" 
+                      class="custom-mode-pill" 
+                      [class.active]="customPaymentDateMode === 'single'" 
+                      (click)="setCustomPaymentDateMode('single')">
+                <mat-icon>event</mat-icon>
+                <span>{{ isHi ? 'एक तारीख' : 'Single Date' }}</span>
+              </button>
+              <button type="button" 
+                      class="custom-mode-pill" 
+                      [class.active]="customPaymentDateMode === 'range'" 
+                      (click)="setCustomPaymentDateMode('range')">
+                <mat-icon>date_range</mat-icon>
+                <span>{{ isHi ? 'तारीख रेंज' : 'Date Range' }}</span>
+              </button>
+            </div>
+
+            @if (customPaymentDateMode === 'single') {
+              <div class="single-picker-row">
+                <div class="date-input-wrap" (click)="openCustomPaymentDateDialog('single')" style="cursor: pointer;">
+                  <mat-icon class="date-wrap-icon">event_note</mat-icon>
+                  <input type="text" 
+                         class="styled-date-input" 
+                         [value]="formatDateDisplay(customPaymentSingleDate)" 
+                         placeholder="DD-MM-YYYY" 
+                         readonly 
+                         style="cursor: pointer;" />
+                  <mat-icon class="date-wrap-icon" style="margin-left: auto;">event</mat-icon>
+                </div>
+              </div>
+            }
+
+            @if (customPaymentDateMode === 'range') {
+              <div class="range-picker-row">
+                <div class="range-date-col">
+                  <label class="date-col-label">{{ isHi ? 'प्रारंभ तारीख' : 'From Date' }}</label>
+                  <div class="date-input-wrap" (click)="openCustomPaymentDateDialog('start')" style="cursor: pointer;">
+                    <mat-icon class="date-wrap-icon">event</mat-icon>
+                    <input type="text" 
+                           class="styled-date-input" 
+                           [value]="formatDateDisplay(customPaymentStartDate)" 
+                           placeholder="DD-MM-YYYY" 
+                           readonly 
+                           style="cursor: pointer;" />
+                  </div>
+                </div>
+                <div class="range-date-col">
+                  <label class="date-col-label">{{ isHi ? 'अंतिम तारीख' : 'To Date' }}</label>
+                  <div class="date-input-wrap" (click)="openCustomPaymentDateDialog('end')" style="cursor: pointer;">
+                    <mat-icon class="date-wrap-icon">event_available</mat-icon>
+                    <input type="text" 
+                           class="styled-date-input" 
+                           [value]="formatDateDisplay(customPaymentEndDate)" 
+                           placeholder="DD-MM-YYYY" 
+                           readonly 
+                           style="cursor: pointer;" />
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Reset Filter Option -->
+    <div class="drawer-reset-wrapper">
+      <button type="button" class="drawer-reset-link" (click)="onReset()" id="btn-filter-drawer-reset">
+        <mat-icon>restart_alt</mat-icon>
+        <span>{{ isHi ? 'सभी फ़िल्टर रीसेट करें' : 'Reset All Filters' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Drawer Footer -->
+  <div class="drawer-footer">
+    <button type="button" class="drawer-apply-pill-btn" (click)="onApply()" id="btn-filter-drawer-apply">
+      {{ isHi ? 'लागू करें' : 'APPLY' }}
+    </button>
+  </div>
+</aside>

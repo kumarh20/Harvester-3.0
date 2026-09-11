@@ -141,6 +141,14 @@
                                     <span class="chip-text">{{ getSelectedHarvesterFilterLabel() }}</span>
                                 </button>
                             }
+
+                            <!-- Payment Status Chip -->
+                            @if (selectedPaymentFilter() !== 'all') {
+                                <button type="button" class="active-filter-chip chip-payment-active" (click)="openFilterPanel()" id="kisan-chip-payment" [title]="translationService.getCurrentLanguage() === 'hi' ? 'भुगतान स्थिति फ़िल्टर बदलें' : 'Change payment status filter'">
+                                    <mat-icon class="chip-icon">payments</mat-icon>
+                                    <span class="chip-text">{{ getSelectedPaymentFilterLabel() }}</span>
+                                </button>
+                            }
                         </div>
 
                         <!-- Right: FILTER Pill Button (Green Theme) -->
@@ -450,6 +458,12 @@
                                 <span class="chip-text">{{ selectedHarvesterRecordFilter() }}</span>
                             </button>
                         }
+                        @if (selectedPaymentFilter() !== 'all') {
+                            <button type="button" class="active-filter-chip chip-payment-active" (click)="openFilterPanel()" title="भुगतान स्थिति फ़िल्टर बदलें" id="records-chip-payment">
+                                <mat-icon class="chip-icon">payments</mat-icon>
+                                <span class="chip-text">{{ getSelectedPaymentFilterLabel() }}</span>
+                            </button>
+                        }
                     </div>
 
                     <!-- Right: FILTER Pill Button (Matching Screenshot 1) -->
@@ -573,225 +587,52 @@
         }
     }
 
-    <!-- Side Panel Drawer for Filters (Works for both All Records & Kisan Detail Page) -->
-    @if (isFilterPanelOpen()) {
-        <div class="filter-drawer-backdrop" (click)="closeFilterPanel()" id="records-filter-backdrop"></div>
-    }
-
-    <aside class="filter-drawer-panel" [class.is-open]="isFilterPanelOpen()" (click)="$event.stopPropagation()" id="records-filter-drawer" aria-label="Filters Panel">
-        <!-- Drawer Header -->
-        <div class="drawer-header">
-            <div class="drawer-title-wrap">
-                <mat-icon class="drawer-header-icon">filter_alt</mat-icon>
-                <span class="drawer-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'फ़िल्टर' : 'FILTER' }}</span>
-            </div>
-            <button type="button" class="drawer-close-circle-btn" (click)="closeFilterPanel()" aria-label="Close filters">
-                <mat-icon>close</mat-icon>
-            </button>
-        </div>
-
-        <!-- Drawer Scrollable Content -->
-        <div class="drawer-content">
-            <!-- 1. Date Filter (तारीख) -->
-            <div class="drawer-filter-card">
-                <div class="drawer-card-header">
-                    <div class="drawer-card-label-col">
-                        <mat-icon class="drawer-card-icon">calendar_today</mat-icon>
-                        <span class="drawer-card-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'तारीख' : 'Date' }}</span>
-                    </div>
-                    <span class="drawer-count-badge">{{ selectedFarmer() ? farmerFilteredCuttings().length : recordsByDate().length }}</span>
-                </div>
-
-                <div class="drawer-select-wrapper">
-                    <button type="button" 
-                            class="drawer-dropdown-btn" 
-                            [class.is-open]="isDrawerDateOpen()"
-                            (click)="toggleDrawerDate()">
-                        <span class="drawer-btn-value">{{ getSelectedDateFilterLabel() }}</span>
-                        <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerDateOpen()">expand_more</mat-icon>
-                    </button>
-
-                    @if (isDrawerDateOpen()) {
-                        <div class="drawer-dropdown-menu">
-                            <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'all'" (click)="selectDateOption('all'); isDrawerDateOpen.set(false)">
-                                <span>{{ translationService.get('records.filterAll') || 'सभी (All)' }}</span>
-                                @if (selectedDateFilter() === 'all') { <mat-icon class="item-check">check</mat-icon> }
-                            </button>
-                            <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'today'" (click)="selectDateOption('today'); isDrawerDateOpen.set(false)">
-                                <span>{{ translationService.get('records.filterToday') || 'आज' }}</span>
-                                @if (selectedDateFilter() === 'today') { <mat-icon class="item-check">check</mat-icon> }
-                            </button>
-                            <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'yesterday'" (click)="selectDateOption('yesterday'); isDrawerDateOpen.set(false)">
-                                <span>{{ translationService.get('records.filterYesterday') || 'कल' }}</span>
-                                @if (selectedDateFilter() === 'yesterday') { <mat-icon class="item-check">check</mat-icon> }
-                            </button>
-                            <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'week'" (click)="selectDateOption('week'); isDrawerDateOpen.set(false)">
-                                <span>{{ translationService.get('records.filterWeek') || 'इस सप्ताह' }}</span>
-                                @if (selectedDateFilter() === 'week') { <mat-icon class="item-check">check</mat-icon> }
-                            </button>
-                            <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'month'" (click)="selectDateOption('month'); isDrawerDateOpen.set(false)">
-                                <span>{{ translationService.get('records.filterMonth') || 'इस माह' }}</span>
-                                @if (selectedDateFilter() === 'month') { <mat-icon class="item-check">check</mat-icon> }
-                            </button>
-                            @if (dueTodaySettlementCount() > 0) {
-                                <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'dueToday'" (click)="selectDateOption('dueToday'); isDrawerDateOpen.set(false)">
-                                    <span>{{ translationService.get('records.filterDueToday') || 'आज देय' }} ({{ dueTodaySettlementCount() }})</span>
-                                    @if (selectedDateFilter() === 'dueToday') { <mat-icon class="item-check">check</mat-icon> }
-                                </button>
-                            }
-                            <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'custom'" (click)="selectDateOption('custom'); isDrawerDateOpen.set(false)">
-                                <span>{{ translationService.get('records.filterCustom') || 'कस्टम तारीख' }}</span>
-                                @if (selectedDateFilter() === 'custom') { <mat-icon class="item-check">check</mat-icon> }
-                            </button>
-                        </div>
-                    }
-                </div>
-
-                <!-- Custom Date Selection Area -->
-                @if (selectedDateFilter() === 'custom') {
-                    <div class="drawer-custom-date-box">
-                        <div class="custom-mode-switcher">
-                            <button type="button" class="custom-mode-pill" [class.active]="customMode() === 'single'" (click)="setCustomMode('single')">
-                                <mat-icon>event</mat-icon>
-                                <span>{{ translationService.get('records.customSingleDate') }}</span>
-                            </button>
-                            <button type="button" class="custom-mode-pill" [class.active]="customMode() === 'range'" (click)="setCustomMode('range')">
-                                <mat-icon>date_range</mat-icon>
-                                <span>{{ translationService.get('records.customDateRange') }}</span>
-                            </button>
-                        </div>
-
-                        @if (customMode() === 'single') {
-                            <div class="single-picker-row" style="margin-top: 8px;">
-                                <div class="date-input-wrap" (click)="openCustomDateDialog('single')" style="cursor: pointer;">
-                                    <mat-icon class="date-wrap-icon">calendar_today</mat-icon>
-                                    <input type="text" class="styled-date-input" [value]="formatDateDisplay(customSingleDate())" placeholder="DD-MM-YYYY" readonly style="cursor: pointer;" />
-                                    <mat-icon class="date-wrap-icon" style="margin-left: auto;">event</mat-icon>
-                                </div>
-                            </div>
-                        }
-                        @if (customMode() === 'range') {
-                            <div class="range-picker-row" style="margin-top: 8px;">
-                                <div class="range-date-col">
-                                    <label class="date-col-label">{{ translationService.get('records.fromDate') }}</label>
-                                    <div class="date-input-wrap" (click)="openCustomDateDialog('start')" style="cursor: pointer;">
-                                        <mat-icon class="date-wrap-icon">event</mat-icon>
-                                        <input type="text" class="styled-date-input" [value]="formatDateDisplay(customStartDate())" placeholder="DD-MM-YYYY" readonly style="cursor: pointer;" />
-                                    </div>
-                                </div>
-                                <div class="range-date-col">
-                                    <label class="date-col-label">{{ translationService.get('records.toDate') }}</label>
-                                    <div class="date-input-wrap" (click)="openCustomDateDialog('end')" style="cursor: pointer;">
-                                        <mat-icon class="date-wrap-icon">event_available</mat-icon>
-                                        <input type="text" class="styled-date-input" [value]="formatDateDisplay(customEndDate())" placeholder="DD-MM-YYYY" readonly style="cursor: pointer;" />
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
-
-            <!-- 2. Season Filter (सीज़न) -->
-            <div class="drawer-filter-card">
-                <div class="drawer-card-header">
-                    <div class="drawer-card-label-col">
-                        <mat-icon class="drawer-card-icon">grass</mat-icon>
-                        <span class="drawer-card-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Season' }}</span>
-                    </div>
-                    <span class="drawer-count-badge">{{ selectedFarmer() ? farmerFilteredCuttings().length : getSeasonRecordCount(selectedSeasonFilter()) }}</span>
-                </div>
-
-                <div class="drawer-select-wrapper">
-                    <button type="button" 
-                            class="drawer-dropdown-btn" 
-                            [class.is-open]="isDrawerSeasonOpen()"
-                            (click)="toggleDrawerSeason()">
-                        <span class="drawer-btn-value">{{ getSelectedSeasonFilterLabel() }}</span>
-                        <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerSeasonOpen()">expand_more</mat-icon>
-                    </button>
-
-                    @if (isDrawerSeasonOpen()) {
-                        <div class="drawer-dropdown-menu">
-                            <button type="button" 
-                                    class="drawer-menu-item" 
-                                    [class.is-selected]="selectedSeasonFilter() === 'all'" 
-                                    (click)="selectSeasonOption('all'); isDrawerSeasonOpen.set(false)">
-                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी सीज़न' : 'All Seasons' }}</span>
-                                @if (selectedSeasonFilter() === 'all') { <mat-icon class="item-check">check</mat-icon> }
-                            </button>
-                            @for (season of seasonService.seasons(); track (season.id || season.name)) {
-                                <button type="button" 
-                                        class="drawer-menu-item" 
-                                        [class.is-selected]="selectedSeasonFilter() === (season.id || '')" 
-                                        (click)="selectSeasonOption(season.id || ''); isDrawerSeasonOpen.set(false)">
-                                    <span>{{ season.name }} {{ season.year }}</span>
-                                    @if (selectedSeasonFilter() === (season.id || '')) { <mat-icon class="item-check">check</mat-icon> }
-                                </button>
-                            }
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <!-- 3. Harvester Filter (हार्वेस्टर - Default: All) -->
-            <div class="drawer-filter-card">
-                <div class="drawer-card-header">
-                    <div class="drawer-card-label-col">
-                        <mat-icon class="drawer-card-icon">agriculture</mat-icon>
-                        <span class="drawer-card-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'हार्वेस्टर' : 'Harvester' }}</span>
-                    </div>
-                    <span class="drawer-count-badge">{{ selectedFarmer() ? farmerFilteredCuttings().length : getHarvesterRecordCount(selectedHarvesterRecordFilter()) }}</span>
-                </div>
-
-                <div class="drawer-select-wrapper">
-                    <button type="button" 
-                            class="drawer-dropdown-btn" 
-                            [class.is-open]="isDrawerHarvesterOpen()"
-                            (click)="toggleDrawerHarvester()">
-                        <span class="drawer-btn-value">{{ getSelectedHarvesterFilterLabel() }}</span>
-                        <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerHarvesterOpen()">expand_more</mat-icon>
-                    </button>
-
-                    @if (isDrawerHarvesterOpen()) {
-                        <div class="drawer-dropdown-menu">
-                            <button type="button" 
-                                    class="drawer-menu-item" 
-                                    [class.is-selected]="selectedHarvesterRecordFilter() === 'all'" 
-                                    (click)="selectHarvesterRecordOption('all')">
-                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी हार्वेस्टर (All)' : 'All Harvesters' }}</span>
-                                @if (selectedHarvesterRecordFilter() === 'all') { <mat-icon class="item-check">check</mat-icon> }
-                            </button>
-                            @for (harv of availableHarvesters(); track harv) {
-                                <button type="button" 
-                                        class="drawer-menu-item" 
-                                        [class.is-selected]="selectedHarvesterRecordFilter() === harv" 
-                                        (click)="selectHarvesterRecordOption(harv)">
-                                    <span>{{ harv }}</span>
-                                    @if (selectedHarvesterRecordFilter() === harv) { <mat-icon class="item-check">check</mat-icon> }
-                                </button>
-                            }
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Reset Filter Option -->
-            <div class="drawer-reset-wrapper">
-                <button type="button" class="drawer-reset-link" (click)="resetAllFilters()">
-                    <mat-icon>restart_alt</mat-icon>
-                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी फ़िल्टर रीसेट करें' : 'Reset All Filters' }}</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Drawer Footer (Matching Screenshot 2) -->
-        <div class="drawer-footer">
-            <button type="button" class="drawer-apply-pill-btn" (click)="applyFilterPanel()">
-                {{ translationService.getCurrentLanguage() === 'hi' ? 'लागू करें' : 'APPLY' }}
-            </button>
-        </div>
-    </aside>
+    <!-- Reusable Filter Drawer Component (with Payment Status Filter enabled for Records & Kisan Record) -->
+    <app-filter-drawer
+        [isOpen]="isFilterPanelOpen()"
+        drawerId="records-filter-drawer"
+        [drawerTitle]="translationService.getCurrentLanguage() === 'hi' ? 'फ़िल्टर' : 'FILTER'"
+        [showDateFilter]="true"
+        [selectedDateFilter]="selectedDateFilter()"
+        [dateBadgeCount]="selectedFarmer() ? farmerFilteredCuttings().length : recordsByDate().length"
+        [dueTodayCount]="dueTodaySettlementCount()"
+        [customMode]="customMode()"
+        [customSingleDate]="customSingleDate()"
+        [customStartDate]="customStartDate()"
+        [customEndDate]="customEndDate()"
+        [showSeasonFilter]="true"
+        [selectedSeasonFilter]="selectedSeasonFilter()"
+        [seasonBadgeCount]="selectedFarmer() ? farmerFilteredCuttings().length : getSeasonRecordCount(selectedSeasonFilter())"
+        [showHarvesterFilter]="true"
+        [selectedHarvesterFilter]="selectedHarvesterRecordFilter()"
+        [availableHarvesters]="availableHarvesters()"
+        [harvesterBadgeCount]="selectedFarmer() ? farmerFilteredCuttings().length : getHarvesterRecordCount(selectedHarvesterRecordFilter())"
+        [showPaymentFilter]="true"
+        [selectedPaymentFilter]="selectedPaymentFilter()"
+        [paymentBadgeCount]="getPaymentRecordCount(selectedPaymentFilter())"
+        [showPaymentDateFilter]="true"
+        [selectedPaymentDateFilter]="selectedPaymentDateFilter()"
+        [customPaymentDateMode]="customPaymentDateMode()"
+        [customPaymentSingleDate]="customPaymentSingleDate()"
+        [customPaymentStartDate]="customPaymentStartDate()"
+        [customPaymentEndDate]="customPaymentEndDate()"
+        (close)="closeFilterPanel()"
+        (apply)="applyFilterPanel()"
+        (resetFilters)="resetAllFilters()"
+        (dateFilterChange)="selectDateOption($event)"
+        (seasonFilterChange)="selectSeasonOption($event)"
+        (harvesterFilterChange)="selectHarvesterRecordOption($event)"
+        (paymentFilterChange)="selectPaymentOption($event)"
+        (paymentDateFilterChange)="selectPaymentDateOption($event)"
+        (customModeChange)="setCustomMode($event)"
+        (customSingleDateChange)="customSingleDate.set($event)"
+        (customStartDateChange)="customStartDate.set($event)"
+        (customEndDateChange)="customEndDate.set($event)"
+        (customPaymentDateModeChange)="customPaymentDateMode.set($event)"
+        (customPaymentSingleDateChange)="customPaymentSingleDate.set($event)"
+        (customPaymentStartDateChange)="customPaymentStartDate.set($event)"
+        (customPaymentEndDateChange)="customPaymentEndDate.set($event)">
+    </app-filter-drawer>
 
     <!-- Move Reminder to Record Modal Prompt -->
     @if (pendingMoveReminder(); as rem) {

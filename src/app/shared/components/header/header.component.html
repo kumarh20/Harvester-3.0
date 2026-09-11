@@ -71,6 +71,24 @@
         <!-- Header Actions (Visible ONLY after login & not on auth/login pages) -->
         @if (showUserActions()) {
             <div class="header-actions" id="header-actions-bar">
+                <!-- 🔔 Notification Icon Button with Live Badges (Positioned just left of profile) -->
+                <button 
+                    type="button" 
+                    id="header-notification-btn" 
+                    class="notification-icon-btn-3d" 
+                    (click)="navigateToNotifications()"
+                    [attr.aria-label]="isHindi() ? 'सूचनाएं' : 'Notifications'"
+                    title="Notifications">
+                    <div class="notification-icon-wrap">
+                        <mat-icon class="header-bell-icon">notifications</mat-icon>
+                        @if (unreadNotificationCount() > 0) {
+                            <span class="notification-badge-pulse" id="header-notif-badge">
+                                {{ unreadNotificationCount() > 99 ? '99+' : unreadNotificationCount() }}
+                            </span>
+                        }
+                    </div>
+                </button>
+
                 <!-- 3D Instagram Story Ring Profile Pill & Dropdown -->
                 <div class="profile-pill-wrapper" id="header-profile-menu-container">
                     <button 

@@ -93,39 +93,41 @@
         </div>
       </div>
 
-      <!-- Promised Settlement Alert Banner (Android System Notification Trigger) -->
-      @if (notificationService.dueTodaySummary()?.hasDueToday) {
-        <div class="settlement-due-alert-banner" id="dashboard-settlement-alert-banner">
-          <div class="alert-icon-wrapper">
-            <mat-icon class="bell-ring-icon">notifications_active</mat-icon>
+      <!-- Promised Settlement Due Today Chip (Thin Pill Bar with Count, Click to Records, and Small Cut Button) -->
+      @if (showDueTodayChip()) {
+        <div 
+          class="settlement-due-chip" 
+          id="dashboard-settlement-chip"
+          (click)="openDueTodayRecords($event)"
+          role="button"
+          tabindex="0"
+          (keydown.enter)="openDueTodayRecords($event)"
+          [attr.aria-label]="translationService.get('settings.settlementDueToday')">
+          
+          <div class="chip-content-left">
+            <span class="chip-icon-box">
+              <mat-icon class="chip-bell-icon">notifications_active</mat-icon>
+            </span>
+            <span class="chip-count-badge">
+              {{ notificationService.dueTodayCount() }} {{ translationService.getCurrentLanguage() === 'hi' ? 'किसान' : (notificationService.dueTodayCount() > 1 ? 'farmers' : 'farmer') }}
+            </span>
+            <span class="chip-title-text">
+              {{ translationService.get('settings.settlementDueToday') }}
+            </span>
+            <span class="chip-amount-text">
+              ₹{{ (notificationService.dueTodaySummary()?.totalDueAmount || 0) | number: '1.0-0' }}
+            </span>
           </div>
-          <div class="alert-info-wrapper">
-            <div class="alert-title-row">
-              <span class="alert-badge">{{ translationService.get('settings.settlementDueToday') }}</span>
-              <span class="alert-count-pill">{{ notificationService.dueTodayCount() }} किसान</span>
-            </div>
-            <p class="alert-description">
-              <span class="farmers-highlight">{{ notificationService.dueTodaySummary()?.farmersListText }}</span>
-              <span> का कुल </span>
-              <strong class="amount-highlight">₹{{ (notificationService.dueTodaySummary()?.totalDueAmount || 0) | number: '1.0-0' }}</strong>
-              <span> का भुगतान आज देय है!</span>
-            </p>
-          </div>
-          <div class="alert-action-buttons">
+
+          <div class="chip-actions-right">
+            <mat-icon class="chip-arrow-icon">chevron_right</mat-icon>
             <button 
               type="button" 
-              class="alert-view-btn" 
-              (click)="goToRecords()"
-              title="View records">
-              <mat-icon>receipt_long</mat-icon>
-              <span>{{ translationService.get('records.title') }}</span>
-            </button>
-            <button 
-              type="button" 
-              class="alert-notify-btn" 
-              (click)="notifyDueSettlementsNow()"
-              title="Trigger notification">
-              <mat-icon>send</mat-icon>
+              class="chip-cut-btn" 
+              (click)="dismissDueChip($event)"
+              [attr.aria-label]="translationService.getCurrentLanguage() === 'hi' ? 'हटाएं' : 'Close'"
+              title="Close">
+              <mat-icon>close</mat-icon>
             </button>
           </div>
         </div>
@@ -184,224 +186,39 @@
         </button>
       </div>
 
-      <!-- Unified Right Side Filter Drawer Panel -->
-      @if (isFilterPanelOpen()) {
-        <div class="filter-drawer-backdrop" (click)="closeFilterPanel()" id="dashboard-filter-drawer-backdrop"></div>
-      }
-      <aside class="filter-drawer-panel" [class.is-open]="isFilterPanelOpen()" (click)="$event.stopPropagation()" id="dashboard-filter-drawer-panel" aria-label="Dashboard filter drawer">
-        <!-- Drawer Header -->
-        <div class="drawer-header">
-          <div class="drawer-title-wrap">
-            <mat-icon class="drawer-header-icon">tune</mat-icon>
-            <h3 class="drawer-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'फ़िल्टर सेटिंग्स' : 'Filter Records' }}</h3>
-          </div>
-          <button type="button" class="drawer-close-circle-btn" (click)="closeFilterPanel()" aria-label="Close Filter Panel">
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
-
-        <!-- Drawer Body Cards List -->
-        <div class="drawer-content">
-              <!-- 1. Date Filter (तारीख) -->
-              <div class="drawer-filter-card">
-                <div class="drawer-card-header">
-                  <div class="drawer-card-label-col">
-                    <mat-icon class="drawer-card-icon">calendar_today</mat-icon>
-                    <span class="drawer-card-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'तारीख' : 'Date' }}</span>
-                  </div>
-                  <span class="drawer-count-badge">{{ recordsByDate().length }}</span>
-                </div>
-
-                <div class="drawer-select-wrapper">
-                  <button type="button" 
-                          class="drawer-dropdown-btn" 
-                          [class.is-open]="isDrawerDateOpen()"
-                          (click)="toggleDrawerDate()">
-                    <span class="drawer-btn-value">{{ getSelectedDateFilterLabel() }}</span>
-                    <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerDateOpen()">expand_more</mat-icon>
-                  </button>
-
-                  @if (isDrawerDateOpen()) {
-                    <div class="drawer-dropdown-menu">
-                      <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'all'" (click)="selectDateOption('all'); isDrawerDateOpen.set(false)">
-                        <span>{{ translationService.get('records.filterAll') || 'सभी' }} ({{ allCount() }})</span>
-                        @if (selectedDateFilter() === 'all') { <mat-icon class="item-check">check</mat-icon> }
-                      </button>
-                      <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'today'" (click)="selectDateOption('today'); isDrawerDateOpen.set(false)">
-                        <span>{{ translationService.get('records.filterToday') || 'आज' }} ({{ todayCount() }})</span>
-                        @if (selectedDateFilter() === 'today') { <mat-icon class="item-check">check</mat-icon> }
-                      </button>
-                      <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'yesterday'" (click)="selectDateOption('yesterday'); isDrawerDateOpen.set(false)">
-                        <span>{{ translationService.get('records.filterYesterday') || 'कल' }}</span>
-                        @if (selectedDateFilter() === 'yesterday') { <mat-icon class="item-check">check</mat-icon> }
-                      </button>
-                      <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'week'" (click)="selectDateOption('week'); isDrawerDateOpen.set(false)">
-                        <span>{{ translationService.get('records.filterWeek') || 'इस सप्ताह' }} ({{ weekCount() }})</span>
-                        @if (selectedDateFilter() === 'week') { <mat-icon class="item-check">check</mat-icon> }
-                      </button>
-                      <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'month'" (click)="selectDateOption('month'); isDrawerDateOpen.set(false)">
-                        <span>{{ translationService.get('records.filterMonth') || 'इस माह' }} ({{ monthCount() }})</span>
-                        @if (selectedDateFilter() === 'month') { <mat-icon class="item-check">check</mat-icon> }
-                      </button>
-                      <button type="button" class="drawer-menu-item" [class.is-selected]="selectedDateFilter() === 'custom'" (click)="selectDateOption('custom'); isDrawerDateOpen.set(false)">
-                        <span>{{ translationService.get('records.filterCustom') || 'कस्टम तारीख' }}</span>
-                        @if (selectedDateFilter() === 'custom') { <mat-icon class="item-check">check</mat-icon> }
-                      </button>
-                      @if (dueTodaySettlementCount() > 0) {
-                        <button type="button" class="drawer-menu-item item-due" [class.is-selected]="selectedDateFilter() === 'dueToday'" (click)="selectDateOption('dueToday'); isDrawerDateOpen.set(false)">
-                          <span>{{ translationService.get('records.filterDueToday') || 'आज देय' }} ({{ dueTodaySettlementCount() }})</span>
-                          @if (selectedDateFilter() === 'dueToday') { <mat-icon class="item-check">check</mat-icon> }
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
-
-                <!-- Custom Date Range picker inside Date Card if custom selected -->
-                @if (selectedDateFilter() === 'custom') {
-                  <div class="drawer-custom-date-box">
-                    <div class="custom-mode-switcher">
-                      <button type="button" class="custom-mode-pill" [class.active]="customMode() === 'single'" (click)="setCustomMode('single')">
-                        <mat-icon>event</mat-icon>
-                        <span>{{ translationService.get('records.customSingleDate') || 'एक तारीख' }}</span>
-                      </button>
-                      <button type="button" class="custom-mode-pill" [class.active]="customMode() === 'range'" (click)="setCustomMode('range')">
-                        <mat-icon>date_range</mat-icon>
-                        <span>{{ translationService.get('records.customDateRange') || 'तारीख रेंज' }}</span>
-                      </button>
-                    </div>
-
-                    @if (customMode() === 'single') {
-                      <div class="single-picker-row" style="margin-top: 8px;">
-                        <div class="date-input-wrap" (click)="openCustomDateDialog('single')" style="cursor: pointer;">
-                          <mat-icon class="date-wrap-icon">calendar_today</mat-icon>
-                          <input type="text" class="styled-date-input" [value]="formatDateDisplay(customSingleDate())" placeholder="DD-MM-YYYY" readonly style="cursor: pointer;" />
-                          <mat-icon class="date-wrap-icon" style="margin-left: auto;">event</mat-icon>
-                        </div>
-                      </div>
-                    }
-                    @if (customMode() === 'range') {
-                      <div class="range-picker-row" style="margin-top: 8px;">
-                        <div class="range-date-col">
-                          <label class="date-col-label">{{ translationService.get('records.fromDate') || 'प्रारंभ तारीख' }}</label>
-                          <div class="date-input-wrap" (click)="openCustomDateDialog('start')" style="cursor: pointer;">
-                            <mat-icon class="date-wrap-icon">event</mat-icon>
-                            <input type="text" class="styled-date-input" [value]="formatDateDisplay(customStartDate())" placeholder="DD-MM-YYYY" readonly style="cursor: pointer;" />
-                          </div>
-                        </div>
-                        <div class="range-date-col">
-                          <label class="date-col-label">{{ translationService.get('records.toDate') || 'अंतिम तारीख' }}</label>
-                          <div class="date-input-wrap" (click)="openCustomDateDialog('end')" style="cursor: pointer;">
-                            <mat-icon class="date-wrap-icon">event_available</mat-icon>
-                            <input type="text" class="styled-date-input" [value]="formatDateDisplay(customEndDate())" placeholder="DD-MM-YYYY" readonly style="cursor: pointer;" />
-                          </div>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-
-              <!-- 2. Season Filter (सीज़न) -->
-              <div class="drawer-filter-card">
-                <div class="drawer-card-header">
-                  <div class="drawer-card-label-col">
-                    <mat-icon class="drawer-card-icon">grass</mat-icon>
-                    <span class="drawer-card-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Season' }}</span>
-                  </div>
-                  <span class="drawer-count-badge">{{ getSeasonRecordCount(selectedSeasonFilter()) }}</span>
-                </div>
-
-                <div class="drawer-select-wrapper">
-                  <button type="button" 
-                          class="drawer-dropdown-btn" 
-                          [class.is-open]="isDrawerSeasonOpen()"
-                          (click)="toggleDrawerSeason()">
-                    <span class="drawer-btn-value">{{ getSelectedSeasonFilterLabel() }}</span>
-                    <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerSeasonOpen()">expand_more</mat-icon>
-                  </button>
-
-                  @if (isDrawerSeasonOpen()) {
-                    <div class="drawer-dropdown-menu">
-                      <button type="button" 
-                              class="drawer-menu-item" 
-                              [class.is-selected]="selectedSeasonFilter() === 'all'" 
-                              (click)="selectSeasonOption('all'); isDrawerSeasonOpen.set(false)">
-                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी सीज़न' : 'All Seasons' }}</span>
-                        @if (selectedSeasonFilter() === 'all') { <mat-icon class="item-check">check</mat-icon> }
-                      </button>
-                      @for (season of seasonService.seasons(); track (season.id || season.name)) {
-                        <button type="button" 
-                                class="drawer-menu-item" 
-                                [class.is-selected]="selectedSeasonFilter() === (season.id || '')" 
-                                (click)="selectSeasonOption(season.id || ''); isDrawerSeasonOpen.set(false)">
-                          <span>{{ season.name }} {{ season.year }}</span>
-                          @if (selectedSeasonFilter() === (season.id || '')) { <mat-icon class="item-check">check</mat-icon> }
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
-              </div>
-
-              <!-- 3. Harvester Filter (हार्वेस्टर - Default: All) -->
-              <div class="drawer-filter-card">
-                <div class="drawer-card-header">
-                  <div class="drawer-card-label-col">
-                    <mat-icon class="drawer-card-icon">agriculture</mat-icon>
-                    <span class="drawer-card-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'हार्वेस्टर' : 'Harvester' }}</span>
-                  </div>
-                  <span class="drawer-count-badge">{{ getHarvesterRecordCount(selectedHarvesterFilter()) }}</span>
-                </div>
-
-                <div class="drawer-select-wrapper">
-                  <button type="button" 
-                          class="drawer-dropdown-btn" 
-                          [class.is-open]="isDrawerHarvesterOpen()"
-                          (click)="toggleDrawerHarvester()">
-                    <span class="drawer-btn-value">{{ getSelectedHarvesterFilterLabel() }}</span>
-                    <mat-icon class="drawer-btn-chevron" [class.rotated]="isDrawerHarvesterOpen()">expand_more</mat-icon>
-                  </button>
-
-                  @if (isDrawerHarvesterOpen()) {
-                    <div class="drawer-dropdown-menu">
-                      <button type="button" 
-                              class="drawer-menu-item" 
-                              [class.is-selected]="selectedHarvesterFilter() === 'all'" 
-                              (click)="selectHarvesterOption('all')">
-                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी हार्वेस्टर (All)' : 'All Harvesters' }}</span>
-                        @if (selectedHarvesterFilter() === 'all') { <mat-icon class="item-check">check</mat-icon> }
-                      </button>
-                      @for (harv of availableHarvesters(); track harv) {
-                        <button type="button" 
-                                class="drawer-menu-item" 
-                                [class.is-selected]="selectedHarvesterFilter() === harv" 
-                                (click)="selectHarvesterOption(harv)">
-                          <span>{{ harv }}</span>
-                          @if (selectedHarvesterFilter() === harv) { <mat-icon class="item-check">check</mat-icon> }
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
-              </div>
-
-              <!-- Reset Filter Option -->
-              <div class="drawer-reset-wrapper">
-                <button type="button" class="drawer-reset-link" (click)="resetAllFilters()">
-                  <mat-icon>restart_alt</mat-icon>
-                  <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सभी फ़िल्टर रीसेट करें' : 'Reset All Filters' }}</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Drawer Footer -->
-            <div class="drawer-footer">
-              <button type="button" class="drawer-apply-pill-btn" (click)="applyFilterPanel()">
-                {{ translationService.getCurrentLanguage() === 'hi' ? 'लागू करें' : 'APPLY' }}
-              </button>
-            </div>
-          </aside>
+      <!-- Reusable Filter Drawer Component (Payment status filter is hidden on Dashboard) -->
+      <app-filter-drawer
+        [isOpen]="isFilterPanelOpen()"
+        drawerId="dashboard-filter-drawer-panel"
+        [drawerTitle]="translationService.getCurrentLanguage() === 'hi' ? 'फ़िल्टर सेटिंग्स' : 'Filter Records'"
+        [showDateFilter]="true"
+        [selectedDateFilter]="selectedDateFilter()"
+        [dateBadgeCount]="recordsByDate().length"
+        [dateCounts]="{ all: allCount(), today: todayCount(), yesterday: yesterdayCount(), week: weekCount(), month: monthCount() }"
+        [dueTodayCount]="dueTodaySettlementCount()"
+        [customMode]="customMode()"
+        [customSingleDate]="customSingleDate()"
+        [customStartDate]="customStartDate()"
+        [customEndDate]="customEndDate()"
+        [showSeasonFilter]="true"
+        [selectedSeasonFilter]="selectedSeasonFilter()"
+        [seasonBadgeCount]="getSeasonRecordCount(selectedSeasonFilter())"
+        [showHarvesterFilter]="true"
+        [selectedHarvesterFilter]="selectedHarvesterFilter()"
+        [availableHarvesters]="availableHarvesters()"
+        [harvesterBadgeCount]="getHarvesterRecordCount(selectedHarvesterFilter())"
+        [showPaymentFilter]="false"
+        (close)="closeFilterPanel()"
+        (apply)="applyFilterPanel()"
+        (resetFilters)="resetAllFilters()"
+        (dateFilterChange)="selectDateOption($event)"
+        (seasonFilterChange)="selectSeasonOption($event)"
+        (harvesterFilterChange)="selectHarvesterOption($event)"
+        (customModeChange)="setCustomMode($event)"
+        (customSingleDateChange)="customSingleDate.set($event)"
+        (customStartDateChange)="customStartDate.set($event)"
+        (customEndDateChange)="customEndDate.set($event)">
+      </app-filter-drawer>
 
       <!-- Financial Overview Banner (2 Modern Hero Cards Matching Screenshot in Same Row) -->
       <div class="financial-hero-grid" id="dashboard-financial-cards">
