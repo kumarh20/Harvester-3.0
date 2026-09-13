@@ -30,11 +30,28 @@
 
     <!-- Business / Farm Name -->
     <div class="input-group">
-      <label class="field-label">{{ translationService.get('dialogs.farmBusinessLabel') }}</label>
-      <mat-form-field appearance="outline" class="dialog-field">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+        <label class="field-label" style="margin: 0;">{{ translationService.get('dialogs.farmBusinessLabel') }}</label>
+        @if (isCollaborator) {
+          <span style="display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #D97706; background: #FEF3C7; padding: 2px 8px; border-radius: 999px;">
+            <mat-icon style="font-size: 12px; width: 12px; height: 12px;">lock</mat-icon>
+            {{ translationService.getCurrentLanguage() === 'hi' ? 'मालिक द्वारा तय' : 'Managed by Owner' }}
+          </span>
+        }
+      </div>
+      <mat-form-field appearance="outline" class="dialog-field" [class.field-locked]="isCollaborator">
         <mat-icon matPrefix class="field-icon">agriculture</mat-icon>
-        <input matInput [(ngModel)]="businessName" [placeholder]="translationService.get('dialogs.farmBusinessPlaceholder')">
+        <input 
+          matInput 
+          [(ngModel)]="businessName" 
+          [readonly]="isCollaborator" 
+          [placeholder]="translationService.get('dialogs.farmBusinessPlaceholder')">
       </mat-form-field>
+      @if (isCollaborator) {
+        <p style="margin: 4px 0 0; font-size: 11.5px; color: #64748B;">
+          {{ translationService.getCurrentLanguage() === 'hi' ? 'सहयोगी केवल अपना नाम बदल सकते हैं, कंपनी का नाम केवल मुख्य मालिक बदल सकते हैं।' : 'Collaborators can edit their name; company name is locked by the owner.' }}
+        </p>
+      }
     </div>
   </mat-dialog-content>
 

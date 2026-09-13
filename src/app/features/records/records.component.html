@@ -262,6 +262,13 @@
                                                 {{ cutting.landInAcres }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Acres' }}
                                             </div>
                                             <div class="cutting-harvester-row">
+                                                @if (cutting.createdBy?.name; as creatorName) {
+                                                    <span class="cutting-creator-chip" [title]="(translationService.getCurrentLanguage() === 'hi' ? 'दर्जकर्ता: ' : 'Added by: ') + creatorName">
+                                                        <mat-icon class="creator-mini-icon">person</mat-icon>
+                                                        <span>{{ creatorName }}</span>
+                                                    </span>
+                                                    <span class="figma-bullet-dot">•</span>
+                                                }
                                                 <span class="harvester-icon-emoji">🚜</span>
                                                 <span class="harvester-name-text">{{ cutting.harvester || 'Harvester 1' }}</span>
                                             </div>
@@ -347,11 +354,44 @@
                                                 </div>
                                             </div>
 
+                                            @if (cutting.createdBy?.name || cutting.lastModifiedBy?.name || cutting.settledBy?.name) {
+                                                <div class="cutting-audit-strip">
+                                                    @if (cutting.createdBy?.name; as cName) {
+                                                        <div class="audit-chip created" [title]="'Created by ' + cName">
+                                                            <mat-icon class="audit-chip-icon">person_pin</mat-icon>
+                                                            <span class="audit-chip-role">{{ translationService.getCurrentLanguage() === 'hi' ? 'दर्ज:' : 'Added:' }}</span>
+                                                            <span class="audit-chip-name">{{ cName }}</span>
+                                                        </div>
+                                                    }
+                                                    @if (cutting.lastModifiedBy?.name; as mName) {
+                                                        <div class="audit-chip edited" [title]="'Last edited by ' + mName">
+                                                            <mat-icon class="audit-chip-icon">edit_note</mat-icon>
+                                                            <span class="audit-chip-role">{{ translationService.getCurrentLanguage() === 'hi' ? 'बदलाव:' : 'Edited:' }}</span>
+                                                            <span class="audit-chip-name">{{ mName }}</span>
+                                                        </div>
+                                                    }
+                                                    @if (cutting.settledBy?.name; as sName) {
+                                                        <div class="audit-chip settled" [title]="'Settled by ' + sName">
+                                                            <mat-icon class="audit-chip-icon">verified</mat-icon>
+                                                            <span class="audit-chip-role">{{ translationService.getCurrentLanguage() === 'hi' ? 'चुकता:' : 'Settled:' }}</span>
+                                                            <span class="audit-chip-name">{{ sName }}</span>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+
                                             <div class="cutting-action-buttons">
-                                                <button type="button" class="c-action-btn edit-btn" (click)="editRecord(cutting)">
-                                                    <mat-icon>edit</mat-icon>
-                                                    <span>{{ translationService.get('records.editRecord') }}</span>
-                                                </button>
+                                                @if (fleetService.canEditRecord(cutting)) {
+                                                    <button type="button" class="c-action-btn edit-btn" (click)="editRecord(cutting)">
+                                                        <mat-icon>edit</mat-icon>
+                                                        <span>{{ translationService.get('records.editRecord') }}</span>
+                                                    </button>
+                                                } @else {
+                                                    <div class="c-action-readonly-badge" [title]="translationService.getCurrentLanguage() === 'hi' ? 'केवल देखने की अनुमति (दर्जकर्ता द्वारा ही संपादन संभव)' : 'View only (can only be edited by creator)'">
+                                                        <mat-icon>visibility</mat-icon>
+                                                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'केवल देखें' : 'View Only' }}</span>
+                                                    </div>
+                                                }
                                                 <button type="button" class="c-action-btn share-btn" (click)="openBillModal(cutting)">
                                                     <mat-icon>receipt_long</mat-icon>
                                                     <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'रसीद / ऑनलाइन बिल' : 'Receipt / Bill' }}</span>
@@ -543,13 +583,21 @@
                                                 <span class="figma-farmer-name" [class.line-through]="record.markedAsPaid">
                                                     {{ record.farmerName }}
                                                 </span>
-                                                @if (record.harvester) {
+                                                @if (record.createdBy?.name; as cName) {
+                                                    <span class="figma-creator-pill" [title]="(translationService.getCurrentLanguage() === 'hi' ? 'दर्जकर्ता: ' : 'Added by: ') + cName">
+                                                        <mat-icon class="creator-mini-icon">person</mat-icon>
+                                                        <span>{{ cName }}</span>
+                                                    </span>
+                                                } @else if (record.harvester) {
                                                     <span class="figma-harvester-pill">{{ record.harvester }}</span>
                                                 }
-                                                
                                             </div>
                                             <div class="figma-farmer-sub-line">
                                                  <span class="figma-acres-text">{{ record.landInAcres }} {{ translationService.getCurrentLanguage() === 'hi' ? 'एकड़' : 'Acres' }}</span>
+                                                 @if (record.harvester && record.createdBy?.name) {
+                                                     <span class="figma-bullet-dot">•</span>
+                                                     <span class="figma-machine-text">🚜 {{ record.harvester }}</span>
+                                                 }
                                              </div>
                                         </div>
 
@@ -602,6 +650,7 @@
         [customEndDate]="customEndDate()"
         [showSeasonFilter]="true"
         [selectedSeasonFilter]="selectedSeasonFilter()"
+        [availableSeasons]="availableSeasons()"
         [seasonBadgeCount]="selectedFarmer() ? farmerFilteredCuttings().length : getSeasonRecordCount(selectedSeasonFilter())"
         [showHarvesterFilter]="true"
         [selectedHarvesterFilter]="selectedHarvesterRecordFilter()"

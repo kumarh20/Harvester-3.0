@@ -39,6 +39,16 @@ service cloud.firestore {
       allow write: if isAuthenticated();
     }
 
+    // Fleet Groups
+    match /fleet_groups/{fleetId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Fleet Invites
+    match /fleet_invites/{inviteCode} {
+      allow read, write: if isAuthenticated();
+    }
+
     // Default deny for unauthenticated or other collections
     match /{document=**} {
       allow read, write: if isAuthenticated();

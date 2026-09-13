@@ -4,6 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslationService } from '../../services/translation.service';
 import { SeasonService } from '../../../core/services/season.service';
+import { Season } from '../../../core/models/season.model';
 import { HarvesterService } from '../../../core/services/harvester.service';
 import { DateTimePickerDialogComponent, DateTimePickerResult } from '../date-time-picker-dialog/date-time-picker-dialog.component';
 import { parseDate, formatDateDisplay, formatDateForInput } from '../../../core/utils/date.utils';
@@ -62,6 +63,7 @@ export class FilterDrawerComponent {
   @Input() showSeasonFilter = true;
   @Input() selectedSeasonFilter = 'all';
   @Input() seasonBadgeCount: number | null = null;
+  @Input() availableSeasons: Season[] = [];
 
   // 3. Harvester Filter Inputs
   @Input() showHarvesterFilter = true;
@@ -253,7 +255,7 @@ export class FilterDrawerComponent {
     if (this.selectedSeasonFilter === 'all' || !this.selectedSeasonFilter) {
       return isHi ? 'सभी सीज़न' : 'All Seasons';
     }
-    const season = this.seasonService.seasons().find(s => s.id === this.selectedSeasonFilter);
+    const season = this.getSeasonsList().find(s => s.id === this.selectedSeasonFilter);
     if (season) {
       return `${season.name} ${season.year}`;
     }
@@ -312,6 +314,13 @@ export class FilterDrawerComponent {
       default:
         return isHi ? 'भुगतान तिथि' : 'Payment Date';
     }
+  }
+
+  getSeasonsList(): Season[] {
+    if (this.availableSeasons && this.availableSeasons.length > 0) {
+      return this.availableSeasons;
+    }
+    return this.seasonService.seasons();
   }
 
   getHarvestersList(): string[] {

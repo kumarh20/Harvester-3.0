@@ -253,7 +253,7 @@
                 <span>{{ isHi ? 'सभी सीज़न' : 'All Seasons' }}</span>
                 @if (selectedSeasonFilter === 'all') { <mat-icon class="item-check">check</mat-icon> }
               </button>
-              @for (season of seasonService.seasons(); track (season.id || season.name)) {
+              @for (season of getSeasonsList(); track (season.id || season.name)) {
                 <button type="button" 
                         class="drawer-menu-item" 
                         [class.is-selected]="selectedSeasonFilter === (season.id || '')" 

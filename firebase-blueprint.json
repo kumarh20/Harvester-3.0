@@ -66,6 +66,30 @@
         "status": { "type": "string" },
         "uid": { "type": "string" }
       }
+    },
+    "FleetGroup": {
+      "title": "FleetGroup",
+      "description": "Multi-harvester team/fleet organization entity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "ownerUid": { "type": "string" },
+        "ownerPhone": { "type": "string" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "FleetInvite": {
+      "title": "FleetInvite",
+      "description": "Six-digit invitation code for joining a fleet",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "fleetId": { "type": "string" },
+        "fleetName": { "type": "string" },
+        "createdByName": { "type": "string" },
+        "role": { "type": "string" }
+      }
     }
   },
   "firestore": {
@@ -84,6 +108,14 @@
     "/seasons/{seasonId}": {
       "schema": "Season",
       "description": "Harvesting seasons configured by the operator"
+    },
+    "/fleet_groups/{fleetId}": {
+      "schema": "FleetGroup",
+      "description": "Fleet organization groups with members and metadata"
+    },
+    "/fleet_invites/{inviteCode}": {
+      "schema": "FleetInvite",
+      "description": "Short-lived or reusable 6-digit fleet join invitation codes"
     }
   }
 }

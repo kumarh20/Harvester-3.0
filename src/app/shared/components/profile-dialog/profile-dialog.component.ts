@@ -12,6 +12,7 @@ export interface ProfileDialogData {
   name: string;
   phone: string;
   businessName?: string;
+  isCollaborator?: boolean;
 }
 
 @Component({
@@ -34,6 +35,7 @@ export class ProfileDialogComponent {
   name = '';
   phone = '';
   businessName = '';
+  isCollaborator = false;
 
   constructor(
     public dialogRef: MatDialogRef<ProfileDialogComponent>,
@@ -43,6 +45,7 @@ export class ProfileDialogComponent {
     this.name = data.name || '';
     this.phone = data.phone || '';
     this.businessName = data.businessName || '';
+    this.isCollaborator = !!data.isCollaborator;
   }
 
   onSave(): void {

@@ -21,6 +21,27 @@ export interface Record {
   /** When true, record is soft-settled/paid */
   markedAsPaid?: boolean;
   createdAt?: any;
+  /** Fleet group ID if multi-user fleet is active */
+  fleetId?: string;
+  /** Audit info: who created this record */
+  createdBy?: {
+    uid: string;
+    name: string;
+    phone?: string;
+    role?: 'owner' | 'collaborator';
+  };
+  /** Audit info: who received full settlement */
+  settledBy?: {
+    uid: string;
+    name: string;
+    at: string;
+  };
+  /** Audit info: who last modified this record */
+  lastModifiedBy?: {
+    uid: string;
+    name: string;
+    at: string;
+  };
 }
 
 export type HarvestRecord = Record;

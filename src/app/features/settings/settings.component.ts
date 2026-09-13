@@ -28,6 +28,7 @@ import { Season, HINDI_MONTHS, getSeasonDisplayLabel } from '../../core/models/s
 import { HarvesterDialogComponent, HarvesterDialogData } from '../../shared/components/harvester-dialog/harvester-dialog.component';
 import { ProfileDialogComponent, ProfileDialogData } from '../../shared/components/profile-dialog/profile-dialog.component';
 import { AppNavigationService } from '../../core/services/app-navigation.service';
+import { FleetService } from '../../core/services/fleet.service';
 
 @Component({
   selector: 'app-settings',
@@ -49,8 +50,21 @@ import { AppNavigationService } from '../../core/services/app-navigation.service
   encapsulation: ViewEncapsulation.None
 })
 export class SettingsComponent implements OnInit, OnDestroy {
-  // Active Modal Signal ('harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about' | null)
-  activeModal = signal<'harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about' | null>(null);
+  // Active Modal Signal ('harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about' | 'team' | null)
+  activeModal = signal<'harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about' | 'team' | null>(null);
+
+  // Team / Collaboration state
+  teamPhone = signal<string>('');
+  teamAssignedMachine = signal<string>('');
+  isGeneratingInvite = signal<boolean>(false);
+  lastGeneratedInvite = signal<{ code: string; whatsappUrl: string } | null>(null);
+  joinCodeInput = signal<string>('');
+  isJoiningFleet = signal<boolean>(false);
+  teamSubTab = signal<'members' | 'invite' | 'join'>('members');
+  fleetCollaborators = computed(() => {
+    const members = this.fleetService.activeFleet()?.members || [];
+    return members.filter(m => m.role === 'collaborator');
+  });
 
   // Season management state
   isSeasonFormOpen = signal<boolean>(false);
@@ -133,7 +147,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     public notificationService: NotificationService,
     private uiPreferencesService: UiPreferencesService,
     public seasonService: SeasonService,
-    public appNavigationService: AppNavigationService
+    public appNavigationService: AppNavigationService,
+    public fleetService: FleetService
   ) {
     this.loadSettings();
 
@@ -158,7 +173,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
       await Promise.all([
         this.harvesterService.loadHarvesters(),
         this.recordsService.loadRecords(),
-        this.seasonService.loadSeasons()
+        this.seasonService.loadSeasons(),
+        this.fleetService.loadFleetContext()
       ]);
     } finally {
       this.harvestersLoading.set(false);
@@ -167,6 +183,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       if (params['open'] === 'seasons') {
         this.openModal('seasons');
+      } else if (params['open'] === 'team') {
+        this.openModal('team');
       }
     });
 
@@ -198,16 +216,27 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private async loadUserData(uid: string): Promise<void> {
     try {
       this.isSyncing.set(true);
+      await this.fleetService.loadFleetContext();
+
       const data = await this.userService.getUser(uid) as any;
       if (data) {
         if (data.name) this.userName.set(data.name);
         if (data.phone) this.userPhone.set(data.phone);
-        if (data.businessName) this.userBusinessName.set(data.businessName);
+        if (this.fleetService.isCollaborator()) {
+          const fleetCorp = this.fleetService.activeFleet()?.businessName;
+          if (fleetCorp) this.userBusinessName.set(fleetCorp);
+        } else if (data.businessName) {
+          this.userBusinessName.set(data.businessName);
+        }
       } else {
         const email = this.currentUser()?.email;
         if (email && email.includes('@harvester.app')) {
           const ph = email.split('@')[0];
           this.userPhone.set(ph);
+        }
+        if (this.fleetService.isCollaborator()) {
+          const fleetCorp = this.fleetService.activeFleet()?.businessName;
+          if (fleetCorp) this.userBusinessName.set(fleetCorp);
         }
       }
     } catch (err) {
@@ -218,10 +247,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   openEditProfileDialog(): void {
+    const isCollab = this.fleetService.isCollaborator();
+    const activeFleet = this.fleetService.activeFleet();
+    const effectiveCorp = isCollab ? (activeFleet?.businessName || this.userBusinessName()) : this.userBusinessName();
+
     const dialogData: ProfileDialogData = {
       name: this.userName() === 'Harvester Operator' ? '' : this.userName(),
       phone: this.userPhone() === '+91 XXXXXXXXXX' ? '' : this.userPhone(),
-      businessName: this.userBusinessName() === 'Agri Cutting Contractor' ? '' : this.userBusinessName()
+      businessName: effectiveCorp === 'Agri Cutting Contractor' ? '' : effectiveCorp,
+      isCollaborator: isCollab
     };
 
     const dialogRef = this.matDialog.open(ProfileDialogComponent, {
@@ -236,15 +270,25 @@ export class SettingsComponent implements OnInit, OnDestroy {
         const user = this.currentUser();
         if (user) {
           try {
-            await this.userService.updateUserProfile(user.uid, result.name, result.phone, {
-              businessName: result.businessName
-            });
-            this.userName.set(result.name);
-            this.userPhone.set(result.phone);
-            if (result.businessName) this.userBusinessName.set(result.businessName);
-            this.toastService.success('Profile updated successfully!');
+            if (isCollab) {
+              // Collaborator can ONLY edit personal name and phone, never the fleet company name
+              await this.userService.updateUserProfile(user.uid, result.name, result.phone);
+              this.userName.set(result.name);
+              this.userPhone.set(result.phone);
+            } else {
+              await this.userService.updateUserProfile(user.uid, result.name, result.phone, {
+                businessName: result.businessName
+              });
+              this.userName.set(result.name);
+              this.userPhone.set(result.phone);
+              if (result.businessName) {
+                this.userBusinessName.set(result.businessName);
+                await this.fleetService.updateFleetBusinessName(result.businessName);
+              }
+            }
+            this.toastService.success(this.languageService.getCurrentLanguage() === 'hi' ? 'प्रोफ़ाइल सफलतापूर्वक अपडेट हुई!' : 'Profile updated successfully!');
           } catch (error) {
-            this.toastService.error('Failed to update profile');
+            this.toastService.error(this.languageService.getCurrentLanguage() === 'hi' ? 'प्रोफ़ाइल अपडेट करने में विफल' : 'Failed to update profile');
           }
         }
       }
@@ -596,6 +640,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   openAddHarvesterDialog(): void {
+    if (!this.fleetService.isOwner()) {
+      const isHi = this.languageService.getCurrentLanguage() === 'hi';
+      this.toastService.error(
+        isHi ? 'हार्वेस्टर सूची केवल फ्लीट मालिक द्वारा जोड़ी या बदली जा सकती है।' : 'Harvesters can only be managed by the fleet owner.'
+      );
+      return;
+    }
     const data: HarvesterDialogData = { mode: 'add', isDefault: false };
     const dialogRef = this.matDialog.open(HarvesterDialogComponent, {
       width: '400px',
@@ -624,6 +675,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   openEditHarvesterDialog(index: number): void {
+    if (!this.fleetService.isOwner()) {
+      const isHi = this.languageService.getCurrentLanguage() === 'hi';
+      this.toastService.error(
+        isHi ? 'हार्वेस्टर केवल फ्लीट मालिक द्वारा बदले जा सकते हैं।' : 'Harvesters can only be edited by the fleet owner.'
+      );
+      return;
+    }
     const list = this.harvesterService.harvesters();
     const currentName = list[index] ?? '';
     const isDefault = this.isDefaultHarvester(currentName);
@@ -649,6 +707,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   async removeHarvester(index: number): Promise<void> {
+    if (!this.fleetService.isOwner()) {
+      const isHi = this.languageService.getCurrentLanguage() === 'hi';
+      this.toastService.error(
+        isHi ? 'हार्वेस्टर केवल फ्लीट मालिक द्वारा हटाए जा सकते हैं।' : 'Harvesters can only be deleted by the fleet owner.'
+      );
+      return;
+    }
     if (!this.canRemoveHarvester) return;
     this.dialogService.confirm(
       this.translationService.get('settings.removeHarvester') + '?',
@@ -673,17 +738,126 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   // --- Modal Management ---
-  openModal(modal: 'harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about'): void {
+  openModal(modal: 'harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about' | 'team'): void {
     this.activeModal.set(modal);
     if (modal === 'seasons') {
       this.closeSeasonForm();
       this.seasonService.loadSeasons();
+    } else if (modal === 'team') {
+      this.fleetService.loadFleetContext();
+      this.lastGeneratedInvite.set(null);
     }
   }
 
   closeModal(): void {
     this.activeModal.set(null);
     this.closeSeasonForm();
+  }
+
+  getTeamSummary(): string {
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    const fleet = this.fleetService.activeFleet();
+    const members = fleet?.members || [];
+    const collabs = members.filter(m => m.role === 'collaborator');
+    if (collabs.length === 0) {
+      return isHi ? 'कोई सहयोगी नहीं • निमंत्रण भेजें' : 'No collaborators • Invite';
+    }
+    return `${collabs.length} ${isHi ? 'ऑपरेटर जुड़े हैं' : 'Operators connected'}`;
+  }
+
+  async generateTeamInvite(): Promise<void> {
+    const phone = this.teamPhone().trim();
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    if (!phone || phone.replace(/\D/g, '').length < 10) {
+      this.toastService.error(isHi ? 'कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें' : 'Please enter a valid 10-digit mobile number');
+      return;
+    }
+
+    this.isGeneratingInvite.set(true);
+    try {
+      const res = await this.fleetService.createInvite(phone, this.teamAssignedMachine());
+      this.lastGeneratedInvite.set(res);
+      this.toastService.success(isHi ? '6-अंकों का निमंत्रण कोड तैयार है!' : 'Invite code generated!');
+    } catch (err: any) {
+      this.toastService.error(err.message || 'त्रुटि हुई');
+    } finally {
+      this.isGeneratingInvite.set(false);
+    }
+  }
+
+  openWhatsAppInvite(): void {
+    const invite = this.lastGeneratedInvite();
+    if (invite?.whatsappUrl) {
+      window.open(invite.whatsappUrl, '_blank');
+    }
+  }
+
+  async copyInviteCode(): Promise<void> {
+    const invite = this.lastGeneratedInvite();
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    if (invite?.code && navigator?.clipboard) {
+      await navigator.clipboard.writeText(invite.code);
+      this.toastService.success(isHi ? 'कोड कॉपी हो गया!' : 'Code copied!');
+    }
+  }
+
+  async joinFleetWithCode(): Promise<void> {
+    const code = this.joinCodeInput().trim();
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    if (!code || code.length !== 6) {
+      this.toastService.error(isHi ? 'कृपया 6 अंकों का मान्य कोड दर्ज करें' : 'Please enter a 6-digit code');
+      return;
+    }
+
+    this.isJoiningFleet.set(true);
+    try {
+      const res = await this.fleetService.joinFleetWithCode(code);
+      this.toastService.success(isHi ? `सफलतापूर्वक ${res.businessName} दल से जुड़े!` : `Joined ${res.businessName} fleet!`);
+      this.joinCodeInput.set('');
+      this.closeModal();
+    } catch (err: any) {
+      this.toastService.error(err.message || 'जॉइन करने में विफल');
+    } finally {
+      this.isJoiningFleet.set(false);
+    }
+  }
+
+  async removeTeamMember(uid: string): Promise<void> {
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    const confirmed = await this.dialogService.confirm(
+      isHi ? 'सहयोगी को हटाएं' : 'Remove Collaborator',
+      isHi ? 'क्या आप इस ऑपरेटर को अपने दल से हटाना चाहते हैं?' : 'Are you sure you want to remove this operator?'
+    );
+    if (!confirmed) return;
+
+    try {
+      await this.fleetService.removeMember(uid);
+      this.toastService.success(isHi ? 'सहयोगी को दल से हटा दिया गया' : 'Collaborator removed');
+    } catch (err: any) {
+      this.toastService.error(err.message || 'हटाने में विफल');
+    }
+  }
+
+  async leaveCurrentFleet(): Promise<void> {
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    const confirmed = await this.dialogService.confirm(
+      isHi ? 'टीम छोड़ें' : 'Leave Fleet',
+      isHi ? 'क्या आप इस हार्वेस्टर दल को छोड़ना चाहते हैं?' : 'Are you sure you want to leave this fleet?'
+    );
+    if (!confirmed) return;
+
+    try {
+      await this.fleetService.leaveFleet();
+      this.toastService.success(isHi ? 'आप टीम से अलग हो गए हैं' : 'You left the fleet');
+    } catch (err: any) {
+      this.toastService.error(err.message || 'त्रुटि हुई');
+    }
+  }
+
+  async setPersonalDefaultHarvester(name: string): Promise<void> {
+    await this.harvesterService.setDefaultHarvester(name);
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+    this.toastService.success(isHi ? `डिफ़ॉल्ट मशीन: ${name}` : `Default machine: ${name}`);
   }
 
   getHarvesterSummary(): string {
@@ -716,6 +890,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   openAddSeasonForm(): void {
+    if (!this.fleetService.isOwner()) {
+      const isHi = this.languageService.getCurrentLanguage() === 'hi';
+      this.toastService.error(
+        isHi ? 'सीज़न सूची केवल फ्लीट मालिक द्वारा प्रबंधित की जा सकती है।' : 'Seasons can only be managed by the fleet owner.'
+      );
+      return;
+    }
     this.editingSeasonId.set(null);
     this.seasonNameInput.set('');
     this.seasonStartMonthInput.set(10);
@@ -725,6 +906,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   openEditSeasonForm(season: Season): void {
+    if (!this.fleetService.isOwner()) {
+      const isHi = this.languageService.getCurrentLanguage() === 'hi';
+      this.toastService.error(
+        isHi ? 'सीज़न केवल फ्लीट मालिक द्वारा बदले जा सकते हैं।' : 'Seasons can only be edited by the fleet owner.'
+      );
+      return;
+    }
     this.editingSeasonId.set(season.id || null);
     this.seasonNameInput.set(season.name);
     this.seasonStartMonthInput.set(Number(season.startMonth) || 1);
@@ -734,6 +922,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   duplicateSeason(season: Season): void {
+    if (!this.fleetService.isOwner()) {
+      const isHi = this.languageService.getCurrentLanguage() === 'hi';
+      this.toastService.error(
+        isHi ? 'सीज़न केवल फ्लीट मालिक द्वारा प्रबंधित किए जा सकते हैं।' : 'Seasons can only be managed by the fleet owner.'
+      );
+      return;
+    }
     this.editingSeasonId.set(null);
     this.seasonNameInput.set(season.name);
     this.seasonStartMonthInput.set(Number(season.startMonth) || 1);
@@ -755,6 +950,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   async saveSeason(): Promise<void> {
+    if (!this.fleetService.isOwner()) {
+      const isHi = this.languageService.getCurrentLanguage() === 'hi';
+      this.toastService.error(
+        isHi ? 'सीज़न केवल फ्लीट मालिक द्वारा जोड़े या बदले जा सकते हैं।' : 'Seasons can only be edited by the fleet owner.'
+      );
+      return;
+    }
     const name = this.seasonNameInput().trim();
     const isHi = this.languageService.getCurrentLanguage() === 'hi';
     if (!name) {
@@ -796,6 +998,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   async setAsDefaultSeason(season: Season): Promise<void> {
+    if (!this.fleetService.isOwner()) {
+      const isHi = this.languageService.getCurrentLanguage() === 'hi';
+      this.toastService.error(
+        isHi ? 'डिफ़ॉल्ट सीज़न केवल फ्लीट मालिक द्वारा तय किया जा सकता है।' : 'Default season can only be set by the fleet owner.'
+      );
+      return;
+    }
     if (!season.id || season.isDefault) return;
     const isHi = this.languageService.getCurrentLanguage() === 'hi';
     try {
@@ -812,6 +1021,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   deleteSeason(season: Season): void {
+    if (!this.fleetService.isOwner()) {
+      const isHi = this.languageService.getCurrentLanguage() === 'hi';
+      this.toastService.error(
+        isHi ? 'सीज़न केवल फ्लीट मालिक द्वारा हटाए जा सकते हैं।' : 'Seasons can only be deleted by the fleet owner.'
+      );
+      return;
+    }
     if (!season.id) return;
     const isHi = this.languageService.getCurrentLanguage() === 'hi';
     const label = getSeasonDisplayLabel(season);

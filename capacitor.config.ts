@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: 'com.harvester.app',
   appName: 'Harvester',
   webDir: 'dist',
+  server: {
+    androidScheme: 'https'
+  }
 };
 
 export default config;

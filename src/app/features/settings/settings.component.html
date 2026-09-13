@@ -26,59 +26,114 @@
         </div>
     </div>
 
+    <!-- Collaborator Mode Banner -->
+    @if (fleetService.isCollaborator()) {
+        <div class="collaborator-fleet-banner" id="collaborator-status-banner">
+            <div class="banner-top-row">
+                <div class="banner-icon-squircle">
+                    <mat-icon>engineering</mat-icon>
+                </div>
+                <div class="banner-text-content">
+                    <div class="banner-badge">
+                        <mat-icon>badge</mat-icon>
+                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सहयोगी ऑपरेटर' : 'Collaborator Operator' }}</span>
+                    </div>
+                    <h3 class="banner-corp-name">{{ fleetService.activeFleet()?.businessName || userBusinessName() }}</h3>
+                    <p class="banner-owner-sub">
+                        {{ translationService.getCurrentLanguage() === 'hi' ? 'मालिक:' : 'Owner:' }} <strong>{{ fleetService.activeFleet()?.ownerName || 'Owner' }}</strong>
+                        @if (fleetService.assignedHarvester()) {
+                            • <span>मशीन: <strong>{{ fleetService.assignedHarvester() }}</strong></span>
+                        }
+                    </p>
+                </div>
+                <button 
+                    type="button" 
+                    class="banner-leave-action-btn" 
+                    (click)="leaveCurrentFleet()" 
+                    [title]="translationService.getCurrentLanguage() === 'hi' ? 'टीम छोड़ें' : 'Leave Fleet'">
+                    <mat-icon>logout</mat-icon>
+                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'छोड़ें' : 'Leave' }}</span>
+                </button>
+            </div>
+            <div class="banner-info-footer">
+                <mat-icon>shield</mat-icon>
+                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'मालिक की सेटिंग्स व दरें सुरक्षित हैं। आप केवल अपनी व्यक्तिगत प्राथमिकताएं बदल सकते हैं।' : 'Fleet settings & rates are locked by the owner.' }}</span>
+            </div>
+        </div>
+    }
+
     <!-- Clean Settings List (Matching Image Layout) -->
     <div class="settings-list-container" id="settings-menu-list">
         
-        <!-- 1. हार्वेस्टर मशीनें (Harvester Machines) -->
-        <button 
-            type="button" 
-            class="settings-nav-item" 
-            (click)="openModal('harvesters')" 
-            id="settings-nav-harvesters"
-            aria-label="Harvester Fleet Settings">
-            <div class="nav-item-icon-squircle emerald">
-                <mat-icon>agriculture</mat-icon>
-            </div>
-            <div class="nav-item-content">
-                <span class="nav-item-title">{{ translationService.get('settings.harvesterSetup') || 'हार्वेस्टर मशीनें' }}</span>
-                <span class="nav-item-subtitle">{{ getHarvesterSummary() }}</span>
-            </div>
-            <mat-icon class="nav-item-chevron">chevron_right</mat-icon>
-        </button>
+        @if (!fleetService.isCollaborator()) {
+            <!-- 1. हार्वेस्टर मशीनें (Harvester Machines) -->
+            <button 
+                type="button" 
+                class="settings-nav-item" 
+                (click)="openModal('harvesters')" 
+                id="settings-nav-harvesters"
+                aria-label="Harvester Fleet Settings">
+                <div class="nav-item-icon-squircle emerald">
+                    <mat-icon>agriculture</mat-icon>
+                </div>
+                <div class="nav-item-content">
+                    <span class="nav-item-title">{{ translationService.get('settings.harvesterSetup') || 'हार्वेस्टर मशीनें' }}</span>
+                    <span class="nav-item-subtitle">{{ getHarvesterSummary() }}</span>
+                </div>
+                <mat-icon class="nav-item-chevron">chevron_right</mat-icon>
+            </button>
 
-        <!-- 2. कटाई दर (Cutting Rates) -->
-        <button 
-            type="button" 
-            class="settings-nav-item" 
-            (click)="openModal('rates')" 
-            id="settings-nav-rates"
-            aria-label="Harvesting Rate Settings">
-            <div class="nav-item-icon-squircle amber">
-                <mat-icon>currency_rupee</mat-icon>
-            </div>
-            <div class="nav-item-content">
-                <span class="nav-item-title">{{ translationService.get('settings.defaultRate') || 'कटाई दर' }}</span>
-                <span class="nav-item-subtitle">{{ getRateSummary() }}</span>
-            </div>
-            <mat-icon class="nav-item-chevron">chevron_right</mat-icon>
-        </button>
+            <!-- 2. कटाई दर (Cutting Rates) -->
+            <button 
+                type="button" 
+                class="settings-nav-item" 
+                (click)="openModal('rates')" 
+                id="settings-nav-rates"
+                aria-label="Harvesting Rate Settings">
+                <div class="nav-item-icon-squircle amber">
+                    <mat-icon>currency_rupee</mat-icon>
+                </div>
+                <div class="nav-item-content">
+                    <span class="nav-item-title">{{ translationService.get('settings.defaultRate') || 'कटाई दर' }}</span>
+                    <span class="nav-item-subtitle">{{ getRateSummary() }}</span>
+                </div>
+                <mat-icon class="nav-item-chevron">chevron_right</mat-icon>
+            </button>
 
-        <!-- 2.5 सीज़न (Season Management) -->
-        <button 
-            type="button" 
-            class="settings-nav-item" 
-            (click)="openModal('seasons')" 
-            id="settings-nav-seasons"
-            aria-label="Season Settings">
-            <div class="nav-item-icon-squircle forest">
-                <mat-icon>calendar_month</mat-icon>
-            </div>
-            <div class="nav-item-content">
-                <span class="nav-item-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Seasons' }}</span>
-                <span class="nav-item-subtitle">{{ getSeasonSummary() }}</span>
-            </div>
-            <mat-icon class="nav-item-chevron">chevron_right</mat-icon>
-        </button>
+            <!-- 2.5 सीज़न (Season Management) -->
+            <button 
+                type="button" 
+                class="settings-nav-item" 
+                (click)="openModal('seasons')" 
+                id="settings-nav-seasons"
+                aria-label="Season Settings">
+                <div class="nav-item-icon-squircle forest">
+                    <mat-icon>calendar_month</mat-icon>
+                </div>
+                <div class="nav-item-content">
+                    <span class="nav-item-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न' : 'Seasons' }}</span>
+                    <span class="nav-item-subtitle">{{ getSeasonSummary() }}</span>
+                </div>
+                <mat-icon class="nav-item-chevron">chevron_right</mat-icon>
+            </button>
+
+            <!-- 2.8 सहयोगी व टीम (Team & Collaborators) -->
+            <button 
+                type="button" 
+                class="settings-nav-item" 
+                (click)="openModal('team')" 
+                id="settings-nav-team"
+                aria-label="Team and Collaborators">
+                <div class="nav-item-icon-squircle indigo">
+                    <mat-icon>groups</mat-icon>
+                </div>
+                <div class="nav-item-content">
+                    <span class="nav-item-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'सहयोगी व टीम' : 'Team & Collaborators' }}</span>
+                    <span class="nav-item-subtitle">{{ getTeamSummary() }}</span>
+                </div>
+                <mat-icon class="nav-item-chevron">chevron_right</mat-icon>
+            </button>
+        }
 
         <!-- 3. ज़मीन पैमाइश (Land Measurement) -->
         <button 
@@ -97,7 +152,7 @@
             <mat-icon class="nav-item-chevron">chevron_right</mat-icon>
         </button>
 
-        <!-- 4. प्राथमिकताएं (Preferences: Theme, Lang, Nav, Filter) -->
+        <!-- 4. प्राथमिकताएं (Preferences: Theme, Lang, Nav, Filter, Personal Default Harvester) -->
         <button 
             type="button" 
             class="settings-nav-item" 
@@ -114,7 +169,7 @@
             <mat-icon class="nav-item-chevron">chevron_right</mat-icon>
         </button>
 
-        <!-- 5. डेटा प्रबंधन (Data Management: Export, Import, Reset) -->
+        <!-- 5. डेटा प्रबंधन / डेटा बैकअप (Data Management: Export, Import, Reset) -->
         <button 
             type="button" 
             class="settings-nav-item" 
@@ -125,7 +180,7 @@
                 <mat-icon>dns</mat-icon>
             </div>
             <div class="nav-item-content">
-                <span class="nav-item-title">{{ translationService.get('settings.dataManagement') || 'डेटा प्रबंधन' }}</span>
+                <span class="nav-item-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'डेटा बैकअप व प्रबंधन' : 'Data Backups' }}</span>
                 <span class="nav-item-subtitle">{{ getDataSummary() }}</span>
             </div>
             <mat-icon class="nav-item-chevron">chevron_right</mat-icon>
@@ -180,13 +235,20 @@
                     </div>
 
                     <div class="modal-sheet-body">
-                        <!-- Add Machine Top Action -->
-                        <div class="modal-action-bar">
-                            <button type="button" class="modal-primary-btn" (click)="openAddHarvesterDialog()" id="settings-modal-add-harvester-btn">
-                                <mat-icon>add</mat-icon>
-                                <span>{{ translationService.get('settings.addHarvester') || 'नई मशीन जोड़ें' }}</span>
-                            </button>
-                        </div>
+                        @if (fleetService.isOwner()) {
+                            <!-- Add Machine Top Action -->
+                            <div class="modal-action-bar">
+                                <button type="button" class="modal-primary-btn" (click)="openAddHarvesterDialog()" id="settings-modal-add-harvester-btn">
+                                    <mat-icon>add</mat-icon>
+                                    <span>{{ translationService.get('settings.addHarvester') || 'नई मशीन जोड़ें' }}</span>
+                                </button>
+                            </div>
+                        } @else {
+                            <div class="collaborator-settings-notice">
+                                <mat-icon>lock</mat-icon>
+                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'फ्लीट मशीनें केवल मुख्य मालिक द्वारा जोड़ी और हटाई जा सकती हैं।' : 'Fleet machines are managed by the fleet owner.' }}</span>
+                            </div>
+                        }
 
                         <!-- Harvesters Search if > 2 -->
                         @if (harvesterService.harvesters().length > 2) {
@@ -242,27 +304,44 @@
                                             </span>
                                         </div>
                                         <div class="harvester-tile-actions">
-                                            @if (!isDefaultHarvester(name)) {
+                                            @if (fleetService.isOwner()) {
+                                                @if (!isDefaultHarvester(name)) {
+                                                    <button 
+                                                        type="button" 
+                                                        class="set-default-action-btn" 
+                                                        (click)="setDefaultHarvester(name)" 
+                                                        [title]="translationService.get('settings.setAsDefault') || 'डिफ़ॉल्ट बनाएं'">
+                                                        <mat-icon>star_border</mat-icon>
+                                                        <span>{{ translationService.get('settings.setAsDefault') || 'डिफ़ॉल्ट' }}</span>
+                                                    </button>
+                                                }
+                                                <button type="button" class="icon-action-btn edit" (click)="openEditHarvesterDialog(i)" title="Edit">
+                                                    <mat-icon>edit</mat-icon>
+                                                </button>
                                                 <button 
                                                     type="button" 
-                                                    class="set-default-action-btn" 
-                                                    (click)="setDefaultHarvester(name)" 
-                                                    [title]="translationService.get('settings.setAsDefault') || 'डिफ़ॉल्ट बनाएं'">
-                                                    <mat-icon>star_border</mat-icon>
-                                                    <span>{{ translationService.get('settings.setAsDefault') || 'डिफ़ॉल्ट' }}</span>
+                                                    class="icon-action-btn delete" 
+                                                    (click)="removeHarvester(i)" 
+                                                    [disabled]="!canRemoveHarvester" 
+                                                    title="Delete">
+                                                    <mat-icon>delete_outline</mat-icon>
                                                 </button>
+                                            } @else {
+                                                @if (!isDefaultHarvester(name)) {
+                                                    <button 
+                                                        type="button" 
+                                                        class="set-default-action-btn" 
+                                                        (click)="setPersonalDefaultHarvester(name)" 
+                                                        [title]="translationService.getCurrentLanguage() === 'hi' ? 'आज इस मशीन को चलाएं (फॉर्म के लिए)' : 'Select for today\'s cuttings'">
+                                                        <mat-icon>check_circle_outline</mat-icon>
+                                                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'चुनें' : 'Select' }}</span>
+                                                    </button>
+                                                } @else {
+                                                    <span style="font-size: 11px; font-weight: 700; color: #16A34A; background: rgba(22, 163, 74, 0.1); padding: 4px 8px; border-radius: 6px;">
+                                                        {{ translationService.getCurrentLanguage() === 'hi' ? 'सक्रिय' : 'Active' }}
+                                                    </span>
+                                                }
                                             }
-                                            <button type="button" class="icon-action-btn edit" (click)="openEditHarvesterDialog(i)" title="Edit">
-                                                <mat-icon>edit</mat-icon>
-                                            </button>
-                                            <button 
-                                                type="button" 
-                                                class="icon-action-btn delete" 
-                                                (click)="removeHarvester(i)" 
-                                                [disabled]="!canRemoveHarvester" 
-                                                title="Delete">
-                                                <mat-icon>delete_outline</mat-icon>
-                                            </button>
                                         </div>
                                     </div>
                                 }
@@ -406,11 +485,18 @@
                     <div class="modal-sheet-body">
                         <!-- Top Action Row -->
                         <div class="modal-top-actions">
-                            @if (!isSeasonFormOpen()) {
-                                <button type="button" class="modal-primary-btn full-width" (click)="openAddSeasonForm()" id="settings-add-season-btn">
-                                    <mat-icon>add_circle</mat-icon>
-                                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? '+ नया सीज़न जोड़ें' : '+ Add New Season' }}</span>
-                                </button>
+                            @if (fleetService.isOwner()) {
+                                @if (!isSeasonFormOpen()) {
+                                    <button type="button" class="modal-primary-btn full-width" (click)="openAddSeasonForm()" id="settings-add-season-btn">
+                                        <mat-icon>add_circle</mat-icon>
+                                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? '+ नया सीज़न जोड़ें' : '+ Add New Season' }}</span>
+                                    </button>
+                                }
+                            } @else {
+                                <div class="collaborator-settings-notice">
+                                    <mat-icon>lock</mat-icon>
+                                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सीज़न सूची केवल फ्लीट मालिक द्वारा प्रबंधित की जाती है।' : 'Seasons are managed by the fleet owner.' }}</span>
+                                </div>
                             }
                         </div>
 
@@ -570,42 +656,287 @@
                                             </span>
                                         </div>
                                         <div class="season-tile-actions">
-                                            @if (!season.isDefault) {
+                                            @if (fleetService.isOwner()) {
+                                                @if (!season.isDefault) {
+                                                    <button 
+                                                        type="button" 
+                                                        class="set-default-action-btn" 
+                                                        (click)="setAsDefaultSeason(season)" 
+                                                        [title]="translationService.getCurrentLanguage() === 'hi' ? 'डिफ़ॉल्ट बनाएं' : 'Set as Default'">
+                                                        <mat-icon>star_border</mat-icon>
+                                                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'डिफ़ॉल्ट' : 'Default' }}</span>
+                                                    </button>
+                                                }
                                                 <button 
                                                     type="button" 
-                                                    class="set-default-action-btn" 
-                                                    (click)="setAsDefaultSeason(season)" 
-                                                    [title]="translationService.getCurrentLanguage() === 'hi' ? 'डिफ़ॉल्ट बनाएं' : 'Set as Default'">
-                                                    <mat-icon>star_border</mat-icon>
-                                                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'डिफ़ॉल्ट' : 'Default' }}</span>
+                                                    class="icon-action-btn duplicate" 
+                                                    (click)="duplicateSeason(season)" 
+                                                    [title]="translationService.getCurrentLanguage() === 'hi' ? 'अगले वर्ष के लिए डुप्लिकेट करें' : 'Duplicate for next year'">
+                                                    <mat-icon>content_copy</mat-icon>
                                                 </button>
+                                                <button 
+                                                    type="button" 
+                                                    class="icon-action-btn edit" 
+                                                    (click)="openEditSeasonForm(season)" 
+                                                    [title]="translationService.getCurrentLanguage() === 'hi' ? 'संपादित करें' : 'Edit'">
+                                                    <mat-icon>edit</mat-icon>
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    class="icon-action-btn delete" 
+                                                    (click)="deleteSeason(season)" 
+                                                    [title]="translationService.getCurrentLanguage() === 'hi' ? 'हटाएं' : 'Delete'">
+                                                    <mat-icon>delete_outline</mat-icon>
+                                                </button>
+                                            } @else {
+                                                @if (season.isDefault) {
+                                                    <span style="font-size: 11px; font-weight: 700; color: #16A34A; background: rgba(22, 163, 74, 0.1); padding: 4px 8px; border-radius: 6px;">
+                                                        {{ translationService.getCurrentLanguage() === 'hi' ? 'सक्रिय सीज़न' : 'Active Season' }}
+                                                    </span>
+                                                }
                                             }
-                                            <button 
-                                                type="button" 
-                                                class="icon-action-btn duplicate" 
-                                                (click)="duplicateSeason(season)" 
-                                                [title]="translationService.getCurrentLanguage() === 'hi' ? 'अगले वर्ष के लिए डुप्लिकेट करें' : 'Duplicate for next year'">
-                                                <mat-icon>content_copy</mat-icon>
-                                            </button>
-                                            <button 
-                                                type="button" 
-                                                class="icon-action-btn edit" 
-                                                (click)="openEditSeasonForm(season)" 
-                                                [title]="translationService.getCurrentLanguage() === 'hi' ? 'संपादित करें' : 'Edit'">
-                                                <mat-icon>edit</mat-icon>
-                                            </button>
-                                            <button 
-                                                type="button" 
-                                                class="icon-action-btn delete" 
-                                                (click)="deleteSeason(season)" 
-                                                [title]="translationService.getCurrentLanguage() === 'hi' ? 'हटाएं' : 'Delete'">
-                                                <mat-icon>delete_outline</mat-icon>
-                                            </button>
                                         </div>
                                     </div>
                                 }
                             }
                         </div>
+                    </div>
+                }
+
+                <!-- ========================================== -->
+                <!-- MODAL 2.8: TEAM & COLLABORATORS MANAGEMENT -->
+                <!-- ========================================== -->
+                @if (activeModal() === 'team') {
+                    <div class="modal-sheet-header">
+                        <div class="modal-header-left">
+                            <div class="modal-header-squircle indigo">
+                                <mat-icon>groups</mat-icon>
+                            </div>
+                            <div>
+                                <h3 class="modal-sheet-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'सहयोगी व टीम' : 'Team & Collaborators' }}</h3>
+                                <p class="modal-sheet-subtitle">{{ translationService.getCurrentLanguage() === 'hi' ? 'हार्वेस्टर ऑपरेटर जोड़ें व मशीन असाइन करें' : 'Manage fleet operators & machines' }}</p>
+                            </div>
+                        </div>
+                        <button type="button" class="modal-close-icon-btn" (click)="closeModal()" aria-label="Close">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </div>
+
+                    <div class="modal-sheet-body">
+                        <!-- Sub-tab Bar -->
+                        <div class="team-subtabs-bar">
+                            <button 
+                                type="button" 
+                                class="team-subtab-btn" 
+                                [class.active]="teamSubTab() === 'members'"
+                                (click)="teamSubTab.set('members')">
+                                <mat-icon>people</mat-icon>
+                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सक्रिय सदस्य' : 'Active Team' }}</span>
+                            </button>
+                            <button 
+                                type="button" 
+                                class="team-subtab-btn" 
+                                [class.active]="teamSubTab() === 'invite'"
+                                (click)="teamSubTab.set('invite')">
+                                <mat-icon>person_add</mat-icon>
+                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? '+ नया जोड़ें' : '+ Invite New' }}</span>
+                            </button>
+                            <button 
+                                type="button" 
+                                class="team-subtab-btn" 
+                                [class.active]="teamSubTab() === 'join'"
+                                (click)="teamSubTab.set('join')">
+                                <mat-icon>link</mat-icon>
+                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'कोड से जुड़ें' : 'Join Team' }}</span>
+                            </button>
+                        </div>
+
+                        <!-- TAB 1: ACTIVE MEMBERS -->
+                        @if (teamSubTab() === 'members') {
+                            <div class="team-tab-content">
+                                <!-- Owner Card -->
+                                <div class="team-member-card is-owner">
+                                    <div class="member-avatar-box owner-avatar">
+                                        <mat-icon>military_tech</mat-icon>
+                                    </div>
+                                    <div class="member-info-box">
+                                        <div class="member-name-row">
+                                            <strong class="member-name">{{ userName() }}</strong>
+                                            <span class="member-role-chip owner-chip">
+                                                <mat-icon>verified_user</mat-icon>
+                                                {{ translationService.getCurrentLanguage() === 'hi' ? 'मुख्य मालिक' : 'Owner' }}
+                                            </span>
+                                        </div>
+                                        <span class="member-phone">{{ userPhone() }}</span>
+                                        <span class="member-assigned-tag">
+                                            <mat-icon>business</mat-icon>
+                                            {{ userBusinessName() }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Collaborators List -->
+                                @let collabs = fleetCollaborators();
+
+                                <div class="team-section-header">
+                                    <span class="team-section-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'जुड़े हुए ऑपरेटर' : 'Connected Operators' }} ({{ collabs.length }})</span>
+                                </div>
+
+                                @if (collabs.length === 0) {
+                                    <div class="team-empty-state">
+                                        <div class="empty-icon-circle">
+                                            <mat-icon>group_off</mat-icon>
+                                        </div>
+                                        <p class="empty-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'अभी कोई सहयोगी ऑपरेटर नहीं जुड़ा है' : 'No collaborator operators added yet' }}</p>
+                                        <p class="empty-desc">{{ translationService.getCurrentLanguage() === 'hi' ? 'अपने ऑपरेटरों को WhatsApp पर 6-अंकों का निमंत्रण कोड भेजें।' : 'Send your operators a 6-digit WhatsApp invitation code.' }}</p>
+                                        <button type="button" class="team-primary-action-btn" (click)="teamSubTab.set('invite')">
+                                            <mat-icon>person_add</mat-icon>
+                                            <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'पहला ऑपरेटर जोड़ें' : 'Invite First Operator' }}</span>
+                                        </button>
+                                    </div>
+                                } @else {
+                                    <div class="members-grid-list">
+                                        @for (m of collabs; track m.uid) {
+                                            <div class="team-member-card">
+                                                <div class="member-avatar-box">
+                                                    <mat-icon>person</mat-icon>
+                                                </div>
+                                                <div class="member-info-box">
+                                                    <div class="member-name-row">
+                                                        <strong class="member-name">{{ m.name }}</strong>
+                                                        <span class="member-role-chip collab-chip">
+                                                            {{ translationService.getCurrentLanguage() === 'hi' ? 'सहयोगी' : 'Collaborator' }}
+                                                        </span>
+                                                    </div>
+                                                    <span class="member-phone">{{ m.phone }}</span>
+                                                    @if (m.assignedHarvester) {
+                                                        <span class="member-assigned-tag">
+                                                            <mat-icon>agriculture</mat-icon>
+                                                            {{ m.assignedHarvester }}
+                                                        </span>
+                                                    }
+                                                </div>
+                                                <button 
+                                                    type="button" 
+                                                    class="member-remove-btn" 
+                                                    (click)="removeTeamMember(m.uid)"
+                                                    [title]="translationService.getCurrentLanguage() === 'hi' ? 'हटाएं' : 'Remove'">
+                                                    <mat-icon>delete_outline</mat-icon>
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <!-- TAB 2: INVITE NEW VIA WHATSAPP -->
+                        @if (teamSubTab() === 'invite') {
+                            <div class="team-tab-content">
+                                <div class="team-invite-card">
+                                    <div class="invite-info-banner">
+                                        <mat-icon>info</mat-icon>
+                                        <p>
+                                            {{ translationService.getCurrentLanguage() === 'hi' 
+                                                ? 'ऑपरेटर आपके दल से जुड़कर डेटा दर्ज कर सकेगा और सभी हार्वेस्टर के रिकॉर्ड देख सकेगा। वह आपकी मुख्य सेटिंग्स, दरें या कंपनी नाम नहीं बदल पाएगा।' 
+                                                : 'Operators can enter harvesting records and view fleet data, but cannot modify your rates or settings.' }}
+                                        </p>
+                                    </div>
+
+                                    <div class="invite-input-form">
+                                        <label class="invite-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'ऑपरेटर का 10-अंकों का मोबाइल नंबर' : 'Operator 10-digit Mobile Number' }}</label>
+                                        <div class="phone-input-wrapper">
+                                            <span class="phone-prefix">+91</span>
+                                            <input 
+                                                type="tel" 
+                                                maxlength="10" 
+                                                [(ngModel)]="teamPhone" 
+                                                placeholder="98XXXXXXXX" 
+                                                class="invite-text-input">
+                                        </div>
+
+                                        <label class="invite-label" style="margin-top: 14px;">{{ translationService.getCurrentLanguage() === 'hi' ? 'असाइन मशीन (वैकल्पिक)' : 'Assigned Machine (Optional)' }}</label>
+                                        <select [(ngModel)]="teamAssignedMachine" class="invite-select-input">
+                                            <option value="">{{ translationService.getCurrentLanguage() === 'hi' ? '-- मशीन चुनें (कोई भी) --' : '-- Select Machine --' }}</option>
+                                            @for (harvester of harvesterService.harvesters(); track harvester) {
+                                                <option [value]="harvester">{{ harvester }}</option>
+                                            }
+                                        </select>
+
+                                        <button 
+                                            type="button" 
+                                            class="team-generate-invite-btn" 
+                                            [disabled]="isGeneratingInvite() || !teamPhone()"
+                                            (click)="generateTeamInvite()">
+                                            <mat-icon>vpn_key</mat-icon>
+                                            <span>{{ isGeneratingInvite() 
+                                                ? (translationService.getCurrentLanguage() === 'hi' ? 'कोड बन रहा है...' : 'Generating Code...') 
+                                                : (translationService.getCurrentLanguage() === 'hi' ? '6-अंकों का निमंत्रण कोड बनाएं' : 'Generate 6-digit Invite Code') }}</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Generated Code Showcase -->
+                                    @if (lastGeneratedInvite()) {
+                                        <div class="generated-code-box">
+                                            <span class="code-box-header">{{ translationService.getCurrentLanguage() === 'hi' ? 'ऑपरेटर जॉइनिंग कोड' : 'Operator Joining PIN' }}</span>
+                                            <div class="code-digits-row">
+                                                <span class="code-digits-text">{{ lastGeneratedInvite()?.code }}</span>
+                                                <button type="button" class="copy-code-btn" (click)="copyInviteCode()" title="Copy Code">
+                                                    <mat-icon>content_copy</mat-icon>
+                                                </button>
+                                            </div>
+                                            <p class="code-expiry-txt">{{ translationService.getCurrentLanguage() === 'hi' ? 'यह कोड 24 घंटे के लिए मान्य है।' : 'Valid for 24 hours.' }}</p>
+
+                                            <button 
+                                                type="button" 
+                                                class="whatsapp-invite-share-btn" 
+                                                (click)="openWhatsAppInvite()">
+                                                <mat-icon>chat</mat-icon>
+                                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'WhatsApp पर निमंत्रण भेजें' : 'Share via WhatsApp' }}</span>
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- TAB 3: JOIN ANOTHER FLEET -->
+                        @if (teamSubTab() === 'join') {
+                            <div class="team-tab-content">
+                                <div class="team-invite-card">
+                                    <div class="invite-info-banner">
+                                        <mat-icon>help_outline</mat-icon>
+                                        <p>
+                                            {{ translationService.getCurrentLanguage() === 'hi' 
+                                                ? 'यदि आप किसी अन्य हार्वेस्टर मालिक के दल से सहयोगी के रूप में जुड़ना चाहते हैं, तो उनका दिया हुआ 6-अंकों का कोड यहां दर्ज करें।' 
+                                                : 'Enter the 6-digit code provided by your fleet owner to join their team.' }}
+                                        </p>
+                                    </div>
+
+                                    <div class="invite-input-form">
+                                        <label class="invite-label">{{ translationService.getCurrentLanguage() === 'hi' ? '6-अंकों का जॉइनिंग कोड' : '6-digit Joining PIN' }}</label>
+                                        <input 
+                                            type="text" 
+                                            maxlength="6" 
+                                            [(ngModel)]="joinCodeInput" 
+                                            placeholder="123456" 
+                                            class="invite-text-input pin-input">
+
+                                        <button 
+                                            type="button" 
+                                            class="team-generate-invite-btn" 
+                                            [disabled]="isJoiningFleet() || joinCodeInput().length !== 6"
+                                            (click)="joinFleetWithCode()">
+                                            <mat-icon>login</mat-icon>
+                                            <span>{{ isJoiningFleet() 
+                                                ? (translationService.getCurrentLanguage() === 'hi' ? 'जांच हो रही है...' : 'Verifying...') 
+                                                : (translationService.getCurrentLanguage() === 'hi' ? 'दल से जुड़ें' : 'Join Fleet') }}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
                     </div>
                 }
 
@@ -853,6 +1184,29 @@
                                         </button>
                                     </div>
                                 }
+                            </div>
+
+                            <!-- Card 6: My Preferred Harvester (Personal) -->
+                            <div class="pref-option-card">
+                                <div class="pref-card-header-row">
+                                    <div class="pref-icon-box teal">
+                                        <mat-icon>agriculture</mat-icon>
+                                    </div>
+                                    <div class="pref-card-text">
+                                        <span class="pref-card-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'मेरी पसंदीदा मशीन' : 'My Default Harvester' }}</span>
+                                        <span class="pref-card-desc">{{ translationService.getCurrentLanguage() === 'hi' ? 'नया रिकॉर्ड जोड़ते समय यह मशीन स्वतः चुनी जाएगी' : 'Pre-selected machine in new record form' }}</span>
+                                    </div>
+                                </div>
+                                <div class="pref-field-row" style="margin-top: 10px;">
+                                    <select 
+                                        [ngModel]="harvesterService.defaultHarvester()" 
+                                        (ngModelChange)="setPersonalDefaultHarvester($event)"
+                                        class="modal-form-select">
+                                        @for (h of harvesterService.harvesters(); track h) {
+                                            <option [value]="h">{{ h }}</option>
+                                        }
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>

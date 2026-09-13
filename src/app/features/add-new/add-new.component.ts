@@ -18,6 +18,7 @@ import { LandMeasurementComponent } from '../land-measurement/land-measurement.c
 import { DateTimePickerDialogComponent, DateTimePickerResult } from '../../shared/components/date-time-picker-dialog/date-time-picker-dialog.component';
 import { RecordsService } from '../../core/services/records.service';
 import { HarvesterService } from '../../core/services/harvester.service';
+import { FleetService } from '../../core/services/fleet.service';
 import { RemindersService } from '../../core/services/reminders.service';
 import { SeasonService } from '../../core/services/season.service';
 import { ToastService } from '../../shared/services/toast.service';
@@ -151,6 +152,7 @@ export class AddNewComponent implements OnInit {
     private recordsService: RecordsService,
     private remindersService: RemindersService,
     public harvesterService: HarvesterService,
+    public fleetService: FleetService,
     public seasonService: SeasonService,
     private toastService: ToastService,
     private route: ActivatedRoute,
@@ -629,6 +631,17 @@ export class AddNewComponent implements OnInit {
     const record = this.recordsService.getRecordById(recordId);
 
     if (record) {
+      // Permission check: Collaborator can only edit records they personally created
+      if (!this.fleetService.canEditRecord(record)) {
+        const isHi = this.translationService.getCurrentLanguage() === 'hi';
+        this.toastService.show(
+          isHi ? 'आप केवल अपने द्वारा दर्ज किए गए रिकॉर्ड को ही एडिट कर सकते हैं।' : 'You can only edit records added by yourself.',
+          'error'
+        );
+        this.router.navigate(['/records']);
+        return;
+      }
+
       console.log('📝 Loading record for edit:', record);
 
       // Set edit mode
@@ -748,6 +761,23 @@ export class AddNewComponent implements OnInit {
       return;
     }
 
+    // Permission enforcement: Collaborator can only save edits to their own records
+    if (this.isEditMode()) {
+      const recordId = this.editingRecordId();
+      if (recordId) {
+        const existing = this.recordsService.getRecordById(recordId);
+        if (existing && !this.fleetService.canEditRecord(existing)) {
+          const isHi = this.translationService.getCurrentLanguage() === 'hi';
+          this.toastService.show(
+            isHi ? 'आप केवल अपने द्वारा दर्ज किए गए रिकॉर्ड को ही संपादित कर सकते हैं।' : 'You can only edit records added by yourself.',
+            'error'
+          );
+          this.router.navigate(['/records']);
+          return;
+        }
+      }
+    }
+
     // Show loading state
     this.isSubmitting.set(true);
     this.loaderService.show();
@@ -759,8 +789,10 @@ export class AddNewComponent implements OnInit {
       // Prepare data for API and Firestore (harvester is optional)
       const harvesterValue = formValue.harvester ? String(formValue.harvester).trim() : '';
       if (harvesterValue) {
-        // Save new manually typed harvester to fleet if not already present
-        this.harvesterService.addHarvester(harvesterValue);
+        // Save new manually typed harvester to settings if not already present, only if owner
+        if (this.fleetService.isOwner()) {
+          this.harvesterService.addHarvester(harvesterValue);
+        }
       }
       const formattedRecordDate = this.formatDateToDDMMYYYY(formValue.date);
       const resolvedSeasonId = formValue.seasonId || this.seasonService.getSeasonForDate(formattedRecordDate)?.id || this.seasonService.getDefaultSeason()?.id || '';

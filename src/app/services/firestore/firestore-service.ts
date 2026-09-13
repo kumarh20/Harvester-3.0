@@ -42,15 +42,57 @@ export class FirestoreService {
     return null;
   }
 
-  // READ: only current user's records
+  /** Get active fleet ID for current user */
+  private getActiveFleetId(): string | null {
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) return null;
+    try {
+      const cachedRole = localStorage.getItem(`harvester_role_${uid}`);
+      const cachedFleet = localStorage.getItem(`harvester_fleet_${uid}`);
+      if (cachedFleet) {
+        const fleet = JSON.parse(cachedFleet);
+        return fleet?.id || (cachedRole === 'owner' ? uid : null);
+      }
+      return uid;
+    } catch {
+      return uid;
+    }
+  }
+
+  /** Get user display name for audit trails */
+  private getUserAuditName(): string {
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) return 'Operator';
+    try {
+      return localStorage.getItem(`user_name_${uid}`) || localStorage.getItem('user_name') || 'Operator';
+    } catch {
+      return 'Operator';
+    }
+  }
+
+  // READ: current user's records & entire fleet's records
   async getUserRecords(): Promise<any[]> {
     const uid = this.auth.currentUser?.uid;
     if (!uid) return [];
 
     const ref = collection(this.firestore, 'records');
     const recordsMap = new Map<string, any>();
+    const fleetId = this.getActiveFleetId();
 
-    // Primary query: where('uid', '==', uid) (Authorized by Firestore Security Rules)
+    // 1. Query by fleetId if user is in a fleet (fetches all team records)
+    if (fleetId) {
+      try {
+        const qFleet = query(ref, where('fleetId', '==', fleetId));
+        const snapFleet = await getDocs(qFleet);
+        snapFleet.docs.forEach(d => recordsMap.set(d.id, { id: d.id, ...d.data() }));
+      } catch (e: any) {
+        // Handled fallback: if security rules do not allow multi-tenant fleetId queries yet,
+        // personal records remain completely accessible via the primary UID query below.
+        console.debug('Query by fleetId fallback:', e?.message || e);
+      }
+    }
+
+    // 2. Query by uid (captures personal records & legacy records)
     try {
       const q1 = query(ref, where('uid', '==', uid));
       const snap1 = await getDocs(q1);
@@ -109,10 +151,21 @@ export class FirestoreService {
     if (!uid) throw new Error('User not logged in');
 
     const cleanPhone = this.getCleanPhone();
+    const fleetId = this.getActiveFleetId();
+    const userName = this.getUserAuditName();
+    const role = (localStorage.getItem(`harvester_role_${uid}`) as any) || 'owner';
+
     const ref = collection(this.firestore, 'records');
     return addDoc(ref, {
       ...record,
       uid,
+      ...(fleetId ? { fleetId } : {}),
+      createdBy: {
+        uid,
+        name: userName,
+        ...(cleanPhone ? { phone: cleanPhone } : {}),
+        role
+      },
       ...(cleanPhone ? { userPhone: cleanPhone } : {}),
       createdAt: new Date()
     });
@@ -120,7 +173,21 @@ export class FirestoreService {
 
   // UPDATE
   updateRecord(id: string, data: any) {
-    return updateDoc(doc(this.firestore, `records/${id}`), data);
+    const uid = this.auth.currentUser?.uid;
+    const userName = this.getUserAuditName();
+
+    const auditData = {
+      ...data,
+      ...(uid ? {
+        lastModifiedBy: {
+          uid,
+          name: userName,
+          at: new Date().toISOString()
+        }
+      } : {})
+    };
+
+    return updateDoc(doc(this.firestore, `records/${id}`), auditData);
   }
 
   // DELETE
@@ -142,6 +209,14 @@ export class FirestoreService {
     // 1. Try reading from 'reminders' collection
     try {
       const ref = collection(this.firestore, 'reminders');
+      const fleetId = this.getActiveFleetId();
+      if (fleetId) {
+        try {
+          const qFleet = query(ref, where('fleetId', '==', fleetId));
+          const snapFleet = await getDocs(qFleet);
+          snapFleet.docs.forEach(d => remindersMap.set(d.id, { id: d.id, ...d.data() }));
+        } catch {}
+      }
       const q = query(ref, where('uid', '==', uid));
       const snap = await getDocs(q);
       snap.docs.forEach(d => remindersMap.set(d.id, { id: d.id, ...d.data() }));
@@ -216,12 +291,20 @@ export class FirestoreService {
 
     const cleanPhone = this.getCleanPhone();
     const reminderId = reminder.id || ('rem_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8));
+    const fleetId = this.getActiveFleetId();
+    const userName = this.getUserAuditName();
 
     const reminderPayload = {
       ...reminder,
       id: reminderId,
       uid,
       status: reminder.status || 'pending',
+      ...(fleetId ? { fleetId } : {}),
+      createdBy: {
+        uid,
+        name: userName,
+        ...(cleanPhone ? { phone: cleanPhone } : {})
+      },
       ...(cleanPhone ? { userPhone: cleanPhone } : {}),
       createdAt: reminder.createdAt || new Date().toISOString()
     };

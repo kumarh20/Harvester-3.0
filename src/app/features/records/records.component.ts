@@ -15,6 +15,7 @@ import { RecordsService, Record, HarvestRecord } from '../../core/services/recor
 import { RemindersService, Reminder } from '../../core/services/reminders.service';
 import { HarvesterService } from '../../core/services/harvester.service';
 import { SeasonService } from '../../core/services/season.service';
+import { Season } from '../../core/models/season.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { DialogService } from '../../shared/services/dialog.service';
 import { TranslationService } from '../../shared/services/translation.service';
@@ -27,6 +28,7 @@ import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { UserService } from '../../services/user/user-service';
 import { AppNavigationService } from '../../core/services/app-navigation.service';
+import { FleetService } from '../../core/services/fleet.service';
 import { parseDate, formatDateDisplay, formatDateForInput, formatDateToDDMMYYYY, normalizeDateToKey } from '../../core/utils/date.utils';
 import { formatIndianCurrency, formatIndianNumber } from '../../core/utils/number.utils';
 import { cleanPhoneNumber, openWhatsAppChat } from '../../core/utils/string.utils';
@@ -101,16 +103,49 @@ export class RecordsComponent implements OnInit, OnDestroy {
   isDateFilterOpen = signal<boolean>(false);
   isSeasonFilterOpen = signal<boolean>(false);
 
-  // Available Harvesters list for filter options
+  // Available Harvesters list for filter options (Data-driven: records first + settings)
   availableHarvesters = computed(() => {
     const list = this.harvesterService.harvesters();
     const allRecords = this.recordsService.records();
     const fromRecords = allRecords.map(r => (r.harvester || '').trim()).filter(Boolean);
-    const set = new Set([...list, ...fromRecords]);
+    const set = new Set([...fromRecords, ...list]);
     if (set.size === 0) {
       set.add('Harvester 1');
     }
     return Array.from(set);
+  });
+
+  // Available Seasons list for filter options (Data-driven: settings + any season used in actual records)
+  availableSeasons = computed(() => {
+    const list = this.seasonService.seasons();
+    const allRecords = this.recordsService.records();
+    const seasonsMap = new Map<string, Season>();
+
+    // 1. Add seasons from settings
+    list.forEach(s => {
+      if (s.id) seasonsMap.set(s.id, s);
+    });
+
+    // 2. Add any seasons present in actual records
+    allRecords.forEach(r => {
+      if (r.seasonId && !seasonsMap.has(r.seasonId)) {
+        const found = this.seasonService.getSeasonById(r.seasonId);
+        if (found && found.id) {
+          seasonsMap.set(found.id, found);
+        } else {
+          seasonsMap.set(r.seasonId, {
+            id: r.seasonId,
+            name: (r as any).seasonName || r.seasonId,
+            startMonth: 1,
+            endMonth: 12,
+            year: new Date().getFullYear(),
+            isDefault: false
+          });
+        }
+      }
+    });
+
+    return Array.from(seasonsMap.values());
   });
 
   // Active filter count for badge indicator
@@ -145,7 +180,8 @@ export class RecordsComponent implements OnInit, OnDestroy {
     private uiPreferencesService: UiPreferencesService,
     private dialog: MatDialog,
     public userService: UserService,
-    public appNavigationService: AppNavigationService
+    public appNavigationService: AppNavigationService,
+    public fleetService: FleetService
   ) {
     effect(() => {
       const isFarmerDetailOpen = !!this.selectedFarmer();
@@ -794,6 +830,7 @@ export class RecordsComponent implements OnInit, OnDestroy {
       record.contactNumber.includes(query) ||
       record.date.includes(query) ||
       (record.harvester && record.harvester.toLowerCase().includes(query)) ||
+      (record.createdBy?.name && record.createdBy.name.toLowerCase().includes(query)) ||
       (this.getRecordSeasonName(record).toLowerCase().includes(query))
     );
   });
@@ -887,6 +924,14 @@ export class RecordsComponent implements OnInit, OnDestroy {
   }
 
   editRecord(record: Record): void {
+    if (!this.fleetService.canEditRecord(record)) {
+      const isHi = this.translationService.getCurrentLanguage() === 'hi';
+      this.toastService.show(
+        isHi ? 'आप केवल अपने द्वारा दर्ज किए गए रिकॉर्ड को ही एडिट कर सकते हैं।' : 'You can only edit records added by yourself.',
+        'error'
+      );
+      return;
+    }
     // Navigate to add-new component with record ID
     this.router.navigate(['/add-new', record.id]);
   }

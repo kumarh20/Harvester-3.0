@@ -1,4 +1,5 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { Auth } from '@angular/fire/auth';
 import { FirestoreService } from '../../services/firestore/firestore-service';
 import type { Record, HarvestRecord } from '../models/record.model';
 
@@ -16,6 +17,8 @@ export class RecordsService {
   isKisanDetailPageOpen = signal<boolean>(false);
   // Shared state for pre-filling Add Record form from Kisan Records page
   prefillFarmerData = signal<{ name: string; phone: string } | null>(null);
+
+  private auth = inject(Auth, { optional: true });
 
   constructor(private firestoreService: FirestoreService) {}
 
@@ -65,10 +68,20 @@ export class RecordsService {
     const record = this.getRecordById(id);
     if (!record) throw new Error('Record not found');
     const total = record.totalPayment ?? 0;
+    const uid = this.auth?.currentUser?.uid;
+    const currentUserName = (typeof localStorage !== 'undefined' && (
+      (uid && localStorage.getItem(`user_name_${uid}`)) || 
+      localStorage.getItem('user_name')
+    )) || 'Operator';
     await this.firestoreService.updateRecord(id, {
       paidOnSight: total,
       pendingAmount: 0,
-      markedAsPaid: true
+      markedAsPaid: true,
+      settledBy: {
+        ...(uid ? { uid } : {}),
+        name: currentUserName,
+        at: new Date().toISOString()
+      }
     });
     await this.loadRecords();
   }
