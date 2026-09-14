@@ -731,23 +731,15 @@
                                 [class.active]="teamSubTab() === 'members'"
                                 (click)="teamSubTab.set('members')">
                                 <mat-icon>people</mat-icon>
-                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सक्रिय सदस्य' : 'Active Team' }}</span>
+                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'सक्रिय सदस्य' : 'Active Team' }} ({{ fleetCollaborators().length + 1 }})</span>
                             </button>
                             <button 
                                 type="button" 
                                 class="team-subtab-btn" 
-                                [class.active]="teamSubTab() === 'invite'"
-                                (click)="teamSubTab.set('invite')">
+                                [class.active]="teamSubTab() === 'add'"
+                                (click)="teamSubTab.set('add'); resetCollaboratorOtpStep()">
                                 <mat-icon>person_add</mat-icon>
-                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? '+ नया जोड़ें' : '+ Invite New' }}</span>
-                            </button>
-                            <button 
-                                type="button" 
-                                class="team-subtab-btn" 
-                                [class.active]="teamSubTab() === 'join'"
-                                (click)="teamSubTab.set('join')">
-                                <mat-icon>link</mat-icon>
-                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'कोड से जुड़ें' : 'Join Team' }}</span>
+                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? '+ सहयोगी जोड़ें (WhatsApp OTP)' : '+ Add Collaborator' }}</span>
                             </button>
                         </div>
 
@@ -788,10 +780,10 @@
                                             <mat-icon>group_off</mat-icon>
                                         </div>
                                         <p class="empty-title">{{ translationService.getCurrentLanguage() === 'hi' ? 'अभी कोई सहयोगी ऑपरेटर नहीं जुड़ा है' : 'No collaborator operators added yet' }}</p>
-                                        <p class="empty-desc">{{ translationService.getCurrentLanguage() === 'hi' ? 'अपने ऑपरेटरों को WhatsApp पर 6-अंकों का निमंत्रण कोड भेजें।' : 'Send your operators a 6-digit WhatsApp invitation code.' }}</p>
-                                        <button type="button" class="team-primary-action-btn" (click)="teamSubTab.set('invite')">
+                                        <p class="empty-desc">{{ translationService.getCurrentLanguage() === 'hi' ? 'सहयोगी का मोबाइल नंबर डालें, उनके WhatsApp पर OTP जाएगा, OTP डालते ही वे तुरंत दल में जुड़ जाएंगे।' : 'Enter collaborator number, they get a WhatsApp OTP, enter OTP to connect.' }}</p>
+                                        <button type="button" class="team-primary-action-btn" (click)="teamSubTab.set('add'); resetCollaboratorOtpStep()">
                                             <mat-icon>person_add</mat-icon>
-                                            <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'पहला ऑपरेटर जोड़ें' : 'Invite First Operator' }}</span>
+                                            <span>{{ translationService.getCurrentLanguage() === 'hi' ? '+ सहयोगी ऑपरेटर जोड़ें' : '+ Add Collaborator' }}</span>
                                         </button>
                                     </div>
                                 } @else {
@@ -830,122 +822,133 @@
                             </div>
                         }
 
-                        <!-- TAB 2: INVITE NEW VIA WHATSAPP -->
-                        @if (teamSubTab() === 'invite') {
+                        <!-- TAB 2: ADD COLLABORATOR VIA WHATSAPP OTP -->
+                        @if (teamSubTab() === 'add') {
                             <div class="team-tab-content">
                                 <div class="team-invite-card">
                                     <div class="invite-info-banner">
                                         <mat-icon>info</mat-icon>
                                         <p>
                                             {{ translationService.getCurrentLanguage() === 'hi' 
-                                                ? 'ऑपरेटर आपके दल से जुड़कर डेटा दर्ज कर सकेगा और सभी हार्वेस्टर के रिकॉर्ड देख सकेगा। वह आपकी मुख्य सेटिंग्स, दरें या कंपनी नाम नहीं बदल पाएगा।' 
-                                                : 'Operators can enter harvesting records and view fleet data, but cannot modify your rates or settings.' }}
+                                                ? 'सहयोगी ऑपरेटर आपके हार्वेस्टर में कटाई रिकॉर्ड दर्ज कर सकेगा। वह आपकी मुख्य सेटिंग्स व दरें नहीं बदल पाएगा।' 
+                                                : 'Collaborator operators can enter harvesting records and view fleet operations, but cannot edit rates or master settings.' }}
                                         </p>
                                     </div>
 
-                                    <div class="invite-input-form">
-                                        <label class="invite-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'ऑपरेटर का 10-अंकों का मोबाइल नंबर' : 'Operator 10-digit Mobile Number' }}</label>
-                                        <div class="phone-input-wrapper">
-                                            <span class="phone-prefix">+91</span>
-                                            <input 
-                                                type="tel" 
-                                                maxlength="10" 
-                                                [ngModel]="teamPhone()" 
-                                                (ngModelChange)="onTeamPhoneInput($event)"
-                                                placeholder="98XXXXXXXX" 
-                                                class="invite-text-input">
-                                        </div>
-
-                                        <label class="invite-label" style="margin-top: 14px;">{{ translationService.getCurrentLanguage() === 'hi' ? 'असाइन मशीन (वैकल्पिक)' : 'Assigned Machine (Optional)' }}</label>
-                                        <select [ngModel]="teamAssignedMachine()" (ngModelChange)="teamAssignedMachine.set($event)" class="invite-select-input">
-                                            <option value="">{{ translationService.getCurrentLanguage() === 'hi' ? '-- मशीन चुनें (कोई भी) --' : '-- Select Machine --' }}</option>
-                                            @for (harvester of harvesterService.harvesters(); track harvester) {
-                                                <option [value]="harvester">{{ harvester }}</option>
-                                            }
-                                        </select>
-
-                                        <button 
-                                            type="button" 
-                                            class="team-generate-invite-btn" 
-                                            [disabled]="isGeneratingInvite() || !teamPhone()"
-                                            (click)="generateTeamInvite()">
-                                            <mat-icon>send</mat-icon>
-                                            <span>{{ isGeneratingInvite() 
-                                                ? (translationService.getCurrentLanguage() === 'hi' ? 'ओटीपी भेजा जा रहा है...' : 'Sending OTP...') 
-                                                : (translationService.getCurrentLanguage() === 'hi' ? 'ओटीपी व निमंत्रण भेजें (WhatsApp)' : 'Send OTP via WhatsApp') }}</span>
-                                        </button>
-                                    </div>
-
-                                    <!-- Generated Code Showcase -->
-                                    @if (lastGeneratedInvite()) {
-                                        <div class="generated-code-box">
-                                            <span class="code-box-header">{{ translationService.getCurrentLanguage() === 'hi' ? 'ऑपरेटर जॉइनिंग ओटीपी / कोड' : 'Operator Joining OTP / Code' }}</span>
-                                            <div class="code-digits-row">
-                                                <span class="code-digits-text">{{ lastGeneratedInvite()?.code }}</span>
-                                                <button type="button" class="copy-code-btn" (click)="copyInviteCode()" title="Copy Code">
-                                                    <mat-icon>content_copy</mat-icon>
-                                                </button>
+                                    <!-- STEP 1: ENTER PHONE & SEND OTP -->
+                                    @if (teamOtpStep() === 'input') {
+                                        <div class="invite-input-form">
+                                            <label class="invite-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'सहयोगी ऑपरेटर का नाम (वैकल्पिक)' : 'Collaborator Name (Optional)' }}</label>
+                                            <div class="phone-input-wrapper" style="margin-bottom: 12px;">
+                                                <input 
+                                                    type="text" 
+                                                    [ngModel]="collaboratorName()" 
+                                                    (ngModelChange)="collaboratorName.set($event)"
+                                                    [placeholder]="translationService.getCurrentLanguage() === 'hi' ? 'उदा. रमेश ऑपरेटर' : 'e.g. Ramesh Operator'" 
+                                                    class="invite-text-input">
                                             </div>
-                                            <p class="code-expiry-txt">{{ translationService.getCurrentLanguage() === 'hi' ? 'यह ओटीपी 24 घंटे के लिए मान्य है।' : 'This OTP is valid for 24 hours.' }}</p>
 
-                                            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
-                                                <button 
-                                                    type="button" 
-                                                    class="whatsapp-invite-share-btn" 
-                                                    style="flex: 1; min-width: 140px;"
-                                                    (click)="openWhatsAppInvite()">
-                                                    <mat-icon>chat</mat-icon>
-                                                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'WhatsApp पर पुनः भेजें' : 'Resend on WhatsApp' }}</span>
-                                                </button>
-                                                <button 
-                                                    type="button" 
-                                                    class="copy-code-btn" 
-                                                    style="padding: 10px 16px; border-radius: 10px; background: rgba(0,0,0,0.06); display: inline-flex; align-items: center; gap: 6px; font-weight: 500; font-size: 13px;"
-                                                    (click)="openSmsInvite()">
-                                                    <mat-icon>textsms</mat-icon>
-                                                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'SMS से भेजें' : 'Send via SMS' }}</span>
-                                                </button>
+                                            <label class="invite-label">{{ translationService.getCurrentLanguage() === 'hi' ? 'सहयोगी का 10-अंकों का मोबाइल नंबर *' : 'Collaborator 10-digit Mobile Number *' }}</label>
+                                            <div class="phone-input-wrapper">
+                                                <span class="phone-prefix">+91</span>
+                                                <input 
+                                                    type="tel" 
+                                                    maxlength="10" 
+                                                    [ngModel]="teamPhone()" 
+                                                    (ngModelChange)="onTeamPhoneInput($event)"
+                                                    placeholder="98XXXXXXXX" 
+                                                    class="invite-text-input">
                                             </div>
+
+                                            <label class="invite-label" style="margin-top: 14px;">{{ translationService.getCurrentLanguage() === 'hi' ? 'असाइन मशीन (वैकल्पिक)' : 'Assigned Harvester (Optional)' }}</label>
+                                            <select [ngModel]="teamAssignedMachine()" (ngModelChange)="teamAssignedMachine.set($event)" class="invite-select-input">
+                                                <option value="">{{ translationService.getCurrentLanguage() === 'hi' ? '-- मशीन चुनें (कोई भी) --' : '-- Select Harvester (Optional) --' }}</option>
+                                                @for (harvester of harvesterService.harvesters(); track harvester) {
+                                                    <option [value]="harvester">{{ harvester }}</option>
+                                                }
+                                            </select>
+
+                                            <button 
+                                                type="button" 
+                                                class="team-generate-invite-btn" 
+                                                [disabled]="isSendingCollaboratorOtp() || teamPhone().length !== 10"
+                                                (click)="sendCollaboratorOtp()">
+                                                <mat-icon>chat</mat-icon>
+                                                <span>{{ isSendingCollaboratorOtp() 
+                                                    ? (translationService.getCurrentLanguage() === 'hi' ? 'WhatsApp OTP भेजा जा रहा है...' : 'Sending WhatsApp OTP...') 
+                                                    : (translationService.getCurrentLanguage() === 'hi' ? 'WhatsApp OTP भेजें' : 'Send WhatsApp OTP') }}</span>
+                                            </button>
                                         </div>
                                     }
-                                </div>
-                            </div>
-                        }
 
-                        <!-- TAB 3: JOIN ANOTHER FLEET -->
-                        @if (teamSubTab() === 'join') {
-                            <div class="team-tab-content">
-                                <div class="team-invite-card">
-                                    <div class="invite-info-banner">
-                                        <mat-icon>help_outline</mat-icon>
-                                        <p>
-                                            {{ translationService.getCurrentLanguage() === 'hi' 
-                                                ? 'यदि आप किसी अन्य हार्वेस्टर मालिक के दल से सहयोगी के रूप में जुड़ना चाहते हैं, तो उनका दिया हुआ 6-अंकों का कोड यहां दर्ज करें।' 
-                                                : 'Enter the 6-digit code provided by your fleet owner to join their team.' }}
-                                        </p>
-                                    </div>
+                                    <!-- STEP 2: ENTER OTP & VERIFY -->
+                                    @if (teamOtpStep() === 'verify') {
+                                        <div class="team-verify-box">
+                                            <div class="verify-target-row">
+                                                <div class="target-phone-info">
+                                                    <mat-icon>chat</mat-icon>
+                                                    <span>WhatsApp OTP: +91 {{ teamPhone() }}</span>
+                                                </div>
+                                                <button type="button" class="change-phone-btn" (click)="resetCollaboratorOtpStep()">
+                                                    {{ translationService.getCurrentLanguage() === 'hi' ? 'नंबर बदलें' : 'Change Number' }}
+                                                </button>
+                                            </div>
 
-                                    <div class="invite-input-form">
-                                        <label class="invite-label">{{ translationService.getCurrentLanguage() === 'hi' ? '6-अंकों का जॉइनिंग कोड' : '6-digit Joining PIN' }}</label>
-                                        <input 
-                                            type="text" 
-                                            maxlength="6" 
-                                            [ngModel]="joinCodeInput()" 
-                                            (ngModelChange)="joinCodeInput.set($event)" 
-                                            placeholder="123456" 
-                                            class="invite-text-input pin-input">
+                                            <p class="verify-instruction-txt">
+                                                {{ translationService.getCurrentLanguage() === 'hi'
+                                                    ? 'सहयोगी के WhatsApp पर 6-अंकों का OTP भेजा गया है। उनसे OTP पूछकर यहाँ दर्ज करें:'
+                                                    : 'A 6-digit OTP has been sent to the collaborator on WhatsApp. Enter the OTP below:' }}
+                                            </p>
 
-                                        <button 
-                                            type="button" 
-                                            class="team-generate-invite-btn" 
-                                            [disabled]="isJoiningFleet() || joinCodeInput().length !== 6"
-                                            (click)="joinFleetWithCode()">
-                                            <mat-icon>login</mat-icon>
-                                            <span>{{ isJoiningFleet() 
-                                                ? (translationService.getCurrentLanguage() === 'hi' ? 'जांच हो रही है...' : 'Verifying...') 
-                                                : (translationService.getCurrentLanguage() === 'hi' ? 'दल से जुड़ें' : 'Join Fleet') }}</span>
-                                        </button>
-                                    </div>
+                                            <div class="otp-input-container">
+                                                <input 
+                                                    type="tel" 
+                                                    maxlength="6" 
+                                                    [ngModel]="collaboratorOtpInput()" 
+                                                    (ngModelChange)="onCollaboratorOtpInput($event)"
+                                                    placeholder="• • • • • •" 
+                                                    class="otp-input-large"
+                                                    autofocus>
+                                            </div>
+
+                                            <div class="otp-timer-action-row">
+                                                <span class="timer-countdown">
+                                                    <mat-icon>schedule</mat-icon>
+                                                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'वैधता:' : 'Expires in:' }} {{ formattedCollaboratorCountdown() }}</span>
+                                                </span>
+                                                <button 
+                                                    type="button" 
+                                                    class="resend-otp-btn" 
+                                                    [disabled]="collaboratorResendCooldown() > 0 || isSendingCollaboratorOtp()"
+                                                    (click)="resendCollaboratorOtp()">
+                                                    @if (collaboratorResendCooldown() > 0) {
+                                                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'पुनः भेजें (' + collaboratorResendCooldown() + 's)' : 'Resend (' + collaboratorResendCooldown() + 's)' }}</span>
+                                                    } @else {
+                                                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'OTP पुनः भेजें' : 'Resend OTP' }}</span>
+                                                    }
+                                                </button>
+                                            </div>
+
+                                            <button 
+                                                type="button" 
+                                                class="verify-submit-btn" 
+                                                [disabled]="isVerifyingCollaboratorOtp() || collaboratorOtpInput().length !== 6"
+                                                (click)="verifyAndAddCollaborator()">
+                                                <mat-icon>how_to_reg</mat-icon>
+                                                <span>{{ isVerifyingCollaboratorOtp() 
+                                                    ? (translationService.getCurrentLanguage() === 'hi' ? 'सत्यापित हो रहा है...' : 'Verifying...') 
+                                                    : (translationService.getCurrentLanguage() === 'hi' ? 'सत्यापित करें और टीम में जोड़ें' : 'Verify OTP & Add to Fleet') }}</span>
+                                            </button>
+
+                                            <button 
+                                                type="button" 
+                                                class="whatsapp-direct-link-btn" 
+                                                (click)="openCollaboratorWhatsAppLink()">
+                                                <mat-icon>open_in_new</mat-icon>
+                                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'WhatsApp चैट में संदेश खोलें / भेजें' : 'Open / Send in WhatsApp' }}</span>
+                                            </button>
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         }

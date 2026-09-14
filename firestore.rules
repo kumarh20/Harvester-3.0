@@ -49,6 +49,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // Fleet Members Phone Index
+    match /fleet_members_by_phone/{phone} {
+      allow read, write: if true;
+    }
+
     // Default deny for unauthenticated or other collections
     match /{document=**} {
       allow read, write: if isAuthenticated();

@@ -29,6 +29,7 @@ import { HarvesterDialogComponent, HarvesterDialogData } from '../../shared/comp
 import { ProfileDialogComponent, ProfileDialogData } from '../../shared/components/profile-dialog/profile-dialog.component';
 import { AppNavigationService } from '../../core/services/app-navigation.service';
 import { FleetService } from '../../core/services/fleet.service';
+import { OtpService } from '../../core/services/otp.service';
 
 @Component({
   selector: 'app-settings',
@@ -53,18 +54,25 @@ export class SettingsComponent implements OnInit, OnDestroy {
   // Active Modal Signal ('harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about' | 'team' | null)
   activeModal = signal<'harvesters' | 'rates' | 'seasons' | 'land' | 'preferences' | 'data' | 'about' | 'team' | null>(null);
 
-  // Team / Collaboration state
+  // Team / Collaboration state (WhatsApp OTP direct verification)
   teamPhone = signal<string>('');
   teamAssignedMachine = signal<string>('');
-  isGeneratingInvite = signal<boolean>(false);
-  lastGeneratedInvite = signal<{ code: string; whatsappUrl: string; smsUrl?: string } | null>(null);
-  joinCodeInput = signal<string>('');
-  isJoiningFleet = signal<boolean>(false);
-  teamSubTab = signal<'members' | 'invite' | 'join'>('members');
+  collaboratorName = signal<string>('');
+  teamOtpStep = signal<'input' | 'verify'>('input');
+  collaboratorOtpInput = signal<string>('');
+  generatedCollaboratorOtp = signal<string>('');
+  collaboratorWhatsAppUrl = signal<string>('');
+  isSendingCollaboratorOtp = signal<boolean>(false);
+  isVerifyingCollaboratorOtp = signal<boolean>(false);
+  collaboratorOtpCountdown = signal<number>(0);
+  collaboratorResendCooldown = signal<number>(0);
+  teamSubTab = signal<'members' | 'add'>('members');
   fleetCollaborators = computed(() => {
     const members = this.fleetService.activeFleet()?.members || [];
     return members.filter(m => m.role === 'collaborator');
   });
+  private collaboratorOtpTimer: any = null;
+  private collaboratorCooldownTimer: any = null;
 
   // Season management state
   isSeasonFormOpen = signal<boolean>(false);
@@ -148,7 +156,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private uiPreferencesService: UiPreferencesService,
     public seasonService: SeasonService,
     public appNavigationService: AppNavigationService,
-    public fleetService: FleetService
+    public fleetService: FleetService,
+    private otpService: OtpService
   ) {
     this.loadSettings();
 
@@ -165,6 +174,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     document.body.classList.remove('settings-modal-open');
+    this.clearCollaboratorTimers();
   }
 
   async ngOnInit(): Promise<void> {
@@ -745,13 +755,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.seasonService.loadSeasons();
     } else if (modal === 'team') {
       this.fleetService.loadFleetContext();
-      this.lastGeneratedInvite.set(null);
+      this.resetCollaboratorOtpStep();
     }
   }
 
   closeModal(): void {
     this.activeModal.set(null);
     this.closeSeasonForm();
+    this.clearCollaboratorTimers();
   }
 
   getTeamSummary(): string {
@@ -760,7 +771,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const members = fleet?.members || [];
     const collabs = members.filter(m => m.role === 'collaborator');
     if (collabs.length === 0) {
-      return isHi ? 'कोई सहयोगी नहीं • निमंत्रण भेजें' : 'No collaborators • Invite';
+      return isHi ? 'कोई सहयोगी नहीं • जोड़ें' : 'No collaborators • Add';
     }
     return `${collabs.length} ${isHi ? 'ऑपरेटर जुड़े हैं' : 'Operators connected'}`;
   }
@@ -770,7 +781,69 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.teamPhone.set(clean);
   }
 
-  async generateTeamInvite(): Promise<void> {
+  onCollaboratorOtpInput(val: string): void {
+    const clean = String(val || '').replace(/\D/g, '').slice(0, 6);
+    this.collaboratorOtpInput.set(clean);
+    if (clean.length === 6) {
+      this.verifyAndAddCollaborator();
+    }
+  }
+
+  resetCollaboratorOtpStep(): void {
+    this.teamOtpStep.set('input');
+    this.collaboratorOtpInput.set('');
+    this.clearCollaboratorTimers();
+  }
+
+  formattedCollaboratorCountdown(): string {
+    const totalSec = this.collaboratorOtpCountdown();
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+
+  private clearCollaboratorTimers(): void {
+    if (this.collaboratorOtpTimer) {
+      clearInterval(this.collaboratorOtpTimer);
+      this.collaboratorOtpTimer = null;
+    }
+    if (this.collaboratorCooldownTimer) {
+      clearInterval(this.collaboratorCooldownTimer);
+      this.collaboratorCooldownTimer = null;
+    }
+  }
+
+  private startCollaboratorCountdown(seconds: number = 300): void {
+    if (this.collaboratorOtpTimer) clearInterval(this.collaboratorOtpTimer);
+    this.collaboratorOtpCountdown.set(seconds);
+    this.collaboratorOtpTimer = setInterval(() => {
+      const cur = this.collaboratorOtpCountdown();
+      if (cur <= 1) {
+        this.collaboratorOtpCountdown.set(0);
+        clearInterval(this.collaboratorOtpTimer);
+        this.collaboratorOtpTimer = null;
+      } else {
+        this.collaboratorOtpCountdown.set(cur - 1);
+      }
+    }, 1000);
+  }
+
+  private startCollaboratorCooldown(seconds: number = 30): void {
+    if (this.collaboratorCooldownTimer) clearInterval(this.collaboratorCooldownTimer);
+    this.collaboratorResendCooldown.set(seconds);
+    this.collaboratorCooldownTimer = setInterval(() => {
+      const cur = this.collaboratorResendCooldown();
+      if (cur <= 1) {
+        this.collaboratorResendCooldown.set(0);
+        clearInterval(this.collaboratorCooldownTimer);
+        this.collaboratorCooldownTimer = null;
+      } else {
+        this.collaboratorResendCooldown.set(cur - 1);
+      }
+    }, 1000);
+  }
+
+  async sendCollaboratorOtp(): Promise<void> {
     const rawPhone = this.teamPhone().trim();
     const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
     const isHi = this.languageService.getCurrentLanguage() === 'hi';
@@ -780,64 +853,118 @@ export class SettingsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.isGeneratingInvite.set(true);
-    try {
-      const res = await this.fleetService.createInvite(cleanPhone, this.teamAssignedMachine());
-      this.lastGeneratedInvite.set(res);
-      this.toastService.success(isHi ? `ओटीपी कोड ${res.code} तैयार है! WhatsApp खुल रहा है...` : `OTP code ${res.code} ready! Opening WhatsApp...`);
-
-      // Automatically launch WhatsApp to send OTP
-      if (res.whatsappUrl) {
-        window.open(res.whatsappUrl, '_blank');
-      }
-    } catch (err: any) {
-      this.toastService.error(err.message || (isHi ? 'ओटीपी भेजने में विफल' : 'Failed to send OTP'));
-    } finally {
-      this.isGeneratingInvite.set(false);
-    }
-  }
-
-  openWhatsAppInvite(): void {
-    const invite = this.lastGeneratedInvite();
-    if (invite?.whatsappUrl) {
-      window.open(invite.whatsappUrl, '_blank');
-    }
-  }
-
-  openSmsInvite(): void {
-    const invite = this.lastGeneratedInvite();
-    if (invite?.smsUrl) {
-      window.open(invite.smsUrl, '_blank');
-    }
-  }
-
-  async copyInviteCode(): Promise<void> {
-    const invite = this.lastGeneratedInvite();
-    const isHi = this.languageService.getCurrentLanguage() === 'hi';
-    if (invite?.code && navigator?.clipboard) {
-      await navigator.clipboard.writeText(invite.code);
-      this.toastService.success(isHi ? 'कोड कॉपी हो गया!' : 'Code copied!');
-    }
-  }
-
-  async joinFleetWithCode(): Promise<void> {
-    const code = this.joinCodeInput().trim();
-    const isHi = this.languageService.getCurrentLanguage() === 'hi';
-    if (!code || code.length !== 6) {
-      this.toastService.error(isHi ? 'कृपया 6 अंकों का मान्य कोड दर्ज करें' : 'Please enter a 6-digit code');
+    // Check if operator is already added in the fleet
+    const existing = (this.fleetService.activeFleet()?.members || []).find(m => m.phone.endsWith(cleanPhone));
+    if (existing) {
+      this.toastService.warning(isHi ? `यह नंबर (${cleanPhone}) पहले से आपके दल में जुड़ा हुआ है!` : `This number is already in your fleet!`);
       return;
     }
 
-    this.isJoiningFleet.set(true);
+    this.isSendingCollaboratorOtp.set(true);
+
+    // 1. Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    this.generatedCollaboratorOtp.set(otp);
+
+    // 2. Prepare WhatsApp message & URL
+    const ownerName = this.userName() || 'हार्वेस्टर मालिक';
+    const biz = this.userBusinessName() || 'हार्वेस्टर दल';
+    const assigned = this.teamAssignedMachine() ? `\nआपकी असाइन मशीन: *${this.teamAssignedMachine()}*` : '';
+    const msg = `🚜 *${biz}* में आपका स्वागत है!\n\nनमस्ते! ${ownerName} ने आपको अपने हार्वेस्टर दल में सहयोगी ऑपरेटर के रूप में जोड़ने के लिए WhatsApp OTP भेजा है।${assigned}\n\n🔐 आपका 6-अंकों का WhatsApp OTP है: *${otp}*\n\nकृपया यह कोड अपने मालिक (${ownerName}) को बताएं ताकि वे आपको तुरंत टीम में जोड़ सकें।`;
+    const waUrl = `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(msg)}`;
+    this.collaboratorWhatsAppUrl.set(waUrl);
+
     try {
-      const res = await this.fleetService.joinFleetWithCode(code);
-      this.toastService.success(isHi ? `सफलतापूर्वक ${res.businessName} दल से जुड़े!` : `Joined ${res.businessName} fleet!`);
-      this.joinCodeInput.set('');
-      this.closeModal();
+      // 3. Attempt sending WhatsApp OTP via backend service
+      try {
+        await this.otpService.sendOtp(cleanPhone);
+        this.toastService.success(isHi ? `सहयोगी के WhatsApp पर OTP भेजा गया (+91 ${cleanPhone})` : `WhatsApp OTP sent to +91 ${cleanPhone}`);
+      } catch (svcErr: any) {
+        // Fallback: If serverless gateway is inactive, open WhatsApp link directly
+        console.debug('OTP service call fallback:', svcErr?.message || svcErr);
+        if (waUrl) {
+          window.open(waUrl, '_blank');
+          this.toastService.info(isHi ? 'WhatsApp खुल रहा है, संदेश भेजें।' : 'Opening WhatsApp with OTP message.');
+        }
+      }
+
+      // 4. Move to Step 2: OTP Verification
+      this.collaboratorOtpInput.set('');
+      this.teamOtpStep.set('verify');
+      this.startCollaboratorCountdown(300);
+      this.startCollaboratorCooldown(30);
     } catch (err: any) {
-      this.toastService.error(err.message || 'जॉइन करने में विफल');
+      this.toastService.error(err.message || (isHi ? 'ओटीपी भेजने में विफल' : 'Failed to send OTP'));
     } finally {
-      this.isJoiningFleet.set(false);
+      this.isSendingCollaboratorOtp.set(false);
+    }
+  }
+
+  async resendCollaboratorOtp(): Promise<void> {
+    if (this.collaboratorResendCooldown() > 0) return;
+    await this.sendCollaboratorOtp();
+  }
+
+  openCollaboratorWhatsAppLink(): void {
+    const url = this.collaboratorWhatsAppUrl();
+    if (url) {
+      window.open(url, '_blank');
+    }
+  }
+
+  async verifyAndAddCollaborator(): Promise<void> {
+    const entered = this.collaboratorOtpInput().trim();
+    const expected = this.generatedCollaboratorOtp().trim();
+    const cleanPhone = this.teamPhone().replace(/\D/g, '').slice(-10);
+    const isHi = this.languageService.getCurrentLanguage() === 'hi';
+
+    if (entered.length !== 6) {
+      this.toastService.warning(isHi ? 'कृपया 6 अंकों का पूरा OTP दर्ज करें' : 'Please enter the complete 6-digit OTP');
+      return;
+    }
+
+    this.isVerifyingCollaboratorOtp.set(true);
+    try {
+      let isVerified = entered === expected;
+
+      if (!isVerified) {
+        // Try backend verification if entered does not match local random code
+        try {
+          isVerified = await this.otpService.verifyOtpOnly(cleanPhone, entered);
+        } catch {
+          isVerified = false;
+        }
+      }
+
+      if (!isVerified) {
+        throw new Error(isHi ? 'गलत OTP कोड! कृपया सहयोगी से सही कोड पूछें।' : 'Invalid OTP code. Please verify with collaborator.');
+      }
+
+      // Successfully verified! Add directly to team
+      await this.fleetService.addCollaboratorDirectly({
+        phone: cleanPhone,
+        name: this.collaboratorName() || undefined,
+        assignedHarvester: this.teamAssignedMachine() || undefined
+      });
+
+      this.toastService.success(
+        isHi 
+          ? `सफलतापूर्वक सहयोगी (+91 ${cleanPhone}) को दल में जोड़ दिया गया!` 
+          : `Collaborator (+91 ${cleanPhone}) successfully added to fleet!`
+      );
+
+      // Reset state and show members tab
+      this.clearCollaboratorTimers();
+      this.teamOtpStep.set('input');
+      this.teamPhone.set('');
+      this.collaboratorName.set('');
+      this.collaboratorOtpInput.set('');
+      this.teamAssignedMachine.set('');
+      this.teamSubTab.set('members');
+    } catch (err: any) {
+      this.toastService.error(err?.message || (isHi ? 'सत्यापन विफल' : 'Verification failed'));
+    } finally {
+      this.isVerifyingCollaboratorOtp.set(false);
     }
   }
 

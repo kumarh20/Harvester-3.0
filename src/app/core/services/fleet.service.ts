@@ -42,7 +42,8 @@ export class FleetService {
    */
   async loadFleetContext(): Promise<void> {
     const user = this.auth.currentUser;
-    const uid = user?.uid || this.userService.userProfile()?.uid;
+    const profile = this.userService.userProfile();
+    const uid = user?.uid || profile?.uid;
     if (!uid) {
       this.currentRole.set('owner');
       return;
@@ -62,7 +63,6 @@ export class FleetService {
       } catch {}
     } else {
       // Create sensible local initial fleet so UI never sits in a null/broken state
-      const profile = this.userService.userProfile();
       const currentHarvesters = this.harvesterService.harvesters();
       const fallbackFleet: FleetGroup = {
         id: uid,
@@ -105,6 +105,31 @@ export class FleetService {
       console.debug('Firestore user document check fallback:', e?.message || e);
     }
 
+    const rawUserPhone = profile?.phone || userData?.['phone'];
+    const cleanUserPhone = rawUserPhone ? String(rawUserPhone).replace(/\D/g, '').slice(-10) : '';
+
+    // Check phone-based fleet association if joinedFleetId is not in user document
+    if (!joinedFleetId && cleanUserPhone) {
+      try {
+        const phoneMapRef = doc(this.firestore, `fleet_members_by_phone/${cleanUserPhone}`);
+        const phoneMapSnap = await getDoc(phoneMapRef);
+        if (phoneMapSnap.exists()) {
+          joinedFleetId = phoneMapSnap.data()?.['fleetId'] || null;
+        }
+      } catch (e: any) {
+        console.debug('Firestore phone map lookup fallback:', e?.message || e);
+      }
+
+      if (!joinedFleetId) {
+        try {
+          const storedMappings = JSON.parse(localStorage.getItem('harvester_phone_fleet_mappings') || '{}');
+          if (storedMappings[cleanUserPhone]?.fleetId) {
+            joinedFleetId = storedMappings[cleanUserPhone].fleetId;
+          }
+        } catch {}
+      }
+    }
+
     // 3. If joined a fleet as collaborator, load that fleet
     if (joinedFleetId) {
       try {
@@ -116,8 +141,8 @@ export class FleetService {
           this.activeFleet.set(fleetData);
           this.currentRole.set('collaborator');
 
-          const userPhone = userData?.['phone'] as string | undefined;
-          const myMembership = fleetData.members?.find(m => m.uid === uid || (userPhone && m.phone === userPhone));
+          const userPhone = cleanUserPhone;
+          const myMembership = fleetData.members?.find(m => m.uid === uid || (userPhone && m.phone.endsWith(userPhone)));
           const machine = myMembership?.assignedHarvester || '';
           this.assignedHarvester.set(machine);
 
@@ -139,7 +164,6 @@ export class FleetService {
     this.currentRole.set('owner');
     localStorage.setItem(`harvester_role_${uid}`, 'owner');
 
-    const profile = this.userService.userProfile();
     const currentHarvesters = this.harvesterService.harvesters();
 
     try {
@@ -378,6 +402,93 @@ export class FleetService {
   }
 
   /**
+   * Directly add a collaborator to the fleet after WhatsApp OTP verification by the owner.
+   */
+  async addCollaboratorDirectly(params: {
+    phone: string;
+    name?: string;
+    assignedHarvester?: string;
+  }): Promise<{ success: boolean; member: FleetMember }> {
+    const user = this.auth.currentUser;
+    const uid = user?.uid || this.userService.userProfile()?.uid || 'owner';
+    const cleanPhone = params.phone.replace(/\D/g, '').slice(-10);
+
+    if (cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+      throw new Error('कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें');
+    }
+
+    const fleet = this.activeFleet();
+    if (!fleet) {
+      throw new Error('मुख्य दल डेटा उपलब्ध नहीं है');
+    }
+
+    const memberName = params.name?.trim() || `ऑपरेटर (${cleanPhone.slice(-4)})`;
+    const newMember: FleetMember = {
+      uid: `collab_${cleanPhone}`,
+      name: memberName,
+      phone: cleanPhone,
+      role: 'collaborator',
+      assignedHarvester: params.assignedHarvester || '',
+      joinedAt: new Date().toISOString()
+    };
+
+    // Filter out if already in list
+    const currentMembers = fleet.members || [];
+    const updatedMembers = currentMembers.filter(m => m.phone !== cleanPhone);
+    updatedMembers.push(newMember);
+    fleet.members = updatedMembers;
+    fleet.updatedAt = new Date().toISOString();
+
+    // 1. Update owner's fleet in Firestore
+    try {
+      const fleetRef = doc(this.firestore, `fleet_groups/${uid}`);
+      await setDoc(fleetRef, {
+        members: updatedMembers,
+        updatedAt: fleet.updatedAt
+      }, { merge: true });
+    } catch (e: any) {
+      console.debug('Firestore fleet member write fallback:', e?.message || e);
+    }
+
+    // 2. Write to fleet_members_by_phone index
+    try {
+      const phoneMapRef = doc(this.firestore, `fleet_members_by_phone/${cleanPhone}`);
+      await setDoc(phoneMapRef, {
+        fleetId: uid,
+        ownerUid: uid,
+        ownerName: fleet.ownerName,
+        businessName: fleet.businessName,
+        phone: cleanPhone,
+        name: memberName,
+        assignedHarvester: params.assignedHarvester || '',
+        addedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch (e: any) {
+      console.debug('Firestore phone map write fallback:', e?.message || e);
+    }
+
+    // 3. Local persistence
+    this.activeFleet.set({ ...fleet });
+    localStorage.setItem(`harvester_fleet_${uid}`, JSON.stringify(fleet));
+
+    try {
+      const storedMap = JSON.parse(localStorage.getItem('harvester_phone_fleet_mappings') || '{}');
+      storedMap[cleanPhone] = {
+        fleetId: uid,
+        ownerUid: uid,
+        ownerName: fleet.ownerName,
+        businessName: fleet.businessName,
+        phone: cleanPhone,
+        name: memberName,
+        assignedHarvester: params.assignedHarvester || ''
+      };
+      localStorage.setItem('harvester_phone_fleet_mappings', JSON.stringify(storedMap));
+    } catch {}
+
+    return { success: true, member: newMember };
+  }
+
+  /**
    * Owner revokes access / removes a member from the fleet
    */
   async removeMember(memberUid: string): Promise<void> {
@@ -389,13 +500,32 @@ export class FleetService {
     const fleet = this.activeFleet();
     if (!fleet) return;
 
+    const memberToRemove = (fleet.members || []).find(m => m.uid === memberUid);
+    const memberPhone = memberToRemove?.phone;
+    const cleanPhone = memberPhone ? memberPhone.replace(/\D/g, '').slice(-10) : '';
+
     const updatedMembers = (fleet.members || []).filter(m => m.uid !== memberUid);
 
     const fleetRef = doc(this.firestore, `fleet_groups/${user.uid}`);
-    await updateDoc(fleetRef, {
-      members: updatedMembers,
-      updatedAt: new Date().toISOString()
-    });
+    try {
+      await setDoc(fleetRef, {
+        members: updatedMembers,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch {}
+
+    // Also clear member's phone mapping
+    if (cleanPhone) {
+      try {
+        const phoneMapRef = doc(this.firestore, `fleet_members_by_phone/${cleanPhone}`);
+        await deleteDoc(phoneMapRef);
+      } catch {}
+      try {
+        const storedMap = JSON.parse(localStorage.getItem('harvester_phone_fleet_mappings') || '{}');
+        delete storedMap[cleanPhone];
+        localStorage.setItem('harvester_phone_fleet_mappings', JSON.stringify(storedMap));
+      } catch {}
+    }
 
     // Also clear member's joinedFleetId in their user document
     try {

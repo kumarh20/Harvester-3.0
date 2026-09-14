@@ -114,4 +114,42 @@ export class OtpService {
       throw new Error(errMsg);
     }
   }
+
+  /**
+   * Verifies the 6-digit OTP via the backend without changing the current auth session.
+   * Used when fleet owner verifies a collaborator's WhatsApp OTP.
+   */
+  async verifyOtpOnly(phoneNumber: string, otp: string): Promise<boolean> {
+    const cleanPhone = String(phoneNumber).replace(/\D/g, '').slice(-10);
+    const cleanOtp = String(otp).trim();
+
+    if (cleanPhone.length !== 10) {
+      throw new Error('Please enter a valid 10-digit phone number.');
+    }
+
+    if (cleanOtp.length !== 6) {
+      throw new Error('Please enter the complete 6-digit OTP.');
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.http.post<VerifyOtpResponse>(`${BASE_URL}/api/verify-otp`, {
+          phoneNumber: cleanPhone,
+          otp: cleanOtp
+        })
+      );
+
+      if (!response || !response.success) {
+        throw new Error(response?.message || 'OTP verification failed.');
+      }
+
+      return true;
+    } catch (error: any) {
+      const errMsg =
+        error?.error?.message ||
+        error?.message ||
+        'OTP verification failed. Please check the code and try again.';
+      throw new Error(errMsg);
+    }
+  }
 }

@@ -3025,112 +3025,6 @@
             margin-top: 14px;
             padding: 12px;
             border-radius: 10px;
-            background: #4F46E5;
-            color: #FFFFFF;
-            font-size: 13.5px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-
-            &:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-
-            mat-icon {
-                font-size: 18px;
-                width: 18px;
-                height: 18px;
-            }
-        }
-    }
-
-    .generated-code-box {
-        background: #F8FAFC;
-        border: 1.5px dashed #6366F1;
-        border-radius: 12px;
-        padding: 14px;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-
-        [data-theme="dark"] & {
-            background: #111E18;
-            border-color: #818CF8;
-        }
-
-        .code-box-header {
-            font-size: 11px;
-            font-weight: 700;
-            color: #64748B;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-
-            [data-theme="dark"] & {
-                color: #94A3B8;
-            }
-        }
-
-        .code-digits-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-
-            .code-digits-text {
-                font-size: 26px;
-                font-weight: 900;
-                letter-spacing: 6px;
-                color: #4F46E5;
-                font-family: monospace;
-
-                [data-theme="dark"] & {
-                    color: #A5B4FC;
-                }
-            }
-
-            .copy-code-btn {
-                background: #FFFFFF;
-                border: 1px solid #CBD5E1;
-                border-radius: 8px;
-                padding: 6px;
-                cursor: pointer;
-                color: #4F46E5;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-
-                [data-theme="dark"] & {
-                    background: #192D24;
-                    border-color: #2E5042;
-                    color: #A5B4FC;
-                }
-
-                mat-icon {
-                    font-size: 18px;
-                    width: 18px;
-                    height: 18px;
-                }
-            }
-        }
-
-        .code-expiry-txt {
-            margin: 0;
-            font-size: 11px;
-            color: #94A3B8;
-        }
-
-        .whatsapp-invite-share-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            margin-top: 4px;
-            padding: 12px;
-            border-radius: 10px;
             background: #25D366;
             color: #FFFFFF;
             font-size: 13.5px;
@@ -3138,11 +3032,231 @@
             border: none;
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(37, 211, 102, 0.25);
+            transition: all 0.2s ease;
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                box-shadow: none;
+            }
 
             mat-icon {
                 font-size: 20px;
                 width: 20px;
                 height: 20px;
+            }
+        }
+    }
+
+    // WhatsApp OTP Verification Box
+    .team-verify-box {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        background: #F8FAFC;
+        border: 1.5px solid #CBD5E1;
+        border-radius: 12px;
+        padding: 16px;
+
+        [data-theme="dark"] & {
+            background: #111E18;
+            border-color: #243E33;
+        }
+
+        .verify-target-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #EFF6FF;
+            border-radius: 8px;
+            border: 1px solid #BFDBFE;
+
+            [data-theme="dark"] & {
+                background: rgba(59, 130, 246, 0.15);
+                border-color: rgba(59, 130, 246, 0.3);
+            }
+
+            .target-phone-info {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 13px;
+                font-weight: 700;
+                color: #1E40AF;
+
+                [data-theme="dark"] & {
+                    color: #93C5FD;
+                }
+
+                mat-icon {
+                    font-size: 18px;
+                    width: 18px;
+                    height: 18px;
+                    color: #25D366;
+                }
+            }
+
+            .change-phone-btn {
+                background: transparent;
+                border: none;
+                color: #2563EB;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                text-decoration: underline;
+
+                [data-theme="dark"] & {
+                    color: #60A5FA;
+                }
+            }
+        }
+
+        .verify-instruction-txt {
+            margin: 0;
+            font-size: 12.5px;
+            line-height: 1.4;
+            color: #475569;
+
+            [data-theme="dark"] & {
+                color: #94A3B8;
+            }
+        }
+
+        .otp-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+
+            .otp-input-large {
+                width: 100%;
+                letter-spacing: 12px;
+                text-align: center;
+                font-size: 26px;
+                font-weight: 900;
+                font-family: monospace;
+                border: 2px solid #6366F1;
+                border-radius: 12px;
+                padding: 12px 14px;
+                background: #FFFFFF;
+                color: #1E1B4B;
+                outline: none;
+                box-shadow: 0 2px 8px rgba(99, 102, 241, 0.12);
+
+                [data-theme="dark"] & {
+                    background: #0B1612;
+                    border-color: #818CF8;
+                    color: #EEF2FF;
+                }
+
+                &::placeholder {
+                    letter-spacing: 6px;
+                    font-size: 20px;
+                    color: #94A3B8;
+                    opacity: 0.5;
+                }
+            }
+        }
+
+        .otp-timer-action-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+
+            .timer-countdown {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                color: #64748B;
+                font-weight: 600;
+
+                [data-theme="dark"] & {
+                    color: #94A3B8;
+                }
+
+                mat-icon {
+                    font-size: 16px;
+                    width: 16px;
+                    height: 16px;
+                }
+            }
+
+            .resend-otp-btn {
+                background: transparent;
+                border: none;
+                color: #4F46E5;
+                font-size: 12px;
+                font-weight: 700;
+                cursor: pointer;
+
+                [data-theme="dark"] & {
+                    color: #818CF8;
+                }
+
+                &:disabled {
+                    color: #94A3B8;
+                    cursor: not-allowed;
+                }
+            }
+        }
+
+        .verify-submit-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 13px;
+            border-radius: 10px;
+            background: #059669;
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+            transition: all 0.2s ease;
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                box-shadow: none;
+            }
+
+            mat-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        .whatsapp-direct-link-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            background: #DCFCE7;
+            border: 1px solid #86EFAC;
+            color: #166534;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+
+            [data-theme="dark"] & {
+                background: rgba(34, 197, 94, 0.15);
+                border-color: rgba(34, 197, 94, 0.3);
+                color: #86EFAC;
+            }
+
+            mat-icon {
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+                color: #16A34A;
             }
         }
     }
