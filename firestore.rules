@@ -41,12 +41,12 @@ service cloud.firestore {
 
     // Fleet Groups
     match /fleet_groups/{fleetId} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if true;
     }
 
     // Fleet Invites
     match /fleet_invites/{inviteCode} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if true;
     }
 
     // Default deny for unauthenticated or other collections

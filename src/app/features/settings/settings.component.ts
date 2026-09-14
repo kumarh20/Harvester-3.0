@@ -57,7 +57,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   teamPhone = signal<string>('');
   teamAssignedMachine = signal<string>('');
   isGeneratingInvite = signal<boolean>(false);
-  lastGeneratedInvite = signal<{ code: string; whatsappUrl: string } | null>(null);
+  lastGeneratedInvite = signal<{ code: string; whatsappUrl: string; smsUrl?: string } | null>(null);
   joinCodeInput = signal<string>('');
   isJoiningFleet = signal<boolean>(false);
   teamSubTab = signal<'members' | 'invite' | 'join'>('members');
@@ -765,21 +765,33 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return `${collabs.length} ${isHi ? 'ऑपरेटर जुड़े हैं' : 'Operators connected'}`;
   }
 
+  onTeamPhoneInput(val: string): void {
+    const clean = String(val || '').replace(/\D/g, '').slice(0, 10);
+    this.teamPhone.set(clean);
+  }
+
   async generateTeamInvite(): Promise<void> {
-    const phone = this.teamPhone().trim();
+    const rawPhone = this.teamPhone().trim();
+    const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
     const isHi = this.languageService.getCurrentLanguage() === 'hi';
-    if (!phone || phone.replace(/\D/g, '').length < 10) {
-      this.toastService.error(isHi ? 'कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें' : 'Please enter a valid 10-digit mobile number');
+
+    if (cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone) || /^(\d)\1{9}$/.test(cleanPhone) || cleanPhone === '1234567890' || cleanPhone === '9876543210') {
+      this.toastService.error(isHi ? 'कृपया 10 अंकों का मान्य भारतीय मोबाइल नंबर दर्ज करें (6-9 से शुरू)' : 'Please enter a valid 10-digit mobile number starting with 6-9');
       return;
     }
 
     this.isGeneratingInvite.set(true);
     try {
-      const res = await this.fleetService.createInvite(phone, this.teamAssignedMachine());
+      const res = await this.fleetService.createInvite(cleanPhone, this.teamAssignedMachine());
       this.lastGeneratedInvite.set(res);
-      this.toastService.success(isHi ? '6-अंकों का निमंत्रण कोड तैयार है!' : 'Invite code generated!');
+      this.toastService.success(isHi ? `ओटीपी कोड ${res.code} तैयार है! WhatsApp खुल रहा है...` : `OTP code ${res.code} ready! Opening WhatsApp...`);
+
+      // Automatically launch WhatsApp to send OTP
+      if (res.whatsappUrl) {
+        window.open(res.whatsappUrl, '_blank');
+      }
     } catch (err: any) {
-      this.toastService.error(err.message || 'त्रुटि हुई');
+      this.toastService.error(err.message || (isHi ? 'ओटीपी भेजने में विफल' : 'Failed to send OTP'));
     } finally {
       this.isGeneratingInvite.set(false);
     }
@@ -789,6 +801,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const invite = this.lastGeneratedInvite();
     if (invite?.whatsappUrl) {
       window.open(invite.whatsappUrl, '_blank');
+    }
+  }
+
+  openSmsInvite(): void {
+    const invite = this.lastGeneratedInvite();
+    if (invite?.smsUrl) {
+      window.open(invite.smsUrl, '_blank');
     }
   }
 

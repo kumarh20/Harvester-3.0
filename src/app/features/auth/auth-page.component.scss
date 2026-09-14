@@ -721,6 +721,75 @@ form {
             display: none;
         }
     }
+
+    &.field-has-error {
+        margin-bottom: 6px;
+
+        ::ng-deep {
+            .mdc-notched-outline__leading,
+            .mdc-notched-outline__notch,
+            .mdc-notched-outline__trailing {
+                border-color: #ef4444 !important;
+                border-width: 1.5px !important;
+            }
+            .mdc-floating-label {
+                color: #dc2626 !important;
+            }
+            .mat-mdc-form-field-icon-prefix mat-icon {
+                color: #dc2626 !important;
+            }
+        }
+    }
+}
+
+// Inline input feedback (Error / Valid messages)
+.auth-input-feedback {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    margin-top: -8px;
+    margin-bottom: 12px;
+    padding: 0 4px;
+    line-height: 1.35;
+    animation: fadeInSlide 0.2s ease-out;
+
+    mat-icon {
+        font-size: 15px;
+        width: 15px;
+        height: 15px;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &.error {
+        color: #dc2626;
+        font-weight: 500;
+        mat-icon {
+            color: #dc2626 !important;
+        }
+    }
+
+    &.valid {
+        color: #16a34a;
+        font-weight: 500;
+        mat-icon {
+            color: #16a34a !important;
+        }
+    }
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .form-group {

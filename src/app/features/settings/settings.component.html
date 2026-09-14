@@ -850,13 +850,14 @@
                                             <input 
                                                 type="tel" 
                                                 maxlength="10" 
-                                                [(ngModel)]="teamPhone" 
+                                                [ngModel]="teamPhone()" 
+                                                (ngModelChange)="onTeamPhoneInput($event)"
                                                 placeholder="98XXXXXXXX" 
                                                 class="invite-text-input">
                                         </div>
 
                                         <label class="invite-label" style="margin-top: 14px;">{{ translationService.getCurrentLanguage() === 'hi' ? 'असाइन मशीन (वैकल्पिक)' : 'Assigned Machine (Optional)' }}</label>
-                                        <select [(ngModel)]="teamAssignedMachine" class="invite-select-input">
+                                        <select [ngModel]="teamAssignedMachine()" (ngModelChange)="teamAssignedMachine.set($event)" class="invite-select-input">
                                             <option value="">{{ translationService.getCurrentLanguage() === 'hi' ? '-- मशीन चुनें (कोई भी) --' : '-- Select Machine --' }}</option>
                                             @for (harvester of harvesterService.harvesters(); track harvester) {
                                                 <option [value]="harvester">{{ harvester }}</option>
@@ -868,32 +869,43 @@
                                             class="team-generate-invite-btn" 
                                             [disabled]="isGeneratingInvite() || !teamPhone()"
                                             (click)="generateTeamInvite()">
-                                            <mat-icon>vpn_key</mat-icon>
+                                            <mat-icon>send</mat-icon>
                                             <span>{{ isGeneratingInvite() 
-                                                ? (translationService.getCurrentLanguage() === 'hi' ? 'कोड बन रहा है...' : 'Generating Code...') 
-                                                : (translationService.getCurrentLanguage() === 'hi' ? '6-अंकों का निमंत्रण कोड बनाएं' : 'Generate 6-digit Invite Code') }}</span>
+                                                ? (translationService.getCurrentLanguage() === 'hi' ? 'ओटीपी भेजा जा रहा है...' : 'Sending OTP...') 
+                                                : (translationService.getCurrentLanguage() === 'hi' ? 'ओटीपी व निमंत्रण भेजें (WhatsApp)' : 'Send OTP via WhatsApp') }}</span>
                                         </button>
                                     </div>
 
                                     <!-- Generated Code Showcase -->
                                     @if (lastGeneratedInvite()) {
                                         <div class="generated-code-box">
-                                            <span class="code-box-header">{{ translationService.getCurrentLanguage() === 'hi' ? 'ऑपरेटर जॉइनिंग कोड' : 'Operator Joining PIN' }}</span>
+                                            <span class="code-box-header">{{ translationService.getCurrentLanguage() === 'hi' ? 'ऑपरेटर जॉइनिंग ओटीपी / कोड' : 'Operator Joining OTP / Code' }}</span>
                                             <div class="code-digits-row">
                                                 <span class="code-digits-text">{{ lastGeneratedInvite()?.code }}</span>
                                                 <button type="button" class="copy-code-btn" (click)="copyInviteCode()" title="Copy Code">
                                                     <mat-icon>content_copy</mat-icon>
                                                 </button>
                                             </div>
-                                            <p class="code-expiry-txt">{{ translationService.getCurrentLanguage() === 'hi' ? 'यह कोड 24 घंटे के लिए मान्य है।' : 'Valid for 24 hours.' }}</p>
+                                            <p class="code-expiry-txt">{{ translationService.getCurrentLanguage() === 'hi' ? 'यह ओटीपी 24 घंटे के लिए मान्य है।' : 'This OTP is valid for 24 hours.' }}</p>
 
-                                            <button 
-                                                type="button" 
-                                                class="whatsapp-invite-share-btn" 
-                                                (click)="openWhatsAppInvite()">
-                                                <mat-icon>chat</mat-icon>
-                                                <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'WhatsApp पर निमंत्रण भेजें' : 'Share via WhatsApp' }}</span>
-                                            </button>
+                                            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+                                                <button 
+                                                    type="button" 
+                                                    class="whatsapp-invite-share-btn" 
+                                                    style="flex: 1; min-width: 140px;"
+                                                    (click)="openWhatsAppInvite()">
+                                                    <mat-icon>chat</mat-icon>
+                                                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'WhatsApp पर पुनः भेजें' : 'Resend on WhatsApp' }}</span>
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    class="copy-code-btn" 
+                                                    style="padding: 10px 16px; border-radius: 10px; background: rgba(0,0,0,0.06); display: inline-flex; align-items: center; gap: 6px; font-weight: 500; font-size: 13px;"
+                                                    (click)="openSmsInvite()">
+                                                    <mat-icon>textsms</mat-icon>
+                                                    <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'SMS से भेजें' : 'Send via SMS' }}</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     }
                                 </div>
@@ -918,7 +930,8 @@
                                         <input 
                                             type="text" 
                                             maxlength="6" 
-                                            [(ngModel)]="joinCodeInput" 
+                                            [ngModel]="joinCodeInput()" 
+                                            (ngModelChange)="joinCodeInput.set($event)" 
                                             placeholder="123456" 
                                             class="invite-text-input pin-input">
 

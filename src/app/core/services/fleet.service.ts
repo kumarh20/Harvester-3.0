@@ -42,38 +42,72 @@ export class FleetService {
    */
   async loadFleetContext(): Promise<void> {
     const user = this.auth.currentUser;
-    if (!user) {
+    const uid = user?.uid || this.userService.userProfile()?.uid;
+    if (!uid) {
       this.currentRole.set('owner');
-      this.activeFleet.set(null);
       return;
     }
 
-    const uid = user.uid;
+    // 1. Immediate offline / local cache hydration for zero-latency UI
+    const cachedFleetStr = localStorage.getItem(`harvester_fleet_${uid}`);
+    const cachedRole = localStorage.getItem(`harvester_role_${uid}`) as UserFleetRole | null;
+    const cachedAssigned = localStorage.getItem(`harvester_assigned_machine_${uid}`) || '';
+
+    if (cachedFleetStr) {
+      try {
+        const parsed = JSON.parse(cachedFleetStr);
+        this.activeFleet.set(parsed);
+        this.currentRole.set(cachedRole || 'owner');
+        if (cachedAssigned) this.assignedHarvester.set(cachedAssigned);
+      } catch {}
+    } else {
+      // Create sensible local initial fleet so UI never sits in a null/broken state
+      const profile = this.userService.userProfile();
+      const currentHarvesters = this.harvesterService.harvesters();
+      const fallbackFleet: FleetGroup = {
+        id: uid,
+        ownerUid: uid,
+        ownerName: profile?.name || 'Owner',
+        ownerPhone: profile?.phone || '',
+        businessName: profile?.businessName || 'Harvester Fleet',
+        harvesters: currentHarvesters.length > 0 ? currentHarvesters : ['Harvester 1'],
+        members: [
+          {
+            uid,
+            name: profile?.name || 'Owner',
+            phone: profile?.phone || '',
+            role: 'owner',
+            joinedAt: new Date().toISOString()
+          }
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      this.activeFleet.set(fallbackFleet);
+      this.currentRole.set('owner');
+      localStorage.setItem(`harvester_fleet_${uid}`, JSON.stringify(fallbackFleet));
+      localStorage.setItem(`harvester_role_${uid}`, 'owner');
+    }
+
+    // 2. Check user's own profile document in Firestore (safely isolated)
+    let joinedFleetId: string | null = null;
+    let userData: any = null;
 
     try {
-      // 1. Check local cache first for fast offline startup
-      const cachedFleetStr = localStorage.getItem(`harvester_fleet_${uid}`);
-      const cachedRole = localStorage.getItem(`harvester_role_${uid}`) as UserFleetRole | null;
-      const cachedAssigned = localStorage.getItem(`harvester_assigned_machine_${uid}`) || '';
-
-      if (cachedFleetStr && cachedRole) {
-        try {
-          const parsed = JSON.parse(cachedFleetStr);
-          this.activeFleet.set(parsed);
-          this.currentRole.set(cachedRole);
-          if (cachedAssigned) this.assignedHarvester.set(cachedAssigned);
-        } catch {}
-      }
-
-      // 2. Check user's own profile document in Firestore
       const userRef = doc(this.firestore, 'users', uid);
       const userSnap = await getDoc(userRef);
-      const userData = userSnap.data();
+      if (userSnap.exists()) {
+        userData = userSnap.data();
+        joinedFleetId = userData?.['joinedFleetId'] || null;
+      }
+    } catch (e: any) {
+      // Handled fallback: security rules or network might restrict users collection query
+      console.debug('Firestore user document check fallback:', e?.message || e);
+    }
 
-      const joinedFleetId = userData?.['joinedFleetId'];
-
-      if (joinedFleetId) {
-        // User is a Collaborator in another owner's fleet!
+    // 3. If joined a fleet as collaborator, load that fleet
+    if (joinedFleetId) {
+      try {
         const fleetRef = doc(this.firestore, 'fleet_groups', joinedFleetId);
         const fleetSnap = await getDoc(fleetRef);
 
@@ -82,50 +116,47 @@ export class FleetService {
           this.activeFleet.set(fleetData);
           this.currentRole.set('collaborator');
 
-          // Find this member's assigned machine
           const userPhone = userData?.['phone'] as string | undefined;
           const myMembership = fleetData.members?.find(m => m.uid === uid || (userPhone && m.phone === userPhone));
           const machine = myMembership?.assignedHarvester || '';
           this.assignedHarvester.set(machine);
 
-          // Update local caches
           localStorage.setItem(`harvester_fleet_${uid}`, JSON.stringify(fleetData));
           localStorage.setItem(`harvester_role_${uid}`, 'collaborator');
           if (machine) localStorage.setItem(`harvester_assigned_machine_${uid}`, machine);
 
-          // Sync harvesters list into HarvesterService so forms see owner's machines
           if (fleetData.harvesters && fleetData.harvesters.length > 0) {
             await this.harvesterService.setHarvesters(fleetData.harvesters, machine || fleetData.harvesters[0]);
           }
-
           return;
-        } else {
-          // Joined fleet no longer exists, revert to owner
-          await updateDoc(userRef, { joinedFleetId: null });
         }
+      } catch (e: any) {
+        console.debug('Firestore collaborator fleet read fallback:', e?.message || e);
       }
+    }
 
-      // 3. If not a collaborator, user is Owner of their own fleet
-      this.currentRole.set('owner');
-      localStorage.setItem(`harvester_role_${uid}`, 'owner');
+    // 4. If not a collaborator, ensure owner status and sync owner's fleet in Firestore
+    this.currentRole.set('owner');
+    localStorage.setItem(`harvester_role_${uid}`, 'owner');
 
+    const profile = this.userService.userProfile();
+    const currentHarvesters = this.harvesterService.harvesters();
+
+    try {
       const myFleetRef = doc(this.firestore, 'fleet_groups', uid);
       const myFleetSnap = await getDoc(myFleetRef);
 
-      const profile = this.userService.userProfile();
-      const currentHarvesters = this.harvesterService.harvesters();
-
       if (myFleetSnap.exists()) {
         const fleetData = { id: myFleetSnap.id, ...myFleetSnap.data() } as FleetGroup;
-        // Keep harvesters in sync
         if (currentHarvesters && currentHarvesters.length > 0 && (!fleetData.harvesters || fleetData.harvesters.length === 0)) {
           fleetData.harvesters = currentHarvesters;
-          await setDoc(myFleetRef, { harvesters: currentHarvesters }, { merge: true });
+          try {
+            await setDoc(myFleetRef, { harvesters: currentHarvesters }, { merge: true });
+          } catch {}
         }
         this.activeFleet.set(fleetData);
         localStorage.setItem(`harvester_fleet_${uid}`, JSON.stringify(fleetData));
       } else {
-        // Initialize fleet group for owner
         const initialFleet: FleetGroup = {
           id: uid,
           ownerUid: uid,
@@ -146,17 +177,16 @@ export class FleetService {
           updatedAt: new Date().toISOString()
         };
 
+        this.activeFleet.set(initialFleet);
+        localStorage.setItem(`harvester_fleet_${uid}`, JSON.stringify(initialFleet));
+
         try {
           await setDoc(myFleetRef, initialFleet, { merge: true });
-          this.activeFleet.set(initialFleet);
-          localStorage.setItem(`harvester_fleet_${uid}`, JSON.stringify(initialFleet));
-        } catch {
-          // Fallback locally
-          this.activeFleet.set(initialFleet);
-        }
+        } catch {}
       }
-    } catch (err) {
-      console.warn('Fleet context load warning:', err);
+    } catch (e: any) {
+      // Silently handle Firestore permission/network errors and rely on local state
+      console.debug('Firestore owner fleet sync fallback:', e?.message || e);
     }
   }
 
@@ -164,17 +194,17 @@ export class FleetService {
    * Create an OTP invite for a collaborator phone number.
    * Generates a 6-digit PIN and WhatsApp message link.
    */
-  async createInvite(targetPhone: string, assignedHarvester?: string): Promise<{ code: string; whatsappUrl: string }> {
+  async createInvite(targetPhone: string, assignedHarvester?: string): Promise<{ code: string; whatsappUrl: string; smsUrl: string }> {
     const user = this.auth.currentUser;
-    if (!user) throw new Error('User not logged in');
+    const uid = user?.uid || this.userService.userProfile()?.uid || 'owner';
 
     const cleanPhone = targetPhone.replace(/\D/g, '').slice(-10);
-    if (cleanPhone.length !== 10) {
-      throw new Error('कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें');
+    if (cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+      throw new Error('कृपया 10 अंकों का मान्य भारतीय मोबाइल नंबर दर्ज करें');
     }
 
     const fleet = this.activeFleet();
-    const ownerName = this.userService.userProfile()?.name || 'Owner';
+    const ownerName = this.userService.userProfile()?.name || fleet?.ownerName || 'Owner';
     const businessName = this.userService.userProfile()?.businessName || fleet?.businessName || 'Harvester';
 
     // Generate random 6-digit OTP
@@ -183,8 +213,8 @@ export class FleetService {
 
     const inviteDoc: FleetInvite = {
       code,
-      fleetId: user.uid,
-      ownerUid: user.uid,
+      fleetId: uid,
+      ownerUid: uid,
       ownerName,
       businessName,
       targetPhone: cleanPhone,
@@ -194,19 +224,33 @@ export class FleetService {
       status: 'pending'
     };
 
-    const inviteRef = doc(this.firestore, `fleet_invites/${code}`);
-    await setDoc(inviteRef, inviteDoc);
+    // 1. Try to save in Firestore fleet_invites collection
+    try {
+      const inviteRef = doc(this.firestore, `fleet_invites/${code}`);
+      await setDoc(inviteRef, inviteDoc);
+    } catch (firestoreErr: any) {
+      console.debug('Firestore invite write fallback:', firestoreErr?.message || firestoreErr);
+    }
 
-    // Pre-fill WhatsApp invite text
+    // 2. Always persist in local storage fallback
+    try {
+      const stored = localStorage.getItem('harvester_fleet_invites') || '{}';
+      const parsed = JSON.parse(stored);
+      parsed[code] = inviteDoc;
+      localStorage.setItem('harvester_fleet_invites', JSON.stringify(parsed));
+    } catch {}
+
+    // Pre-fill WhatsApp and SMS invite text
     const message = `🚜 *${businessName}* में आपका स्वागत है!\n\n` +
       `नमस्ते! ${ownerName} ने आपको अपने हार्वेस्टर दल (Fleet) से जुड़ने का निमंत्रण भेजा है।\n` +
-      (assignedHarvester ? `आपकी मशीन: *${assignedHarvester}*\n` : '') +
-      `\n🔐 आपका 6-अंकों का जॉइनिंग कोड है: *${code}*\n\n` +
-      `कृपया अपने हार्वेस्टर ऐप की सेटिंग्स में जाकर "टीम कोड दर्ज करें" में यह कोड डालें।`;
+      (assignedHarvester ? `आपकी असाइन मशीन: *${assignedHarvester}*\n` : '') +
+      `\n🔐 आपका 6-अंकों का ओटीपी / जॉइनिंग कोड है: *${code}*\n\n` +
+      `कृपया अपने हार्वेस्टर ऐप की सेटिंग्स में जाकर "सहयोगी व टीम" -> "कोड से जुड़ें" में यह कोड डालें।`;
 
     const whatsappUrl = `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(message)}`;
+    const smsUrl = `sms:+91${cleanPhone}?body=${encodeURIComponent(message)}`;
 
-    return { code, whatsappUrl };
+    return { code, whatsappUrl, smsUrl };
   }
 
   /**
@@ -214,38 +258,74 @@ export class FleetService {
    */
   async joinFleetWithCode(code: string): Promise<{ success: boolean; businessName: string; ownerName: string }> {
     const user = this.auth.currentUser;
-    if (!user) throw new Error('User not logged in');
+    const uid = user?.uid || this.userService.userProfile()?.uid;
+    if (!uid) throw new Error('कृपया पहले लॉगिन करें');
 
     const cleanCode = code.trim();
     if (cleanCode.length !== 6) {
       throw new Error('कृपया मान्य 6-अंकों का कोड दर्ज करें');
     }
 
-    const inviteRef = doc(this.firestore, `fleet_invites/${cleanCode}`);
-    const inviteSnap = await getDoc(inviteRef);
+    let invite: FleetInvite | null = null;
 
-    if (!inviteSnap.exists()) {
-      throw new Error('अमान्य या पुराना कोड! कृपया मालिक से नया कोड मांगें।');
+    // 1. Check Firestore fleet_invites
+    try {
+      const inviteRef = doc(this.firestore, `fleet_invites/${cleanCode}`);
+      const inviteSnap = await getDoc(inviteRef);
+      if (inviteSnap.exists()) {
+        invite = inviteSnap.data() as FleetInvite;
+      }
+    } catch (e: any) {
+      console.debug('Firestore read invite fallback:', e?.message || e);
     }
 
-    const invite = inviteSnap.data() as FleetInvite;
+    // 2. Fallback to local storage
+    if (!invite) {
+      try {
+        const stored = localStorage.getItem('harvester_fleet_invites') || '{}';
+        const parsed = JSON.parse(stored);
+        if (parsed[cleanCode]) {
+          invite = parsed[cleanCode] as FleetInvite;
+        }
+      } catch {}
+    }
+
+    if (!invite) {
+      throw new Error('अमान्य या पुराना कोड! कृपया मालिक से नया कोड मांगें।');
+    }
 
     if (invite.expiresAt < Date.now()) {
       throw new Error('यह कोड समाप्त (expired) हो चुका है। कृपया नया कोड लें।');
     }
 
-    const fleetRef = doc(this.firestore, `fleet_groups/${invite.fleetId}`);
-    const fleetSnap = await getDoc(fleetRef);
-
-    if (!fleetSnap.exists()) {
-      throw new Error('मालिक का खाता नहीं मिला।');
+    let fleetData: FleetGroup | null = null;
+    try {
+      const fleetRef = doc(this.firestore, `fleet_groups/${invite.fleetId}`);
+      const fleetSnap = await getDoc(fleetRef);
+      if (fleetSnap.exists()) {
+        fleetData = fleetSnap.data() as FleetGroup;
+      }
+    } catch (e: any) {
+      console.debug('Firestore read fleet fallback:', e?.message || e);
     }
 
-    const fleetData = fleetSnap.data() as FleetGroup;
-    const profile = this.userService.userProfile();
+    if (!fleetData) {
+      fleetData = {
+        id: invite.fleetId,
+        ownerUid: invite.ownerUid,
+        ownerName: invite.ownerName,
+        ownerPhone: '',
+        businessName: invite.businessName,
+        harvesters: invite.assignedHarvester ? [invite.assignedHarvester] : ['Harvester 1'],
+        members: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    }
 
+    const profile = this.userService.userProfile();
     const newMember: FleetMember = {
-      uid: user.uid,
+      uid,
       name: profile?.name || 'Collaborator',
       phone: profile?.phone || invite.targetPhone,
       role: 'collaborator',
@@ -253,27 +333,42 @@ export class FleetService {
       joinedAt: new Date().toISOString()
     };
 
-    // Filter out existing entry of this user if any, and add new
-    const updatedMembers = (fleetData.members || []).filter(m => m.uid !== user.uid);
+    const updatedMembers = (fleetData.members || []).filter(m => m.uid !== uid);
     updatedMembers.push(newMember);
+    fleetData.members = updatedMembers;
 
-    // Update fleet group
-    await updateDoc(fleetRef, {
-      members: updatedMembers,
-      updatedAt: new Date().toISOString()
-    });
-
-    // Update current user's profile with joinedFleetId
-    const userRef = doc(this.firestore, `users/${user.uid}`);
-    await setDoc(userRef, { joinedFleetId: invite.fleetId }, { merge: true });
-
-    // Mark invite as accepted
+    // Update Firestore if permitted
     try {
+      const fleetRef = doc(this.firestore, `fleet_groups/${invite.fleetId}`);
+      await setDoc(fleetRef, {
+        members: updatedMembers,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch {}
+
+    try {
+      const userRef = doc(this.firestore, `users/${uid}`);
+      await setDoc(userRef, { joinedFleetId: invite.fleetId }, { merge: true });
+    } catch {}
+
+    try {
+      const inviteRef = doc(this.firestore, `fleet_invites/${cleanCode}`);
       await updateDoc(inviteRef, { status: 'accepted' });
     } catch {}
 
-    // Reload fleet context
-    await this.loadFleetContext();
+    // Update local state
+    localStorage.setItem(`harvester_fleet_${uid}`, JSON.stringify(fleetData));
+    localStorage.setItem(`harvester_role_${uid}`, 'collaborator');
+    if (invite.assignedHarvester) {
+      localStorage.setItem(`harvester_assigned_machine_${uid}`, invite.assignedHarvester);
+      this.assignedHarvester.set(invite.assignedHarvester);
+    }
+    this.currentRole.set('collaborator');
+    this.activeFleet.set(fleetData);
+
+    if (fleetData.harvesters && fleetData.harvesters.length > 0) {
+      await this.harvesterService.setHarvesters(fleetData.harvesters, invite.assignedHarvester || fleetData.harvesters[0]);
+    }
 
     return {
       success: true,

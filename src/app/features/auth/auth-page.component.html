@@ -104,16 +104,35 @@
 
                 <div class="auth-flow-container">
                     <!-- Phone Input Field -->
-                    <mat-form-field appearance="outline" class="auth-form-field">
+                    <mat-form-field appearance="outline" class="auth-form-field" [class.field-has-error]="loginPhoneTouched() && !!loginPhoneError()">
                         <mat-label>{{ translationService.get('auth.phoneLabel') }}</mat-label>
-                        <input matInput type="tel" [ngModel]="loginPhone()" (ngModelChange)="loginPhone.set($event)" [placeholder]="translationService.get('auth.phonePlaceholder')" maxlength="10" inputmode="numeric" [readonly]="loginOtpSent()">
+                        <input matInput type="tel" 
+                               [ngModel]="loginPhone()" 
+                               (ngModelChange)="onLoginPhoneInput($event)" 
+                               (blur)="loginPhoneTouched.set(true)"
+                               [placeholder]="translationService.get('auth.phonePlaceholder')" 
+                               maxlength="10" 
+                               inputmode="numeric" 
+                               [readonly]="loginOtpSent()">
                         <mat-icon matPrefix>phone</mat-icon>
                         <span matPrefix class="phone-prefix">+91</span>
                     </mat-form-field>
 
+                    @if (!loginOtpSent() && loginPhoneTouched() && loginPhoneError()) {
+                    <div class="auth-input-feedback error" id="login-phone-error">
+                        <mat-icon>error_outline</mat-icon>
+                        <span>{{ loginPhoneError() }}</span>
+                    </div>
+                    } @else if (!loginOtpSent() && loginPhone() && isLoginPhoneValid()) {
+                    <div class="auth-input-feedback valid" id="login-phone-valid">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'मान्य मोबाइल नंबर' : 'Valid 10-digit number' }}</span>
+                    </div>
+                    }
+
                     <!-- STEP 1: Send OTP Button -->
                     @if (!loginOtpSent()) {
-                    <button type="button" class="submit-button whatsapp-submit-btn" [disabled]="loginLoading() || !loginPhone() || loginPhone().length !== 10" (click)="sendLoginOtp()" mat-raised-button color="primary">
+                    <button type="button" class="submit-button whatsapp-submit-btn" [disabled]="loginLoading() || !isLoginPhoneValid()" (click)="sendLoginOtp()" mat-raised-button color="primary">
                         @if (!loginLoading()) {
                             <mat-icon>send</mat-icon>
                         }
@@ -187,12 +206,27 @@
                 <h2 class="form-title">{{ translationService.get('auth.welcomeBack') }}</h2>
 
                 <form [formGroup]="passwordLoginForm" (ngSubmit)="onPasswordLogin()">
-                    <mat-form-field appearance="outline" class="auth-form-field">
+                    <mat-form-field appearance="outline" class="auth-form-field" [class.field-has-error]="passwordLoginForm.get('phone')?.invalid && (passwordLoginForm.get('phone')?.touched || passwordLoginForm.get('phone')?.dirty)">
                         <mat-label>{{ translationService.get('auth.phoneLabel') }}</mat-label>
-                        <input matInput type="tel" formControlName="phone" [placeholder]="translationService.get('auth.phonePlaceholder')" maxlength="10" inputmode="numeric">
+                        <input matInput type="tel" formControlName="phone" (input)="onPasswordPhoneInput($event)" [placeholder]="translationService.get('auth.phonePlaceholder')" maxlength="10" inputmode="numeric">
                         <mat-icon matPrefix>phone</mat-icon>
                         <span matPrefix class="phone-prefix">+91</span>
                     </mat-form-field>
+
+                    @if (passwordLoginForm.get('phone')?.invalid && (passwordLoginForm.get('phone')?.touched || passwordLoginForm.get('phone')?.dirty)) {
+                    <div class="auth-input-feedback error" id="pwd-phone-error">
+                        <mat-icon>error_outline</mat-icon>
+                        <span>
+                            @if (passwordLoginForm.get('phone')?.hasError('required')) {
+                                {{ translationService.get('auth.phoneRequired') }}
+                            } @else if (passwordLoginForm.get('phone')?.hasError('allSameDigits') || passwordLoginForm.get('phone')?.hasError('dummyNumber')) {
+                                {{ translationService.getCurrentLanguage() === 'hi' ? 'कृपया एक मान्य मोबाइल नंबर दर्ज करें (डमी नंबर मान्य नहीं है)' : 'Please enter a valid mobile number' }}
+                            } @else {
+                                {{ translationService.getCurrentLanguage() === 'hi' ? 'कृपया 6-9 से शुरू होने वाला 10-अंकीय नंबर दर्ज करें' : 'Must be 10 digits starting with 6, 7, 8 or 9' }}
+                            }
+                        </span>
+                    </div>
+                    }
 
                     <mat-form-field appearance="outline" class="auth-form-field">
                         <mat-label>{{ translationService.get('auth.passwordLabel') }}</mat-label>
@@ -244,26 +278,78 @@
                     <!-- STEP 1: Registration fields before OTP -->
                     @if (!signupOtpSent()) {
                     <!-- Full Name Field -->
-                    <mat-form-field appearance="outline" class="auth-form-field">
+                    <mat-form-field appearance="outline" class="auth-form-field" [class.field-has-error]="signupNameTouched() && !!signupNameError()">
                         <mat-label>{{ translationService.get('auth.fullNameLabel') }} *</mat-label>
-                        <input matInput type="text" [ngModel]="signupName()" (ngModelChange)="signupName.set($event)" [placeholder]="translationService.get('auth.fullNamePlaceholder')">
+                        <input matInput type="text" 
+                               [ngModel]="signupName()" 
+                               (ngModelChange)="onSignupNameInput($event)" 
+                               (blur)="signupNameTouched.set(true)"
+                               [placeholder]="translationService.get('auth.fullNamePlaceholder')"
+                               maxlength="50">
                         <mat-icon matPrefix>person</mat-icon>
                     </mat-form-field>
 
+                    @if (signupNameTouched() && signupNameError()) {
+                    <div class="auth-input-feedback error" id="signup-name-error">
+                        <mat-icon>error_outline</mat-icon>
+                        <span>{{ signupNameError() }}</span>
+                    </div>
+                    } @else if (signupNameTouched() && isSignupNameValid()) {
+                    <div class="auth-input-feedback valid" id="signup-name-valid">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'मान्य नाम' : 'Valid name' }}</span>
+                    </div>
+                    }
+
                     <!-- Company / Farm Name Field (MANDATORY) -->
-                    <mat-form-field appearance="outline" class="auth-form-field">
-                        <mat-label>{{ translationService.get('auth.companyNameLabel') }}</mat-label>
-                        <input matInput type="text" [ngModel]="signupBusinessName()" (ngModelChange)="signupBusinessName.set($event)" [placeholder]="translationService.get('auth.companyNamePlaceholder')">
+                    <mat-form-field appearance="outline" class="auth-form-field" [class.field-has-error]="signupBusinessNameTouched() && !!signupBusinessNameError()">
+                        <mat-label>{{ translationService.get('auth.companyNameLabel') }} *</mat-label>
+                        <input matInput type="text" 
+                               [ngModel]="signupBusinessName()" 
+                               (ngModelChange)="onSignupBusinessNameInput($event)" 
+                               (blur)="signupBusinessNameTouched.set(true)"
+                               [placeholder]="translationService.get('auth.companyNamePlaceholder')"
+                               maxlength="60">
                         <mat-icon matPrefix>agriculture</mat-icon>
                     </mat-form-field>
 
+                    @if (signupBusinessNameTouched() && signupBusinessNameError()) {
+                    <div class="auth-input-feedback error" id="signup-business-error">
+                        <mat-icon>error_outline</mat-icon>
+                        <span>{{ signupBusinessNameError() }}</span>
+                    </div>
+                    } @else if (signupBusinessNameTouched() && isSignupBusinessNameValid()) {
+                    <div class="auth-input-feedback valid" id="signup-business-valid">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'मान्य कंपनी/फार्म' : 'Valid company/farm' }}</span>
+                    </div>
+                    }
+
                     <!-- Phone Number Field -->
-                    <mat-form-field appearance="outline" class="auth-form-field">
+                    <mat-form-field appearance="outline" class="auth-form-field" [class.field-has-error]="signupPhoneTouched() && !!signupPhoneError()">
                         <mat-label>{{ translationService.get('auth.phoneLabel') }} *</mat-label>
-                        <input matInput type="tel" [ngModel]="signupPhone()" (ngModelChange)="signupPhone.set($event)" [placeholder]="translationService.get('auth.phonePlaceholder')" maxlength="10" inputmode="numeric">
+                        <input matInput type="tel" 
+                               [ngModel]="signupPhone()" 
+                               (ngModelChange)="onSignupPhoneInput($event)" 
+                               (blur)="signupPhoneTouched.set(true)"
+                               [placeholder]="translationService.get('auth.phonePlaceholder')" 
+                               maxlength="10" 
+                               inputmode="numeric">
                         <mat-icon matPrefix>phone</mat-icon>
                         <span matPrefix class="phone-prefix">+91</span>
                     </mat-form-field>
+
+                    @if (signupPhoneTouched() && signupPhoneError()) {
+                    <div class="auth-input-feedback error" id="signup-phone-error">
+                        <mat-icon>error_outline</mat-icon>
+                        <span>{{ signupPhoneError() }}</span>
+                    </div>
+                    } @else if (signupPhoneTouched() && isSignupPhoneValid()) {
+                    <div class="auth-input-feedback valid" id="signup-phone-valid">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>{{ translationService.getCurrentLanguage() === 'hi' ? 'मान्य मोबाइल नंबर' : 'Valid 10-digit number' }}</span>
+                    </div>
+                    }
 
                     <div class="form-checkbox">
                         <label class="checkbox-label">
@@ -280,7 +366,7 @@
 
                     <!-- Send OTP & Register Button -->
                     <button type="button" class="submit-button whatsapp-submit-btn" 
-                            [disabled]="signupLoading() || !signupName() || signupName().length < 2 || !signupBusinessName() || signupBusinessName().trim().length < 2 || !signupPhone() || signupPhone().length !== 10 || !signupAgreeTerms()" 
+                            [disabled]="signupLoading() || !isSignupNameValid() || !isSignupBusinessNameValid() || !isSignupPhoneValid() || !signupAgreeTerms()" 
                             (click)="sendSignupOtp()"
                             mat-raised-button color="primary">
                         @if (!signupLoading()) {
